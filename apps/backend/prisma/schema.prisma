@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================================================
+// Users & Authentication
+// ============================================================================
+
+model User {
+  id        String   @id @default(ulid())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(255)
+  password  String?  @db.VarChar(255)
+  phone     String?  @db.VarChar(20)
+  whatsapp  String?  @db.VarChar(20)
+  telegram  String?  @db.VarChar(100)
+  role      UserRole @default(STUDENT)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  groups     GroupStudent[]
+  attendance AttendanceRecord[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+  TUTOR
+  STUDENT
+}
+
+// ============================================================================
+// Groups
+// ============================================================================
+
+model Group {
+  id          String      @id @default(ulid())
+  name        String      @db.VarChar(100)
+  description String?     @db.VarChar(500)
+  tutorId     String      @map("tutor_id")
+  status      GroupStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  scheduleDays GroupScheduleDay[]
+  students     GroupStudent[]
+  sessions     Session[]
+
+  @@index([tutorId])
+  @@index([status])
+  @@map("groups")
+}
+
+model GroupScheduleDay {
+  groupId         String   @map("group_id")
+  dayOfWeek       Int      @map("day_of_week") @db.TinyInt
+  time            DateTime @db.Time
+  durationMinutes Int      @map("duration_minutes") @db.SmallInt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, dayOfWeek])
+  @@map("group_schedule_days")
+}
+
+model GroupStudent {
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@index([userId])
+  @@map("group_students")
+}
+
+enum GroupStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+}
+
+// ============================================================================
+// Sessions
+// ============================================================================
+
+model Session {
+  id        String        @id @default(ulid())
+  groupId   String        @map("group_id")
+  date      DateTime      @db.Date
+  time      DateTime      @db.Time
+  status    SessionStatus @default(SCHEDULED)
+  notes     String?       @db.Text
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  group      Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  attendance AttendanceRecord[]
+
+  @@index([groupId])
+  @@index([date])
+  @@index([status])
+  @@map("sessions")
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
+}
+
+// ============================================================================
+// Attendance
+// ============================================================================
+
+model AttendanceRecord {
+  id        String           @id @default(ulid())
+  sessionId String           @map("session_id")
+  userId    String           @map("user_id")
+  status    AttendanceStatus
+  notes     String?          @db.Text
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@index([status])
+  @@map("attendance_records")
+}
+
+enum AttendanceStatus {
+  ATTENDED
+  MISSED
+  EXCUSED
+}

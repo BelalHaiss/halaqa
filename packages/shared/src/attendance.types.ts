@@ -1,49 +1,87 @@
 import { z } from 'zod';
 
+// ============================================================================
+// DTOs (Public Types)
+// ============================================================================
+
+export type AttendanceStatus = 'ATTENDED' | 'MISSED' | 'EXCUSED';
+
+export interface AttendanceRecord {
+  id: string;
+  sessionId: string;
+  userId: string;
+  status: AttendanceStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAttendanceRecordDto {
+  sessionId: string;
+  userId: string;
+  status: AttendanceStatus;
+  notes?: string;
+}
+
+export interface UpdateAttendanceRecordDto {
+  id: string;
+  status: AttendanceStatus;
+  notes?: string;
+}
+
+export interface BulkAttendanceDto {
+  sessionId: string;
+  records: CreateAttendanceRecordDto[];
+}
+
+export interface AttendanceFilterDto {
+  sessionId?: string;
+  userId?: string;
+  status?: AttendanceStatus;
+}
+
+// ============================================================================
+// Zod Schemas
+// ============================================================================
+
 export const AttendanceStatusSchema = z.enum([
-  'attended',
-  'missed',
-  'late',
-  'excused'
-]);
-export type AttendanceStatus = z.infer<typeof AttendanceStatusSchema>;
+  'ATTENDED',
+  'MISSED',
+  'EXCUSED'
+]) satisfies z.ZodType<AttendanceStatus>;
 
 export const AttendanceRecordSchema = z.object({
-  id: z.string().optional(),
-  studentId: z.string(),
+  id: z.string(),
   sessionId: z.string(),
+  userId: z.string(),
   status: AttendanceStatusSchema,
   notes: z.string().optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional()
-});
-
-export type AttendanceRecord = z.infer<typeof AttendanceRecordSchema>;
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime()
+}) satisfies z.ZodType<AttendanceRecord>;
 
 export const CreateAttendanceRecordSchema = z.object({
-  studentId: z.string(),
   sessionId: z.string(),
+  userId: z.string(),
   status: AttendanceStatusSchema,
   notes: z.string().optional()
-});
-
-export type CreateAttendanceRecord = z.infer<
-  typeof CreateAttendanceRecordSchema
->;
+}) satisfies z.ZodType<CreateAttendanceRecordDto>;
 
 export const UpdateAttendanceRecordSchema = z.object({
-  id: z.string(),
+  id: z.string().uuid(),
   status: AttendanceStatusSchema,
   notes: z.string().optional()
-});
-
-export type UpdateAttendanceRecord = z.infer<
-  typeof UpdateAttendanceRecordSchema
->;
+}) satisfies z.ZodType<UpdateAttendanceRecordDto>;
 
 export const BulkAttendanceSchema = z.object({
-  sessionId: z.string(),
-  records: z.array(CreateAttendanceRecordSchema)
-});
+  sessionId: z.string().uuid('معرف الجلسة غير صحيح'),
+  records: z
+    .array(CreateAttendanceRecordSchema)
+    .min(1, 'يجب إضافة سجل حضور واحد على الأقل')
+}) satisfies z.ZodType<BulkAttendanceDto>;
 
-export type BulkAttendance = z.infer<typeof BulkAttendanceSchema>;
+export const AttendanceFilterSchema = z.object({
+  sessionId: z.string().optional(),
+  userId: z.string().optional(),
+  status: AttendanceStatusSchema.optional()
+}) satisfies z.ZodType<AttendanceFilterDto>;

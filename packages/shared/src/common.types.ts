@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-// API Response types
+// ============================================================================
+// API Response Types
+// ============================================================================
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -16,15 +19,15 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-// Query params
-export const PaginationParamsSchema = z.object({
-  page: z.number().int().positive().default(1),
-  pageSize: z.number().int().positive().max(100).default(10)
-});
+// ============================================================================
+// Query & Filter Types
+// ============================================================================
 
-export type PaginationParams = z.infer<typeof PaginationParamsSchema>;
+export interface PaginationParamsDto {
+  page: number;
+  pageSize: number;
+}
 
-// Filter and Sort
 export interface FilterParams {
   [key: string]: any;
 }
@@ -34,15 +37,15 @@ export interface SortParams {
   order: 'asc' | 'desc';
 }
 
-// Date range
-export const DateRangeSchema = z.object({
-  from: z.string(),
-  to: z.string()
-});
+export interface DateRangeDto {
+  from: string; // YYYY-MM-DD
+  to: string; // YYYY-MM-DD
+}
 
-export type DateRange = z.infer<typeof DateRangeSchema>;
+// ============================================================================
+// Statistics Types
+// ============================================================================
 
-// Statistics
 export interface DashboardStats {
   totalGroups: number;
   totalStudents: number;
@@ -58,11 +61,27 @@ export interface GroupStats {
   totalSessions: number;
 }
 
-// View modes
+// ============================================================================
+// UI State Types
+// ============================================================================
+
 export type ViewMode = 'list' | 'grid' | 'calendar';
 
-// Loading and error states
 export interface LoadingState {
   isLoading: boolean;
   error?: string;
 }
+
+// ============================================================================
+// Zod Schemas
+// ============================================================================
+
+export const PaginationParamsSchema = z.object({
+  page: z.number().int().positive().default(1),
+  pageSize: z.number().int().positive().max(100).default(10)
+}) satisfies z.ZodType<PaginationParamsDto>;
+
+export const DateRangeSchema = z.object({
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ غير صحيحة'),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ غير صحيحة')
+}) satisfies z.ZodType<DateRangeDto>;

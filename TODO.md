@@ -1,7 +1,6 @@
 Code Readability
 
 - always use single source of truth like zod schema with utility types or typescript type and then use utility type with same type
-  -monorepo
 
 - shared types + Role + zod schema
   check what db is best ?
@@ -29,3 +28,4 @@ important make reusable component and make other page use it and make reusable a
 
 General
 -we should have alert dialog for any action like delete
+-format time with luxon to be 12hrs not 24 format
