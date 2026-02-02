@@ -191,12 +191,14 @@ function Sessions({ user }: SessionsProps) {
                           </div>
                           <div
                             className={`text-xs ${
-                              session.status === 'done'
+                              session.status === 'COMPLETED'
                                 ? 'text-green-600 dark:text-green-400'
                                 : 'text-red-600 dark:text-red-400'
                             }`}
                           >
-                            {session.status === 'done' ? 'منتهية' : 'ملغية'}
+                            {session.status === 'COMPLETED'
+                              ? 'منتهية'
+                              : 'ملغية'}
                           </div>
                         </div>
                       </div>

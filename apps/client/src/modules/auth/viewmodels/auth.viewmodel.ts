@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { storageService } from '@/services';
-import { User, LoginCredentials } from '@halaqa/shared';
+import { User, LoginCredentialsDto } from '@halaqa/shared';
 import { toast } from 'sonner';
 
 export const useAuthViewModel = () => {
@@ -10,7 +10,7 @@ export const useAuthViewModel = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials: LoginCredentialsDto) => {
     setIsLoading(true);
     setError(null);
 

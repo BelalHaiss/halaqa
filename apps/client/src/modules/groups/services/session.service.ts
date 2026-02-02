@@ -12,43 +12,53 @@ class SessionService {
             groupId: groupId,
             date: '2026-01-20',
             time: '09:00',
-            status: 'done',
-            notes: 'جلسة ممتازة، تم مراجعة سورة البقرة'
+            status: 'COMPLETED',
+            notes: 'جلسة ممتازة، تم مراجعة سورة البقرة',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
             id: '2',
             groupId: groupId,
             date: '2026-01-18',
             time: '09:00',
-            status: 'done',
-            notes: 'تم حفظ آيات جديدة'
+            status: 'COMPLETED',
+            notes: 'تم حفظ آيات جديدة',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
             id: '3',
             groupId: groupId,
             date: '2026-01-15',
             time: '09:00',
-            status: 'canceled',
-            notes: 'تم إلغاء الجلسة لظروف خاصة'
+            status: 'CANCELED',
+            notes: 'تم إلغاء الجلسة لظروف خاصة',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
             id: '4',
             groupId: groupId,
             date: '2026-01-13',
             time: '09:00',
-            status: 'done',
-            notes: 'مراجعة وتصحيح التلاوة'
+            status: 'COMPLETED',
+            notes: 'مراجعة وتصحيح التلاوة',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
             id: '5',
             groupId: groupId,
             date: '2026-01-10',
             time: '09:00',
-            status: 'done',
-            notes: 'جلسة تقويم وتقييم'
+            status: 'COMPLETED',
+            notes: 'جلسة تقويم وتقييم',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ];
-        
+
         resolve({
           success: true,
           data: mockSessions

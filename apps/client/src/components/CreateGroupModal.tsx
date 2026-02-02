@@ -11,7 +11,7 @@ interface CreateGroupModalProps {
 
 export default function CreateGroupModal({
   onClose,
-  user
+  user: _user
 }: CreateGroupModalProps) {
   const [name, setName] = useState('');
   const [tutorId, setTutorId] = useState('');

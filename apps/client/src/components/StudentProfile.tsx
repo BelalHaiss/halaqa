@@ -1,8 +1,8 @@
 import { Phone, MessageCircle, Send } from 'lucide-react';
-import { User } from '@halaqa/shared';
+import { StudentUser } from '../lib/mockData';
 
 interface StudentProfileProps {
-  student: User;
+  student: StudentUser;
   compact?: boolean;
 }
 
@@ -74,9 +74,9 @@ export default function StudentProfile({
         <h3 className='text-lg text-gray-800 dark:text-gray-100 mb-1'>
           {student.name}
         </h3>
-        {student.notes && (
+        {student.profile?.notes && (
           <p className='text-sm text-gray-600 dark:text-gray-400'>
-            {student.notes}
+            {student.profile.notes}
           </p>
         )}
       </div>

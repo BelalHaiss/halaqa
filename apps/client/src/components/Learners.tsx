@@ -20,7 +20,7 @@ interface LearnersProps {
   user: User;
 }
 
-function Learners({ user }: LearnersProps) {
+function Learners({ user: _user }: LearnersProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);

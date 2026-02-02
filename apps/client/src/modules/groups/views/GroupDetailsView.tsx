@@ -17,21 +17,26 @@ import { User } from '@halaqa/shared';
 export const GroupDetailsView = ({ user }: { user?: User }) => {
   const { id } = useParams<{ id: string }>();
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
-  
+
   const { group, students, tutor, isLoading, error } = useGroupDetailsViewModel(
     id!
   );
-  
-  const { updateGroupStatus } = useGroupsViewModel(user || { 
-    id: '', 
-    name: '', 
-    email: '', 
-    role: 'tutor' 
-  });
-  
-  const { 
-    sessions, 
-    isLoading: sessionsLoading, 
+
+  const { updateGroupStatus } = useGroupsViewModel(
+    user || {
+      id: '',
+      username: 'guest',
+      name: '',
+      email: '',
+      role: 'TUTOR',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  );
+
+  const {
+    sessions,
+    isLoading: sessionsLoading,
     error: sessionsError,
     searchQuery: sessionSearchQuery,
     setSearchQuery: setSessionSearchQuery
@@ -53,22 +58,26 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
     );
   }
 
-  const scheduleDays = group.schedule.days.map((d) => dayNames[d]).join(' و ');
-  
+  const scheduleDays = group.scheduleDays
+    .map((sd) => dayNames[sd.dayOfWeek])
+    .join(' و ');
+
   // Filter students based on search query
-  const filteredStudents = students.filter(student => 
-    !studentSearchQuery || student.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
+  const filteredStudents = students.filter(
+    (student) =>
+      !studentSearchQuery ||
+      student.name.toLowerCase().includes(studentSearchQuery.toLowerCase())
   );
 
-  const groupStatus = (group as any).status || 'active';
-  const canEdit = user && (user.role === 'admin' || user.role === 'moderator');
+  const groupStatus = group.status;
+  const canEdit = user && (user.role === 'ADMIN' || user.role === 'MODERATOR');
 
   return (
     <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className='flex items-start justify-between'>
         <div>
-          <div className="flex items-center gap-3 mb-2">
+          <div className='flex items-center gap-3 mb-2'>
             <h1 className='text-2xl text-gray-800 dark:text-gray-100'>
               {group.name}
             </h1>
@@ -85,9 +94,11 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
       </div>
 
       {/* Group Info */}
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+      <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
         <CardHeader>
-          <CardTitle className='text-lg text-gray-800 dark:text-gray-100'>معلومات الحلقة</CardTitle>
+          <CardTitle className='text-lg text-gray-800 dark:text-gray-100'>
+            معلومات الحلقة
+          </CardTitle>
         </CardHeader>
         <CardContent className='space-y-3'>
           <div className='flex items-center justify-between'>
@@ -111,7 +122,7 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
               الوقت:
             </span>
             <span className='text-sm text-gray-800 dark:text-gray-100'>
-              {group.schedule.time}
+              {group.scheduleDays[0]?.time || 'غير محدد'}
             </span>
           </div>
           <div className='flex items-center justify-between'>
@@ -119,29 +130,35 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
               المدة:
             </span>
             <span className='text-sm text-gray-800 dark:text-gray-100'>
-              {group.schedule.duration} دقيقة
+              {group.scheduleDays[0]?.durationMinutes || 60} دقيقة
             </span>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs for Students and Sessions */}
-      <Tabs defaultValue="students" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
-          <TabsTrigger value="students" className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
-            <Users className="w-4 h-4" />
+      <Tabs defaultValue='students' className='w-full'>
+        <TabsList className='grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800'>
+          <TabsTrigger
+            value='students'
+            className='flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700'
+          >
+            <Users className='w-4 h-4' />
             الطلاب ({students.length})
           </TabsTrigger>
-          <TabsTrigger value="sessions" className="flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700">
-            <History className="w-4 h-4" />
+          <TabsTrigger
+            value='sessions'
+            className='flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700'
+          >
+            <History className='w-4 h-4' />
             سجل الجلسات
           </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="students" className="space-y-4">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+
+        <TabsContent value='students' className='space-y-4'>
+          <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className='flex items-center justify-between'>
                 <CardTitle className='text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2'>
                   <Users className='w-5 h-5' />
                   الطلاب ({filteredStudents.length})
@@ -151,17 +168,19 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
                 <SearchInput
                   value={studentSearchQuery}
                   onChange={setStudentSearchQuery}
-                  placeholder="بحث عن طالب..."
-                  className="mt-2"
+                  placeholder='بحث عن طالب...'
+                  className='mt-2'
                 />
               )}
             </CardHeader>
             <CardContent>
               {filteredStudents.length === 0 ? (
                 <div className='text-center py-8'>
-                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400" />
+                  <Users className='w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400' />
                   <p className='text-sm text-gray-500 dark:text-gray-400'>
-                    {studentSearchQuery ? 'لا توجد نتائج للبحث' : 'لا يوجد طلاب في هذه الحلقة'}
+                    {studentSearchQuery
+                      ? 'لا توجد نتائج للبحث'
+                      : 'لا يوجد طلاب في هذه الحلقة'}
                   </p>
                 </div>
               ) : (
@@ -178,11 +197,11 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="sessions" className="space-y-4">
-          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+
+        <TabsContent value='sessions' className='space-y-4'>
+          <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className='flex items-center justify-between'>
                 <CardTitle className='text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2'>
                   <Clock className='w-5 h-5' />
                   الجلسات السابقة ({sessions.length})
@@ -192,8 +211,8 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
                 <SearchInput
                   value={sessionSearchQuery}
                   onChange={setSessionSearchQuery}
-                  placeholder="بحث في الجلسات..."
-                  className="mt-2"
+                  placeholder='بحث في الجلسات...'
+                  className='mt-2'
                 />
               )}
             </CardHeader>
@@ -208,18 +227,17 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
                 </Alert>
               ) : sessions.length === 0 ? (
                 <div className='text-center py-8'>
-                  <History className="w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400" />
+                  <History className='w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400' />
                   <p className='text-sm text-gray-500 dark:text-gray-400'>
-                    {sessionSearchQuery ? 'لا توجد نتائج للبحث' : 'لا توجد جلسات سابقة'}
+                    {sessionSearchQuery
+                      ? 'لا توجد نتائج للبحث'
+                      : 'لا توجد جلسات سابقة'}
                   </p>
                 </div>
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                   {sessions.map((session) => (
-                    <SessionItem
-                      key={session.id}
-                      session={session}
-                    />
+                    <SessionItem key={session.id} session={session} />
                   ))}
                 </div>
               )}

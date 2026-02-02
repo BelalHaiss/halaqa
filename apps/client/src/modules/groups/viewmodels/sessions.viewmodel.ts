@@ -11,22 +11,22 @@ export const useSessionsViewModel = (groupId: string) => {
   useEffect(() => {
     const fetchSessions = async () => {
       if (!groupId) return;
-      
+
       setIsLoading(true);
       setError(null);
-      
+
       const response = await sessionService.getSessionsByGroupId(groupId);
-      
+
       if (response.success && response.data) {
         // Sort sessions by date descending (newest first)
-        const sortedSessions = response.data.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+        const sortedSessions = response.data.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         setSessions(sortedSessions);
       } else {
         setError(response.error || 'فشل في جلب الجلسات');
       }
-      
+
       setIsLoading(false);
     };
 
@@ -34,9 +34,9 @@ export const useSessionsViewModel = (groupId: string) => {
   }, [groupId]);
 
   // Filter sessions based on search query
-  const filteredSessions = sessions.filter(session => {
+  const filteredSessions = sessions.filter((session) => {
     if (!searchQuery) return true;
-    
+
     const query = searchQuery.toLowerCase();
     return (
       session.date.includes(query) ||
@@ -47,8 +47,8 @@ export const useSessionsViewModel = (groupId: string) => {
   });
 
   // Get only past sessions (done or canceled)
-  const pastSessions = filteredSessions.filter(session => 
-    session.status === 'done' || session.status === 'canceled'
+  const pastSessions = filteredSessions.filter(
+    (session) => session.status === 'COMPLETED' || session.status === 'CANCELED'
   );
 
   return {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { groupService } from '../services/group.service';
-import { Group, User, CreateGroup, GroupStatus } from '@halaqa/shared';
+import { Group, User, GroupStatus, CreateGroupDto } from '@halaqa/shared';
 import { toast } from 'sonner';
 
 export const useGroupsViewModel = (currentUser: User) => {
@@ -23,7 +23,7 @@ export const useGroupsViewModel = (currentUser: User) => {
       if (response.success && response.data) {
         // Filter by user role
         const filteredGroups =
-          currentUser.role === 'tutor'
+          currentUser.role === 'TUTOR'
             ? response.data.filter((g) => g.tutorId === currentUser.id)
             : response.data;
 
@@ -38,7 +38,7 @@ export const useGroupsViewModel = (currentUser: User) => {
     }
   };
 
-  const createGroup = async (group: CreateGroup) => {
+  const createGroup = async (group: CreateGroupDto) => {
     try {
       const response = await groupService.createGroup(group);
 
@@ -73,16 +73,14 @@ export const useGroupsViewModel = (currentUser: User) => {
       return { success: false };
     }
   };
-  
+
   const updateGroupStatus = async (groupId: string, status: GroupStatus) => {
     try {
       const response = await groupService.updateGroupStatus(groupId, status);
 
       if (response.success && response.data) {
         // Update the local state
-        setGroups(groups.map(g => 
-          g.id === groupId ? { ...g, status } : g
-        ));
+        setGroups(groups.map((g) => (g.id === groupId ? { ...g, status } : g)));
         toast.success('تم تحديث حالة الحلقة بنجاح');
         return { success: true };
       } else {

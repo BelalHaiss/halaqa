@@ -79,7 +79,7 @@ export interface LoadingState {
 export const PaginationParamsSchema = z.object({
   page: z.number().int().positive().default(1),
   pageSize: z.number().int().positive().max(100).default(10)
-}) satisfies z.ZodType<PaginationParamsDto>;
+});
 
 export const DateRangeSchema = z.object({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ غير صحيحة'),

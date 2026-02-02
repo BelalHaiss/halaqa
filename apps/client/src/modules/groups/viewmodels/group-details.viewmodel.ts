@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { groupService } from '../services/group.service';
-import { Group, Student, User as UserType, UpdateGroup } from '@halaqa/shared';
+import { Group, User as UserType } from '@halaqa/shared';
+import { StudentUser } from '@/lib/mockData';
 import { toast } from 'sonner';
 
 export const useGroupDetailsViewModel = (groupId: string) => {
   const [group, setGroup] = useState<Group | null>(null);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<StudentUser[]>([]);
   const [tutor, setTutor] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export const useGroupDetailsViewModel = (groupId: string) => {
 
         // Load related data
         const groupStudents = await groupService.getGroupStudents(groupId);
-        setStudents(groupStudents as Student[]);
+        setStudents(groupStudents as StudentUser[]);
 
         const groupTutor = await groupService.getGroupTutor(
           response.data.tutorId
@@ -42,9 +43,9 @@ export const useGroupDetailsViewModel = (groupId: string) => {
     }
   };
 
-  const updateGroup = async (updatedGroup: UpdateGroup) => {
+  const updateGroup = async (updatedGroup: Partial<Group> & { id: string }) => {
     try {
-      const response = await groupService.updateGroup(updatedGroup);
+      const response = await groupService.updateGroup(updatedGroup as any);
 
       if (response.success && response.data) {
         setGroup(response.data);

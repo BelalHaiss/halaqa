@@ -15,8 +15,14 @@ interface GroupsViewProps {
 }
 
 export const GroupsView = ({ user, onCreateGroup }: GroupsViewProps) => {
-  const { groups, isLoading, error, searchQuery, setSearchQuery, updateGroupStatus } =
-    useGroupsViewModel(user);
+  const {
+    groups,
+    isLoading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    updateGroupStatus
+  } = useGroupsViewModel(user);
 
   if (isLoading) {
     return (
@@ -45,7 +51,7 @@ export const GroupsView = ({ user, onCreateGroup }: GroupsViewProps) => {
             إدارة حلقات تحفيظ القرآن
           </p>
         </div>
-        {(user.role === 'admin' || user.role === 'moderator') && (
+        {(user.role === 'ADMIN' || user.role === 'MODERATOR') && (
           <Button onClick={onCreateGroup} className='gap-2'>
             <Plus className='w-4 h-4' />
             إضافة حلقة
@@ -58,27 +64,27 @@ export const GroupsView = ({ user, onCreateGroup }: GroupsViewProps) => {
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="بحث عن حلقة..."
+          placeholder='بحث عن حلقة...'
         />
       </div>
 
       {/* Groups Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         {groups.map((group) => {
-          const scheduleDays = group.schedule.days
-            .map((d) => dayNames[d])
+          const scheduleDays = group.scheduleDays
+            .map((sd) => dayNames[sd.dayOfWeek])
             .join(' و ');
-          
-          const groupStatus = (group as any).status || 'active';
-          const canEdit = user.role === 'admin' || user.role === 'moderator';
+
+          const groupStatus = group.status;
+          const canEdit = user.role === 'ADMIN' || user.role === 'MODERATOR';
 
           return (
-            <div key={group.id} className="relative group">
+            <div key={group.id} className='relative group'>
               <Link
                 to={`/groups/${group.id}`}
                 className='block transition-shadow hover:shadow-md'
               >
-                <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
                   <CardContent className='p-4'>
                     <div className='flex items-start justify-between mb-3'>
                       <div className='bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg'>
@@ -100,7 +106,7 @@ export const GroupsView = ({ user, onCreateGroup }: GroupsViewProps) => {
                       <div className='flex items-center justify-between'>
                         <span>الموعد:</span>
                         <span className='text-gray-800 dark:text-gray-100'>
-                          {group.schedule.time}
+                          {group.scheduleDays[0]?.time || 'غير محدد'}
                         </span>
                       </div>
                       <div className='pt-1.5 border-t border-gray-200 dark:border-gray-700'>
@@ -112,12 +118,17 @@ export const GroupsView = ({ user, onCreateGroup }: GroupsViewProps) => {
                   </CardContent>
                 </Card>
               </Link>
-              
+
               {/* Status Dropdown - positioned absolutely */}
-              <div className="absolute top-4 left-4 z-10" onClick={(e) => e.preventDefault()}>
+              <div
+                className='absolute top-4 left-4 z-10'
+                onClick={(e) => e.preventDefault()}
+              >
                 <StatusDropdown
                   currentStatus={groupStatus}
-                  onStatusChange={(status) => updateGroupStatus(group.id, status)}
+                  onStatusChange={(status) =>
+                    updateGroupStatus(group.id, status)
+                  }
                   disabled={!canEdit}
                 />
               </div>

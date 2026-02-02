@@ -1,4 +1,4 @@
-import { User } from '@halaqa/shared';
+import { StudentUser } from '../../lib/mockData';
 import {
   Phone,
   User as UserIcon,
@@ -10,12 +10,12 @@ import {
 import { Button } from './button';
 
 interface LearnerItemProps {
-  student: User;
+  student: StudentUser;
   showPhone?: boolean;
   showActions?: boolean;
   showContactLinks?: boolean;
-  onClick?: (student: User) => void;
-  onEdit?: (student: User) => void;
+  onClick?: (student: StudentUser) => void;
+  onEdit?: (student: StudentUser) => void;
   onDelete?: (studentId: string) => void;
   className?: string;
 }
@@ -72,9 +72,9 @@ export const LearnerItem = ({
                 <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1'>
                   {student.name}
                 </h3>
-                {student.notes && (
+                {student.profile?.notes && (
                   <p className='text-sm text-gray-500 dark:text-gray-400'>
-                    {student.notes}
+                    {student.profile.notes}
                   </p>
                 )}
               </div>

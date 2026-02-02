@@ -5,8 +5,7 @@ import {
   students,
   generateSessions,
   generateAttendance,
-  users,
-  attendanceStatusLabels
+  users
 } from '../lib/mockData';
 import { TrendingDown, TrendingUp, AlertCircle } from 'lucide-react';
 import { withRole } from '../hoc/withRole';
@@ -15,28 +14,25 @@ interface ReportsProps {
   user: User;
 }
 
-function Reports({ user }: ReportsProps) {
+function Reports({ user: _user }: ReportsProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
 
   const sessions = generateSessions();
   const attendance = generateAttendance();
-  const completedSessions = sessions.filter((s) => s.status === 'done');
 
   // Calculate student attendance statistics
   const studentStats = students.map((student) => {
-    const studentAttendance = attendance.filter(
-      (a) => a.studentId === student.id
-    );
+    const studentAttendance = attendance.filter((a) => a.userId === student.id);
     const total = studentAttendance.length;
     const attended = studentAttendance.filter(
-      (a) => a.status === 'attended'
+      (a) => a.status === 'ATTENDED'
     ).length;
-    const late = studentAttendance.filter((a) => a.status === 'late').length;
+    const late = 0; // No late status in current system
     const missed = studentAttendance.filter(
-      (a) => a.status === 'missed'
+      (a) => a.status === 'MISSED'
     ).length;
     const excused = studentAttendance.filter(
-      (a) => a.status === 'excused'
+      (a) => a.status === 'EXCUSED'
     ).length;
 
     const percentage =
@@ -56,7 +52,7 @@ function Reports({ user }: ReportsProps) {
 
     let missedStreak = 0;
     for (const att of recentAttendance) {
-      if (att.status === 'missed') {
+      if (att.status === 'MISSED') {
         missedStreak++;
       } else {
         break;
@@ -97,14 +93,14 @@ function Reports({ user }: ReportsProps) {
         group.students.includes(s.id)
       );
       const groupAttendance = attendance.filter((a) =>
-        groupStudents.some((s) => s.id === a.studentId)
+        groupStudents.some((s) => s.id === a.userId)
       );
 
       const total = groupAttendance.length;
       const attended = groupAttendance.filter(
-        (a) => a.status === 'attended'
+        (a) => a.status === 'ATTENDED'
       ).length;
-      const late = groupAttendance.filter((a) => a.status === 'late').length;
+      const late = 0; // No late status in current system
 
       const percentage =
         total > 0 ? Math.round(((attended + late) / total) * 100) : 0;

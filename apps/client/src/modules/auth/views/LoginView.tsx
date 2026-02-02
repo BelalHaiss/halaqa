@@ -25,7 +25,7 @@ export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = await login({ email, password });
+    const result = await login({ usernameOrEmail: email, password });
 
     if (result.success) {
       onLoginSuccess();
