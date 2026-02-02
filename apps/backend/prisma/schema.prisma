@@ -16,21 +16,18 @@ datasource db {
 
 model User {
   id        String   @id @default(ulid())
+  username  String   @unique @db.VarChar(50)
   name      String   @db.VarChar(100)
-  email     String   @unique @db.VarChar(255)
+  email     String?  @unique @db.VarChar(255)
   password  String?  @db.VarChar(255)
-  phone     String?  @db.VarChar(20)
-  whatsapp  String?  @db.VarChar(20)
-  telegram  String?  @db.VarChar(100)
-  role      UserRole @default(STUDENT)
-  notes     String?  @db.Text
+  role      UserRole
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  profile    UserProfile?
   groups     GroupStudent[]
   attendance AttendanceRecord[]
 
-  @@index([email])
   @@index([role])
   @@map("users")
 }
@@ -40,6 +37,18 @@ enum UserRole {
   MODERATOR
   TUTOR
   STUDENT
+}
+
+model UserProfile {
+  userId   String  @id @map("user_id")
+  phone    String? @db.VarChar(20)
+  whatsapp String? @db.VarChar(20)
+  telegram String? @db.VarChar(100)
+  notes    String? @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }
 
 // ============================================================================

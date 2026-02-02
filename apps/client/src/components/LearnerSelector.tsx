@@ -46,8 +46,8 @@ export default function LearnerSelector({
     return availableStudents.filter(
       (student) =>
         student.name.toLowerCase().includes(query) ||
-        student.phone?.includes(query) ||
-        student.whatsapp?.includes(query)
+        student.profile?.phone?.includes(query) ||
+        student.profile?.whatsapp?.includes(query)
     );
   }, [searchQuery, availableStudents]);
 

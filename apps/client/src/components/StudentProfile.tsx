@@ -1,8 +1,8 @@
 import { Phone, MessageCircle, Send } from 'lucide-react';
-import { Student } from '@halaqa/shared';
+import { User } from '@halaqa/shared';
 
 interface StudentProfileProps {
-  student: Student;
+  student: User;
   compact?: boolean;
 }
 
@@ -13,31 +13,31 @@ export default function StudentProfile({
   const contactLinks = [
     {
       type: 'phone',
-      value: student.phone,
+      value: student.profile?.phone,
       icon: Phone,
       label: 'اتصال',
-      href: student.phone ? `tel:${student.phone}` : null,
+      href: student.profile?.phone ? `tel:${student.profile.phone}` : null,
       color:
         'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
     },
     {
       type: 'whatsapp',
-      value: student.whatsapp,
+      value: student.profile?.whatsapp,
       icon: MessageCircle,
       label: 'واتساب',
-      href: student.whatsapp
-        ? `https://wa.me/${student.whatsapp.replace(/[^0-9]/g, '')}`
+      href: student.profile?.whatsapp
+        ? `https://wa.me/${student.profile.whatsapp.replace(/[^0-9]/g, '')}`
         : null,
       color:
         'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
     },
     {
       type: 'telegram',
-      value: student.telegram,
+      value: student.profile?.telegram,
       icon: Send,
       label: 'تيليجرام',
-      href: student.telegram
-        ? `https://t.me/${student.telegram.replace('@', '')}`
+      href: student.profile?.telegram
+        ? `https://t.me/${student.profile.telegram.replace('@', '')}`
         : null,
       color:
         'text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20'

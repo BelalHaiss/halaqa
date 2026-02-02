@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import {
   LayoutDashboard,
   Users,
@@ -33,43 +33,44 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       name: 'لوحة التحكم',
       href: '/',
       icon: LayoutDashboard,
-      roles: ['admin', 'moderator', 'tutor']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
     },
     {
       name: 'الحلقات',
       href: '/groups',
       icon: Users,
-      roles: ['admin', 'moderator', 'tutor']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
     },
     {
       name: 'المتعلمون',
       href: '/learners',
       icon: GraduationCap,
-      roles: ['admin', 'moderator', 'tutor']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
     },
     {
       name: 'السجل',
       href: '/sessions',
       icon: Calendar,
-      roles: ['admin', 'moderator', 'tutor']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
     },
     {
       name: 'التقارير',
       href: '/reports',
       icon: FileText,
-      roles: ['admin', 'moderator']
+      roles: ['ADMIN', 'MODERATOR']
     },
-    { name: 'المستخدمون', href: '/users', icon: UserCog, roles: ['admin'] }
+    { name: 'المستخدمون', href: '/users', icon: UserCog, roles: ['ADMIN'] }
   ];
 
   const filteredNavigation = navigation.filter((item) =>
     item.roles.includes(user.role)
   );
 
-  const roleLabels = {
-    admin: 'مدير',
-    moderator: 'مشرف',
-    tutor: 'معلم'
+  const roleLabels: Record<string, string> = {
+    ADMIN: 'مدير',
+    MODERATOR: 'مشرف',
+    TUTOR: 'معلم',
+    STUDENT: 'طالب'
   };
 
   return (

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import { groups, students, users, dayNames } from '../lib/mockData';
 import { Plus, Users as UsersIcon } from 'lucide-react';
 import { SearchInput } from './ui/search-input';
@@ -18,7 +18,7 @@ function Groups({ user }: GroupsProps) {
 
   // Filter groups based on role
   const userGroups =
-    user.role === 'tutor'
+    user.role === 'TUTOR'
       ? groups.filter((g) => g.tutorId === user.id)
       : groups;
 
@@ -38,7 +38,7 @@ function Groups({ user }: GroupsProps) {
             إدارة حلقات تحفيظ القرآن
           </p>
         </div>
-        {(user.role === 'admin' || user.role === 'moderator') && (
+        {(user.role === 'ADMIN' || user.role === 'MODERATOR') && (
           <button
             onClick={() => setShowCreateModal(true)}
             className='flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors text-sm'
@@ -107,15 +107,7 @@ function Groups({ user }: GroupsProps) {
                   </div>
                   <div className='flex items-center justify-between'>
                     <span>الحالة:</span>
-                    <StatusBadge
-                      status={
-                        group.status as
-                          | 'active'
-                          | 'inactive'
-                          | 'suspended'
-                          | 'completed'
-                      }
-                    />
+                    <StatusBadge status={group.status} />
                   </div>
                   <div className='pt-1.5 border-t border-gray-200 dark:border-gray-700'>
                     <div className='text-xs text-gray-500 dark:text-gray-500'>
@@ -148,4 +140,4 @@ function Groups({ user }: GroupsProps) {
   );
 }
 
-export default withRole(Groups, ['admin', 'moderator', 'tutor']);
+export default withRole(Groups, ['ADMIN', 'MODERATOR', 'TUTOR']);

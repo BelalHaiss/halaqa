@@ -17,10 +17,9 @@ interface StatusDropdownProps {
 }
 
 const statusOptions: { value: GroupStatus; label: string }[] = [
-  { value: 'active', label: 'نشط' },
-  { value: 'inactive', label: 'غير نشط' },
-  { value: 'suspended', label: 'متوقف' },
-  { value: 'completed', label: 'مكتمل' }
+  { value: 'ACTIVE', label: 'نشط' },
+  { value: 'INACTIVE', label: 'غير نشط' },
+  { value: 'COMPLETED', label: 'مكتمل' }
 ];
 
 export const StatusDropdown = ({

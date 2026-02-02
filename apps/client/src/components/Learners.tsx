@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import { students } from '../lib/mockData';
 import { UserPlus } from 'lucide-react';
 import { withRole } from '../hoc/withRole';
@@ -38,7 +38,7 @@ function Learners({ user }: LearnersProps) {
   const filteredStudents = students.filter(
     (student) =>
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      student.phone?.includes(searchQuery)
+      student.profile?.phone?.includes(searchQuery)
   );
 
   const handleAdd = () => {
@@ -68,10 +68,10 @@ function Learners({ user }: LearnersProps) {
     setSelectedStudent(student);
     setFormData({
       name: student.name,
-      phone: student.phone || '',
-      whatsapp: student.whatsapp || '',
-      telegram: student.telegram || '',
-      notes: student.notes || ''
+      phone: student.profile?.phone || '',
+      whatsapp: student.profile?.whatsapp || '',
+      telegram: student.profile?.telegram || '',
+      notes: student.profile?.notes || ''
     });
     setShowEditDialog(true);
   };
@@ -279,4 +279,4 @@ function Learners({ user }: LearnersProps) {
   );
 }
 
-export default withRole(Learners, ['admin', 'moderator', 'tutor']);
+export default withRole(Learners, ['ADMIN', 'MODERATOR', 'TUTOR']);

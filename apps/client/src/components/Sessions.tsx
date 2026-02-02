@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import { groups, generateSessions, users, dayNames } from '../lib/mockData';
 import {
   Calendar as CalendarIcon,
@@ -20,7 +20,7 @@ function Sessions({ user }: SessionsProps) {
 
   const sessions = generateSessions();
   const userGroups =
-    user.role === 'tutor'
+    user.role === 'TUTOR'
       ? groups.filter((g) => g.tutorId === user.id)
       : groups;
 
@@ -278,4 +278,4 @@ function Sessions({ user }: SessionsProps) {
   );
 }
 
-export default withRole(Sessions, ['admin', 'moderator', 'tutor']);
+export default withRole(Sessions, ['ADMIN', 'MODERATOR', 'TUTOR']);

@@ -1,4 +1,4 @@
-import { User } from '../App';
+import { User, UserRole } from '@halaqa/shared';
 import { users as mockUsers } from '../lib/mockData';
 import { useState } from 'react';
 import {
@@ -38,7 +38,7 @@ interface UsersProps {
 interface UserFormData {
   name: string;
   email: string;
-  role: 'admin' | 'moderator' | 'tutor';
+  role: UserRole;
   password?: string;
 }
 
@@ -50,29 +50,32 @@ function Users({ user }: UsersProps) {
   const [formData, setFormData] = useState<UserFormData>({
     name: '',
     email: '',
-    role: 'tutor',
+    role: 'TUTOR',
     password: ''
   });
 
-  const roleLabels = {
-    admin: 'مدير',
-    moderator: 'مشرف',
-    tutor: 'معلم'
+  const roleLabels: Record<string, string> = {
+    ADMIN: 'مدير',
+    MODERATOR: 'مشرف',
+    TUTOR: 'معلم',
+    STUDENT: 'طالب'
   };
 
-  const roleIcons = {
-    admin: Shield,
-    moderator: UserCog,
-    tutor: GraduationCap
+  const roleIcons: Record<string, typeof Shield> = {
+    ADMIN: Shield,
+    MODERATOR: UserCog,
+    TUTOR: GraduationCap,
+    STUDENT: GraduationCap
   };
 
-  const roleColors = {
-    admin:
+  const roleColors: Record<string, string> = {
+    ADMIN:
       'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    moderator:
+    MODERATOR:
       'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    tutor:
-      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+    TUTOR:
+      'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
   };
 
   const handleOpenDialog = (userToEdit?: User) => {
@@ -80,7 +83,7 @@ function Users({ user }: UsersProps) {
       setEditingUser(userToEdit);
       setFormData({
         name: userToEdit.name,
-        email: userToEdit.email,
+        email: userToEdit.email || '',
         role: userToEdit.role
       });
     } else {
@@ -88,7 +91,7 @@ function Users({ user }: UsersProps) {
       setFormData({
         name: '',
         email: '',
-        role: 'tutor',
+        role: 'TUTOR',
         password: ''
       });
     }
@@ -106,7 +109,7 @@ function Users({ user }: UsersProps) {
             ? {
                 ...u,
                 name: formData.name,
-                email: formData.email,
+                email: formData.email || undefined,
                 role: formData.role
               }
             : u
@@ -115,10 +118,13 @@ function Users({ user }: UsersProps) {
     } else {
       // Add new user
       const newUser: User = {
-        id: `${users.length + 1}`,
+        id: `u${users.length + 1}`,
+        username: formData.email.split('@')[0], // Generate username from email
         name: formData.name,
         email: formData.email,
-        role: formData.role
+        role: formData.role,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       setUsers([...users, newUser]);
     }
@@ -136,7 +142,8 @@ function Users({ user }: UsersProps) {
   const filteredUsers = users.filter(
     (userItem) =>
       userItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      userItem.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (userItem.email &&
+        userItem.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       roleLabels[userItem.role].includes(searchQuery)
   );
 
@@ -221,7 +228,7 @@ function Users({ user }: UsersProps) {
                   <Label htmlFor='role'>الدور</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value: 'admin' | 'moderator' | 'tutor') =>
+                    onValueChange={(value: UserRole) =>
                       setFormData({ ...formData, role: value })
                     }
                   >
@@ -229,9 +236,9 @@ function Users({ user }: UsersProps) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='admin'>مدير</SelectItem>
-                      <SelectItem value='moderator'>مشرف</SelectItem>
-                      <SelectItem value='tutor'>معلم</SelectItem>
+                      <SelectItem value='ADMIN'>مدير</SelectItem>
+                      <SelectItem value='MODERATOR'>مشرف</SelectItem>
+                      <SelectItem value='TUTOR'>معلم</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -345,4 +352,4 @@ function Users({ user }: UsersProps) {
   );
 }
 
-export default withRole(Users, ['admin']);
+export default withRole(Users, ['ADMIN']);

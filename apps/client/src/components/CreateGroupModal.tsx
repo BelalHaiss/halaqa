@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import { users, dayNames } from '../lib/mockData';
 import { X } from 'lucide-react';
 
@@ -19,7 +19,7 @@ export default function CreateGroupModal({
   const [time, setTime] = useState('17:00');
   const [duration, setDuration] = useState(60);
 
-  const tutors = users.filter((u) => u.role === 'tutor');
+  const tutors = users.filter((u) => u.role === 'TUTOR');
 
   const handleDayToggle = (day: number) => {
     if (selectedDays.includes(day)) {

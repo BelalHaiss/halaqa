@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import {
   groups,
   students,
@@ -21,6 +21,7 @@ import LearnerSelector from './LearnerSelector';
 import { StatusBadge } from './ui/status-badge';
 import { StatusDropdown } from './ui/status-dropdown';
 import { Button } from './ui/button';
+import { GroupStatus } from '@halaqa/shared';
 
 interface GroupDetailsProps {
   user: User;
@@ -33,11 +34,8 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
   const [groupStudentIds, setGroupStudentIds] = useState<string[]>(
     group?.students || []
   );
-  const [groupStatus, setGroupStatus] = useState<
-    'active' | 'inactive' | 'suspended' | 'completed'
-  >(
-    (group?.status as 'active' | 'inactive' | 'suspended' | 'completed') ||
-      'active'
+  const [groupStatus, setGroupStatus] = useState<GroupStatus>(
+    (group?.status as GroupStatus) || 'ACTIVE'
   );
 
   if (!group) {
@@ -75,9 +73,7 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
     }
   };
 
-  const handleStatusChange = (
-    newStatus: 'active' | 'inactive' | 'suspended' | 'completed'
-  ) => {
+  const handleStatusChange = (newStatus: GroupStatus) => {
     setGroupStatus(newStatus);
     // In a real app, this would update the backend
     console.log(`تم تغيير حالة الحلقة إلى: ${newStatus}`);
@@ -98,7 +94,7 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
           <h1 className='text-3xl text-gray-800 dark:text-gray-100'>
             {group.name}
           </h1>
-          {(user.role === 'admin' || user.role === 'moderator') && (
+          {(user.role === 'ADMIN' || user.role === 'MODERATOR') && (
             <div className='flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700'>
               <span className='text-sm text-gray-600 dark:text-gray-400'>
                 حالة الحلقة:
@@ -109,7 +105,7 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
               />
             </div>
           )}
-          {user.role === 'tutor' && (
+          {user.role === 'TUTOR' && (
             <div className='flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700'>
               <span className='text-sm text-gray-600 dark:text-gray-400'>
                 حالة الحلقة:
@@ -210,10 +206,10 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
                         </div>
                         <div>
                           <div className='text-gray-800'>{student.name}</div>
-                          {student.phone && (
+                          {student.profile?.phone && (
                             <div className='text-sm text-gray-600 flex items-center gap-1'>
                               <Phone className='w-3 h-3' />
-                              {student.phone}
+                              {student.profile.phone}
                             </div>
                           )}
                         </div>
@@ -263,16 +259,16 @@ export default function GroupDetails({ user }: GroupDetailsProps) {
                       </div>
                       <div
                         className={`text-xs mt-2 ${
-                          session.status === 'done'
+                          session.status === 'COMPLETED'
                             ? 'text-green-600'
-                            : session.status === 'canceled'
+                            : session.status === 'CANCELED'
                               ? 'text-red-600'
                               : 'text-blue-600'
                         }`}
                       >
-                        {session.status === 'done'
+                        {session.status === 'COMPLETED'
                           ? 'منتهية'
-                          : session.status === 'canceled'
+                          : session.status === 'CANCELED'
                             ? 'ملغية'
                             : 'مجدولة'}
                       </div>

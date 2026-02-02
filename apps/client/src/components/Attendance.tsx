@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { User } from '../App';
+import { User } from '@halaqa/shared';
 import { groups, students, generateSessions, dayNames } from '../lib/mockData';
 import { ArrowRight, Save, CheckCircle2, User as UserIcon } from 'lucide-react';
 import StudentProfile from './StudentProfile';
@@ -16,7 +16,7 @@ interface AttendanceProps {
   user: User;
 }
 
-export default function Attendance({ user }: AttendanceProps) {
+export default function Attendance({ user: _user }: AttendanceProps) {
   const { sessionId } = useParams<{ sessionId: string }>();
   const [attendance, setAttendance] = useState<
     Record<string, { status: string; notes: string }>

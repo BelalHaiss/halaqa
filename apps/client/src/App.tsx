@@ -5,6 +5,7 @@ import {
   Navigate
 } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { User } from '@halaqa/shared';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Groups from './components/Groups';
@@ -16,13 +17,6 @@ import Users from './components/Users';
 import Learners from './components/Learners';
 import Layout from './components/Layout';
 import { ThemeProvider } from './contexts/ThemeContext';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'moderator' | 'tutor';
-}
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);

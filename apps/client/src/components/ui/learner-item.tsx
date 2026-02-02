@@ -1,14 +1,21 @@
-import { Student } from '@halaqa/shared';
-import { Phone, User, MessageCircle, Send, Edit, Trash2 } from 'lucide-react';
+import { User } from '@halaqa/shared';
+import {
+  Phone,
+  User as UserIcon,
+  MessageCircle,
+  Send,
+  Edit,
+  Trash2
+} from 'lucide-react';
 import { Button } from './button';
 
 interface LearnerItemProps {
-  student: Student;
+  student: User;
   showPhone?: boolean;
   showActions?: boolean;
   showContactLinks?: boolean;
-  onClick?: (student: Student) => void;
-  onEdit?: (student: Student) => void;
+  onClick?: (student: User) => void;
+  onEdit?: (student: User) => void;
   onDelete?: (studentId: string) => void;
   className?: string;
 }
@@ -102,19 +109,19 @@ export const LearnerItem = ({
             {/* Contact Links */}
             {showContactLinks && (
               <div className='flex flex-wrap gap-2'>
-                {student.phone && (
+                {student.profile?.phone && (
                   <a
-                    href={`tel:${student.phone}`}
+                    href={`tel:${student.profile.phone}`}
                     onClick={(e) => e.stopPropagation()}
                     className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'
                   >
                     <Phone className='w-3.5 h-3.5' />
-                    <span>{student.phone}</span>
+                    <span>{student.profile.phone}</span>
                   </a>
                 )}
-                {student.whatsapp && (
+                {student.profile?.whatsapp && (
                   <a
-                    href={`https://wa.me/${student.whatsapp.replace(/[^0-9]/g, '')}`}
+                    href={`https://wa.me/${student.profile.whatsapp.replace(/[^0-9]/g, '')}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     onClick={(e) => e.stopPropagation()}
@@ -124,9 +131,9 @@ export const LearnerItem = ({
                     <span>واتساب</span>
                   </a>
                 )}
-                {student.telegram && (
+                {student.profile?.telegram && (
                   <a
-                    href={`https://t.me/${student.telegram.replace('@', '')}`}
+                    href={`https://t.me/${student.profile.telegram.replace('@', '')}`}
                     target='_blank'
                     rel='noopener noreferrer'
                     onClick={(e) => e.stopPropagation()}
@@ -152,24 +159,24 @@ export const LearnerItem = ({
     >
       <div className='flex items-center gap-3'>
         <div className='bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-full'>
-          <User className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
+          <UserIcon className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
         </div>
         <div>
           <span className='text-sm font-medium text-gray-800 dark:text-gray-100'>
             {student.name}
           </span>
-          {student.notes && (
+          {student.profile?.notes && (
             <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
-              {student.notes}
+              {student.profile.notes}
             </p>
           )}
         </div>
       </div>
 
-      {showPhone && student.phone && (
+      {showPhone && student.profile?.phone && (
         <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
           <Phone className='w-3 h-3' />
-          <span>{student.phone}</span>
+          <span>{student.profile.phone}</span>
         </div>
       )}
     </div>

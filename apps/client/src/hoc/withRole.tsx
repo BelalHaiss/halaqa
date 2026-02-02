@@ -1,6 +1,6 @@
 import { ComponentType } from 'react';
 import { Navigate } from 'react-router-dom';
-import { User } from '../App';
+import { User, UserRole } from '@halaqa/shared';
 
 interface WithRoleProps {
   user: User;
@@ -8,13 +8,13 @@ interface WithRoleProps {
 
 export function withRole<P extends WithRoleProps>(
   Component: ComponentType<P>,
-  allowedRoles: Array<'admin' | 'moderator' | 'tutor'>
+  allowedRoles: Array<UserRole>
 ) {
   return function ProtectedComponent(props: P) {
     const { user } = props;
 
     if (!allowedRoles.includes(user.role)) {
-      return <Navigate to="/" replace />;
+      return <Navigate to='/' replace />;
     }
 
     return <Component {...props} />;
