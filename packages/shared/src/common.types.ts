@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 // ============================================================================
 // API Response Types
 // ============================================================================
@@ -71,17 +69,3 @@ export interface LoadingState {
   isLoading: boolean;
   error?: string;
 }
-
-// ============================================================================
-// Zod Schemas
-// ============================================================================
-
-export const PaginationParamsSchema = z.object({
-  page: z.number().int().positive().default(1),
-  pageSize: z.number().int().positive().max(100).default(10)
-});
-
-export const DateRangeSchema = z.object({
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ غير صحيحة'),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'صيغة التاريخ غير صحيحة')
-}) satisfies z.ZodType<DateRangeDto>;

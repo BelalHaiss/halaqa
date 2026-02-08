@@ -107,3 +107,12 @@ Flow: **Service → ViewModel → View**
 
 - shadcn **MCP server** may be used for scaffolding
 - Generated code **must still follow all rules above**
+
+## important - for handling Date
+
+- Always use Luxon for date/time operations (server + client).
+- Store all event timestamps in DB as UTC (DATETIME, not TIMESTAMP).
+- Every Group must have an IANA timezone (e.g. Africa/Cairo) — schedules are based on it.
+- User timezone is optional (store it only if needed for UX/notifications); otherwise use browser timezone.
+- For queries like “today / dayOfWeek / schedule” use Group.timezone.
+- For display convert timestamps from UTC to User timezone (fallback to Group timezone).

@@ -2,15 +2,14 @@
   "name": "@halaqa/shared",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
-  "dependencies": {
-    "zod": "^3.24.1"
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "dev": "tsc --watch"
   }
 }
