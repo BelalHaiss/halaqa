@@ -1,19 +1,16 @@
 import { ComponentType } from 'react';
 import { Navigate } from 'react-router-dom';
-import { User, UserRole } from '@halaqa/shared';
+import { UserRole } from '@halaqa/shared';
+import { useApp } from '@/contexts/AppContext';
 
-interface WithRoleProps {
-  user: User;
-}
-
-export function withRole<P extends WithRoleProps>(
+export function withRole<P extends object>(
   Component: ComponentType<P>,
   allowedRoles: Array<UserRole>
 ) {
   return function ProtectedComponent(props: P) {
-    const { user } = props;
+    const { user } = useApp();
 
-    if (!allowedRoles.includes(user.role)) {
+    if (!user || !allowedRoles.includes(user.role)) {
       return <Navigate to='/' replace />;
     }
 

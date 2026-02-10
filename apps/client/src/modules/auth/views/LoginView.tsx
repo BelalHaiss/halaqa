@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Typography } from '@/components/ui/typography';
 
 interface LoginViewProps {
   onLoginSuccess: () => void;
@@ -33,16 +34,18 @@ export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4'>
+    <div className='min-h-screen flex items-center justify-center bg-muted/30 p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
-          <CardTitle className='text-2xl'>نظام إدارة الحلقات</CardTitle>
+          <CardTitle as='h2' size='2xl'>
+            نظام إدارة الحلقات
+          </CardTitle>
           <CardDescription>قم بتسجيل الدخول للمتابعة</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
             {error && (
-              <Alert variant='destructive'>
+              <Alert variant='soft' color='danger'>
                 <AlertCircle className='h-4 w-4' />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -80,11 +83,19 @@ export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
               {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </Button>
 
-            <div className='text-xs text-center text-gray-500 dark:text-gray-400 mt-4'>
-              <p className='mb-1'>حسابات تجريبية:</p>
-              <p>مدير: admin@halaqa.com / 123456</p>
-              <p>مشرف: mod@halaqa.com / 123456</p>
-              <p>معلم: tutor1@halaqa.com / 123456</p>
+            <div className='mt-4 text-center'>
+              <Typography as='div' size='xs' weight='medium' variant='ghost' color='muted'>
+                حسابات تجريبية:
+              </Typography>
+              <Typography as='div' size='xs' variant='ghost' color='muted'>
+                مدير: admin@halaqa.com / 123456
+              </Typography>
+              <Typography as='div' size='xs' variant='ghost' color='muted'>
+                مشرف: mod@halaqa.com / 123456
+              </Typography>
+              <Typography as='div' size='xs' variant='ghost' color='muted'>
+                معلم: tutor1@halaqa.com / 123456
+              </Typography>
             </div>
           </form>
         </CardContent>

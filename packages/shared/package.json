@@ -4,8 +4,11 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./src/index.ts",
-  "dependencies": {},
+  "dependencies": {
+    "luxon": "^3.7.2"
+  },
   "devDependencies": {
+    "@types/luxon": "^3.7.1",
     "typescript": "^5.9.3"
   },
   "scripts": {

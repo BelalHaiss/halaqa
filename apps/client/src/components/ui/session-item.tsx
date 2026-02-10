@@ -1,12 +1,66 @@
 import { Session, SessionStatus } from '@halaqa/shared';
 import { Calendar, Clock, FileText } from 'lucide-react';
 import { StatusBadge, StatusType } from './status-badge';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
+import { Typography } from '@/components/ui/typography';
 
 interface SessionItemProps {
   session: Session;
   onClick?: (session: Session) => void;
   className?: string;
 }
+
+const sessionItemVariants = cva(
+  'p-4 border rounded-lg transition-colors',
+  {
+    variants: {
+      variant: {
+        solid: 'bg-card',
+        ghost: 'bg-transparent border-transparent',
+        outline: 'bg-card',
+        soft: 'bg-muted/30'
+      },
+      color: {
+        primary: '',
+        success: '',
+        danger: '',
+        muted: ''
+      },
+      interactive: {
+        true: 'cursor-pointer hover:bg-accent',
+        false: ''
+      }
+    },
+    compoundVariants: [
+      { variant: 'solid', color: 'muted', className: 'border-border' },
+      { variant: 'solid', color: 'primary', className: 'border-primary/20' },
+      { variant: 'solid', color: 'success', className: 'border-success/20' },
+      { variant: 'solid', color: 'danger', className: 'border-danger/20' },
+
+      { variant: 'outline', color: 'muted', className: 'border-border' },
+      { variant: 'outline', color: 'primary', className: 'border-primary/30' },
+      { variant: 'outline', color: 'success', className: 'border-success/30' },
+      { variant: 'outline', color: 'danger', className: 'border-danger/30' },
+
+      { variant: 'ghost', color: 'muted', className: '' },
+      { variant: 'ghost', color: 'primary', className: '' },
+      { variant: 'ghost', color: 'success', className: '' },
+      { variant: 'ghost', color: 'danger', className: '' },
+
+      { variant: 'soft', color: 'muted', className: 'border-border' },
+      { variant: 'soft', color: 'primary', className: 'border-primary/20' },
+      { variant: 'soft', color: 'success', className: 'border-success/20' },
+      { variant: 'soft', color: 'danger', className: 'border-danger/20' }
+    ],
+    defaultVariants: {
+      variant: 'outline',
+      color: 'muted',
+      interactive: false
+    }
+  }
+);
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -21,8 +75,11 @@ const formatDate = (dateString: string) => {
 export const SessionItem = ({
   session,
   onClick,
-  className = ''
-}: SessionItemProps) => {
+  className,
+  variant = 'outline',
+  color = 'muted'
+}: SessionItemProps &
+  Pick<VariantProps<typeof sessionItemVariants>, 'variant' | 'color'>) => {
   const handleClick = () => {
     if (onClick) {
       onClick(session);
@@ -37,21 +94,30 @@ export const SessionItem = ({
 
   return (
     <div
-      className={`p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={cn(
+        sessionItemVariants({
+          variant,
+          color,
+          interactive: Boolean(onClick)
+        }),
+        className
+      )}
       onClick={handleClick}
     >
       <div className='flex items-start justify-between mb-3'>
         <div className='flex items-center gap-2'>
-          <div className='bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full'>
-            <Calendar className='w-4 h-4 text-blue-600 dark:text-blue-400' />
+          <div className='bg-primary/10 p-2 rounded-full'>
+            <Calendar className='w-4 h-4 text-primary' />
           </div>
           <div>
-            <h4 className='text-sm font-medium text-gray-800 dark:text-gray-100'>
+            <Typography as='div' size='sm' weight='medium'>
               {formatDate(session.date)}
-            </h4>
-            <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+            </Typography>
+            <div className='flex items-center gap-1 mt-0.5'>
               <Clock className='w-3 h-3' />
-              <span>{session.time}</span>
+              <Typography as='div' size='xs' variant='ghost' color='muted'>
+                {session.time}
+              </Typography>
             </div>
           </div>
         </div>
@@ -60,9 +126,11 @@ export const SessionItem = ({
       </div>
 
       {session.notes && (
-        <div className='flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300'>
-          <FileText className='w-3 h-3 mt-0.5 text-gray-400' />
-          <p className='line-clamp-2'>{session.notes}</p>
+        <div className='flex items-start gap-2'>
+          <FileText className='w-3 h-3 mt-0.5 text-muted-foreground' />
+          <Typography as='div' size='xs' variant='ghost' color='muted' className='line-clamp-2'>
+            {session.notes}
+          </Typography>
         </div>
       )}
     </div>

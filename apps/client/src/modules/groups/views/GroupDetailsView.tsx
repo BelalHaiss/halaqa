@@ -13,6 +13,8 @@ import { StatusDropdown } from '@/components/ui/status-dropdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dayNames } from '@/lib/mockData';
 import { User } from '@halaqa/shared';
+import { PageHeader } from '@/components/ui/page-header';
+import { Typography } from '@/components/ui/typography';
 
 export const GroupDetailsView = ({ user }: { user?: User }) => {
   const { id } = useParams<{ id: string }>();
@@ -45,14 +47,14 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center h-64'>
-        <Loader2 className='w-8 h-8 animate-spin text-emerald-600' />
+        <Loader2 className='w-8 h-8 animate-spin text-primary' />
       </div>
     );
   }
 
   if (error || !group) {
     return (
-      <Alert variant='destructive'>
+      <Alert variant='soft' color='danger'>
         <AlertDescription>{error || 'الحلقة غير موجودة'}</AlertDescription>
       </Alert>
     );
@@ -75,80 +77,72 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
   return (
     <div className='space-y-6'>
       {/* Header */}
-      <div className='flex items-start justify-between'>
-        <div>
-          <div className='flex items-center gap-3 mb-2'>
-            <h1 className='text-2xl text-gray-800 dark:text-gray-100'>
-              {group.name}
-            </h1>
-            <StatusDropdown
-              currentStatus={groupStatus}
-              onStatusChange={(status) => updateGroupStatus(group.id, status)}
-              disabled={!canEdit}
-            />
-          </div>
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            تفاصيل الحلقة
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={group.name}
+        description='تفاصيل الحلقة'
+        actions={
+          <StatusDropdown
+            currentStatus={groupStatus}
+            onStatusChange={(status) => updateGroupStatus(group.id, status)}
+            disabled={!canEdit}
+          />
+        }
+      />
 
       {/* Group Info */}
-      <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
+      <Card>
         <CardHeader>
-          <CardTitle className='text-lg text-gray-800 dark:text-gray-100'>
-            معلومات الحلقة
-          </CardTitle>
+          <CardTitle size='lg'>معلومات الحلقة</CardTitle>
         </CardHeader>
         <CardContent className='space-y-3'>
           <div className='flex items-center justify-between'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
+            <Typography as='div' size='sm' variant='ghost' color='muted'>
               المعلم:
-            </span>
-            <span className='text-sm text-gray-800 dark:text-gray-100'>
+            </Typography>
+            <Typography as='div' size='sm' weight='medium'>
               {tutor?.name}
-            </span>
+            </Typography>
           </div>
           <div className='flex items-center justify-between'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
+            <Typography as='div' size='sm' variant='ghost' color='muted'>
               الأيام:
-            </span>
-            <span className='text-sm text-gray-800 dark:text-gray-100'>
+            </Typography>
+            <Typography as='div' size='sm' weight='medium'>
               {scheduleDays}
-            </span>
+            </Typography>
           </div>
           <div className='flex items-center justify-between'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
+            <Typography as='div' size='sm' variant='ghost' color='muted'>
               الوقت:
-            </span>
-            <span className='text-sm text-gray-800 dark:text-gray-100'>
+            </Typography>
+            <Typography as='div' size='sm' weight='medium'>
               {group.scheduleDays[0]?.time || 'غير محدد'}
-            </span>
+            </Typography>
           </div>
           <div className='flex items-center justify-between'>
-            <span className='text-sm text-gray-600 dark:text-gray-400'>
+            <Typography as='div' size='sm' variant='ghost' color='muted'>
               المدة:
-            </span>
-            <span className='text-sm text-gray-800 dark:text-gray-100'>
+            </Typography>
+            <Typography as='div' size='sm' weight='medium'>
               {group.scheduleDays[0]?.durationMinutes || 60} دقيقة
-            </span>
+            </Typography>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs for Students and Sessions */}
       <Tabs defaultValue='students' className='w-full'>
-        <TabsList className='grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800'>
+        <TabsList className='grid w-full grid-cols-2'>
           <TabsTrigger
             value='students'
-            className='flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700'
+            className='flex items-center gap-2'
           >
             <Users className='w-4 h-4' />
             الطلاب ({students.length})
           </TabsTrigger>
           <TabsTrigger
             value='sessions'
-            className='flex items-center gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700'
+            className='flex items-center gap-2'
           >
             <History className='w-4 h-4' />
             سجل الجلسات
@@ -156,10 +150,10 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
         </TabsList>
 
         <TabsContent value='students' className='space-y-4'>
-          <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
+          <Card>
             <CardHeader>
               <div className='flex items-center justify-between'>
-                <CardTitle className='text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2'>
+                <CardTitle size='lg' className='flex items-center gap-2'>
                   <Users className='w-5 h-5' />
                   الطلاب ({filteredStudents.length})
                 </CardTitle>
@@ -176,12 +170,12 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
             <CardContent>
               {filteredStudents.length === 0 ? (
                 <div className='text-center py-8'>
-                  <Users className='w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400' />
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <Users className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
+                  <Typography as='div' size='sm' variant='ghost' color='muted'>
                     {studentSearchQuery
                       ? 'لا توجد نتائج للبحث'
                       : 'لا يوجد طلاب في هذه الحلقة'}
-                  </p>
+                  </Typography>
                 </div>
               ) : (
                 <div className='space-y-2'>
@@ -199,10 +193,10 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
         </TabsContent>
 
         <TabsContent value='sessions' className='space-y-4'>
-          <Card className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
+          <Card>
             <CardHeader>
               <div className='flex items-center justify-between'>
-                <CardTitle className='text-lg text-gray-800 dark:text-gray-100 flex items-center gap-2'>
+                <CardTitle size='lg' className='flex items-center gap-2'>
                   <Clock className='w-5 h-5' />
                   الجلسات السابقة ({sessions.length})
                 </CardTitle>
@@ -219,20 +213,20 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
             <CardContent>
               {sessionsLoading ? (
                 <div className='flex items-center justify-center py-8'>
-                  <Loader2 className='w-6 h-6 animate-spin text-emerald-600' />
+                  <Loader2 className='w-6 h-6 animate-spin text-primary' />
                 </div>
               ) : sessionsError ? (
-                <Alert variant='destructive'>
+                <Alert variant='soft' color='danger'>
                   <AlertDescription>{sessionsError}</AlertDescription>
                 </Alert>
               ) : sessions.length === 0 ? (
                 <div className='text-center py-8'>
-                  <History className='w-12 h-12 mx-auto mb-3 opacity-50 text-gray-400' />
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <History className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
+                  <Typography as='div' size='sm' variant='ghost' color='muted'>
                     {sessionSearchQuery
                       ? 'لا توجد نتائج للبحث'
                       : 'لا توجد جلسات سابقة'}
-                  </p>
+                  </Typography>
                 </div>
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>

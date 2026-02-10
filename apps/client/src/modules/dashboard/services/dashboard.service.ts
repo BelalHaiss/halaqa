@@ -1,4 +1,3 @@
-// import { apiClient } from '@/services';
 import { DashboardStats, ApiResponse } from '@halaqa/shared';
 
 export class DashboardService {
@@ -6,8 +5,6 @@ export class DashboardService {
     _userId: string,
     userRole: string
   ): Promise<ApiResponse<DashboardStats>> {
-    // return apiClient.get(`/dashboard/stats?userId=${userId}`);
-
     // Mock implementation
     return Promise.resolve({
       success: true,

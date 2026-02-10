@@ -1,4 +1,4 @@
-import { StudentUser } from '../../lib/mockData';
+import { StudentUser } from '@/lib/mockData';
 import {
   Phone,
   User as UserIcon,
@@ -8,6 +8,10 @@ import {
   Trash2
 } from 'lucide-react';
 import { Button } from './button';
+import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
+import { Typography } from '@/components/ui/typography';
 
 interface LearnerItemProps {
   student: StudentUser;
@@ -18,7 +22,61 @@ interface LearnerItemProps {
   onEdit?: (student: StudentUser) => void;
   onDelete?: (studentId: string) => void;
   className?: string;
+  variant?: 'solid' | 'ghost' | 'outline' | 'soft';
+  color?: 'primary' | 'success' | 'danger' | 'muted';
 }
+
+const learnerItemVariants = cva('transition-colors', {
+  variants: {
+    variant: {
+      solid: 'bg-card',
+      ghost: 'bg-transparent',
+      outline: 'bg-card border',
+      soft: 'bg-muted/30 border'
+    },
+    color: {
+      primary: '',
+      success: '',
+      danger: '',
+      muted: ''
+    },
+    interactive: {
+      true: 'cursor-pointer hover:bg-accent',
+      false: ''
+    },
+    density: {
+      compact: 'flex items-center justify-between p-3 rounded-lg',
+      comfortable: 'p-5 rounded-lg'
+    }
+  },
+  compoundVariants: [
+    { variant: 'solid', color: 'muted', className: '' },
+    { variant: 'solid', color: 'primary', className: '' },
+    { variant: 'solid', color: 'success', className: '' },
+    { variant: 'solid', color: 'danger', className: '' },
+
+    { variant: 'outline', color: 'muted', className: 'border-border' },
+    { variant: 'outline', color: 'primary', className: 'border-primary/20' },
+    { variant: 'outline', color: 'success', className: 'border-success/20' },
+    { variant: 'outline', color: 'danger', className: 'border-danger/20' },
+
+    { variant: 'ghost', color: 'muted', className: '' },
+    { variant: 'ghost', color: 'primary', className: '' },
+    { variant: 'ghost', color: 'success', className: '' },
+    { variant: 'ghost', color: 'danger', className: '' },
+
+    { variant: 'soft', color: 'muted', className: 'border-border' },
+    { variant: 'soft', color: 'primary', className: 'border-primary/20' },
+    { variant: 'soft', color: 'success', className: 'border-success/20' },
+    { variant: 'soft', color: 'danger', className: 'border-danger/20' }
+  ],
+  defaultVariants: {
+    variant: 'outline',
+    color: 'muted',
+    interactive: false,
+    density: 'compact'
+  }
+});
 
 export const LearnerItem = ({
   student,
@@ -28,7 +86,9 @@ export const LearnerItem = ({
   onClick,
   onEdit,
   onDelete,
-  className = ''
+  className,
+  variant = 'outline',
+  color = 'muted'
 }: LearnerItemProps) => {
   const handleClick = () => {
     if (onClick) {
@@ -54,28 +114,36 @@ export const LearnerItem = ({
     // Enhanced version with actions and contact links
     return (
       <div
-        className={`p-5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${onClick ? 'cursor-pointer' : ''} ${className}`}
+        className={cn(
+          learnerItemVariants({
+            variant,
+            color,
+            density: 'comfortable',
+            interactive: Boolean(onClick)
+          }),
+          className
+        )}
         onClick={handleClick}
       >
         <div className='flex items-start gap-4'>
           {/* Avatar */}
-          <div className='w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm'>
-            <span className='text-white text-lg font-semibold'>
+          <div className='w-12 h-12 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm'>
+            <Typography as='div' size='lg' weight='semibold' className='text-primary-foreground'>
               {student.name.charAt(0)}
-            </span>
+            </Typography>
           </div>
 
           {/* Main Content */}
           <div className='flex-1 min-w-0'>
             <div className='flex items-start justify-between gap-4 mb-3'>
               <div>
-                <h3 className='text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1'>
+                <Typography as='h3' size='lg' weight='semibold'>
                   {student.name}
-                </h3>
+                </Typography>
                 {student.profile?.notes && (
-                  <p className='text-sm text-gray-500 dark:text-gray-400'>
+                  <Typography as='div' size='sm' variant='ghost' color='muted'>
                     {student.profile.notes}
-                  </p>
+                  </Typography>
                 )}
               </div>
 
@@ -85,9 +153,9 @@ export const LearnerItem = ({
                   {onEdit && (
                     <Button
                       variant='ghost'
+                      color='primary'
                       size='sm'
                       onClick={handleEdit}
-                      className='text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
                     >
                       <Edit className='w-4 h-4' />
                     </Button>
@@ -95,9 +163,9 @@ export const LearnerItem = ({
                   {onDelete && (
                     <Button
                       variant='ghost'
+                      color='danger'
                       size='sm'
                       onClick={handleDelete}
-                      className='text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
                     >
                       <Trash2 className='w-4 h-4' />
                     </Button>
@@ -110,38 +178,50 @@ export const LearnerItem = ({
             {showContactLinks && (
               <div className='flex flex-wrap gap-2'>
                 {student.profile?.phone && (
-                  <a
-                    href={`tel:${student.profile.phone}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors'
-                  >
-                    <Phone className='w-3.5 h-3.5' />
-                    <span>{student.profile.phone}</span>
-                  </a>
+                  <Button asChild variant='soft' color='primary' size='sm'>
+                    <a
+                      href={`tel:${student.profile.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className='gap-1.5'
+                    >
+                      <Phone className='w-3.5 h-3.5' />
+                      <Typography as='span' size='sm'>
+                        {student.profile.phone}
+                      </Typography>
+                    </a>
+                  </Button>
                 )}
                 {student.profile?.whatsapp && (
-                  <a
-                    href={`https://wa.me/${student.profile.whatsapp.replace(/[^0-9]/g, '')}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    onClick={(e) => e.stopPropagation()}
-                    className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-md hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors'
-                  >
-                    <MessageCircle className='w-3.5 h-3.5' />
-                    <span>واتساب</span>
-                  </a>
+                  <Button asChild variant='soft' color='success' size='sm'>
+                    <a
+                      href={`https://wa.me/${student.profile.whatsapp.replace(/[^0-9]/g, '')}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      onClick={(e) => e.stopPropagation()}
+                      className='gap-1.5'
+                    >
+                      <MessageCircle className='w-3.5 h-3.5' />
+                      <Typography as='span' size='sm'>
+                        واتساب
+                      </Typography>
+                    </a>
+                  </Button>
                 )}
                 {student.profile?.telegram && (
-                  <a
-                    href={`https://t.me/${student.profile.telegram.replace('@', '')}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    onClick={(e) => e.stopPropagation()}
-                    className='flex items-center gap-1.5 px-3 py-1.5 text-sm bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 rounded-md hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors'
-                  >
-                    <Send className='w-3.5 h-3.5' />
-                    <span>تيليجرام</span>
-                  </a>
+                  <Button asChild variant='soft' color='primary' size='sm'>
+                    <a
+                      href={`https://t.me/${student.profile.telegram.replace('@', '')}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      onClick={(e) => e.stopPropagation()}
+                      className='gap-1.5'
+                    >
+                      <Send className='w-3.5 h-3.5' />
+                      <Typography as='span' size='sm'>
+                        تيليجرام
+                      </Typography>
+                    </a>
+                  </Button>
                 )}
               </div>
             )}
@@ -154,29 +234,39 @@ export const LearnerItem = ({
   // Simple version for basic usage
   return (
     <div
-      className={`flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={cn(
+        learnerItemVariants({
+          variant,
+          color,
+          density: 'compact',
+          interactive: Boolean(onClick)
+        }),
+        className
+      )}
       onClick={handleClick}
     >
       <div className='flex items-center gap-3'>
-        <div className='bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-full'>
-          <UserIcon className='w-4 h-4 text-emerald-600 dark:text-emerald-400' />
+        <div className='bg-primary/10 p-2 rounded-full'>
+          <UserIcon className='w-4 h-4 text-primary' />
         </div>
         <div>
-          <span className='text-sm font-medium text-gray-800 dark:text-gray-100'>
+          <Typography as='div' size='sm' weight='medium'>
             {student.name}
-          </span>
+          </Typography>
           {student.profile?.notes && (
-            <p className='text-xs text-gray-500 dark:text-gray-400 mt-0.5'>
+            <Typography as='div' size='xs' variant='ghost' color='muted' className='mt-0.5'>
               {student.profile.notes}
-            </p>
+            </Typography>
           )}
         </div>
       </div>
 
       {showPhone && student.profile?.phone && (
-        <div className='flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400'>
+        <div className='flex items-center gap-1'>
           <Phone className='w-3 h-3' />
-          <span>{student.profile.phone}</span>
+          <Typography as='div' size='xs' variant='ghost' color='muted'>
+            {student.profile.phone}
+          </Typography>
         </div>
       )}
     </div>

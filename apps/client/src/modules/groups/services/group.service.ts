@@ -1,4 +1,3 @@
-// import { apiClient } from '@/services';
 import {
   Group,
   CreateGroupDto,
@@ -14,8 +13,6 @@ import {
 
 export class GroupService {
   async getAllGroups(): Promise<ApiResponse<Group[]>> {
-    // return apiClient.get('/groups');
-
     // Mock implementation - convert GroupWithSchedule to Group
     const groups: Group[] = mockGroups.map((g) => ({
       id: g.id,
@@ -36,8 +33,6 @@ export class GroupService {
   }
 
   async getGroupById(id: string): Promise<ApiResponse<Group>> {
-    // return apiClient.get(`/groups/${id}`);
-
     const group = mockGroups.find((g) => g.id === id);
     if (group) {
       const convertedGroup: Group = {
@@ -63,8 +58,6 @@ export class GroupService {
   }
 
   async createGroup(group: CreateGroupDto): Promise<ApiResponse<Group>> {
-    // return apiClient.post('/groups', group);
-
     const newGroup: Group = {
       id: `${mockGroups.length + 1}`,
       ...group,
@@ -81,8 +74,6 @@ export class GroupService {
   }
 
   async updateGroup(group: UpdateGroupDto): Promise<ApiResponse<Group>> {
-    // return apiClient.put(`/groups/${group.id}`, group);
-
     // Mock - would need proper conversion in real app
     const existingGroup = mockGroups.find((g) => g.id === group.id);
     if (!existingGroup) {
@@ -107,8 +98,6 @@ export class GroupService {
   }
 
   async deleteGroup(_id: string): Promise<ApiResponse<void>> {
-    // return apiClient.delete(`/groups/${id}`);
-
     return Promise.resolve({
       success: true
     });

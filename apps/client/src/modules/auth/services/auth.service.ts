@@ -1,4 +1,3 @@
-// import { apiClient } from '@/services';
 import { User, LoginCredentialsDto, ApiResponse } from '@halaqa/shared';
 
 export class AuthService {
@@ -6,7 +5,6 @@ export class AuthService {
     credentials: LoginCredentialsDto
   ): Promise<ApiResponse<{ user: User; token: string }>> {
     // For now, using mock data. Replace with actual API call
-    // return apiClient.post('/auth/login', credentials);
 
     // Mock implementation
     return new Promise((resolve) => {
@@ -75,12 +73,10 @@ export class AuthService {
   }
 
   async logout(): Promise<ApiResponse<void>> {
-    // return apiClient.post('/auth/logout');
     return Promise.resolve({ success: true });
   }
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
-    // return apiClient.get('/auth/me');
     return Promise.resolve({
       success: false,
       error: 'Not implemented'

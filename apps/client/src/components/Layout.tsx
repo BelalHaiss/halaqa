@@ -5,23 +5,41 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  FileText,
   LogOut,
   BookOpen,
   Menu,
   X,
   Moon,
   Sun,
-  UserCog,
-  GraduationCap
+  UserCog
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { cva } from 'class-variance-authority';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Typography } from '@/components/ui/typography';
 
 interface LayoutProps {
   user: User;
   onLogout: () => void;
   children: ReactNode;
 }
+
+const sidebarVariants = cva(
+  'fixed inset-y-0 right-0 w-56 bg-card border-l border-border z-40 transform transition-transform duration-300 lg:transform-none',
+  {
+    variants: {
+      open: {
+        true: 'translate-x-0',
+        false: 'translate-x-full lg:translate-x-0'
+      }
+    },
+    defaultVariants: {
+      open: false
+    }
+  }
+);
 
 export default function Layout({ user, onLogout, children }: LayoutProps) {
   const location = useLocation();
@@ -42,22 +60,10 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       roles: ['ADMIN', 'MODERATOR', 'TUTOR']
     },
     {
-      name: 'المتعلمون',
-      href: '/learners',
-      icon: GraduationCap,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
-    },
-    {
       name: 'السجل',
       href: '/sessions',
       icon: Calendar,
       roles: ['ADMIN', 'MODERATOR', 'TUTOR']
-    },
-    {
-      name: 'التقارير',
-      href: '/reports',
-      icon: FileText,
-      roles: ['ADMIN', 'MODERATOR']
     },
     { name: 'المستخدمون', href: '/users', icon: UserCog, roles: ['ADMIN'] }
   ];
@@ -74,46 +80,45 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-gray-950' dir='rtl'>
+    <div className='min-h-screen bg-muted/30' dir='rtl'>
       {/* Mobile Menu Button */}
-      <button
+      <Button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className='lg:hidden fixed top-3 right-3 z-50 bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700'
+        variant='outline'
+        color='muted'
+        size='icon'
+        className='lg:hidden fixed top-3 right-3 z-50 shadow-lg'
       >
         {isMobileMenuOpen ? (
           <X className='w-5 h-5' />
         ) : (
           <Menu className='w-5 h-5' />
         )}
-      </button>
+      </Button>
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 right-0 w-56 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 z-40 transform transition-transform duration-300 lg:transform-none ${
-          isMobileMenuOpen
-            ? 'translate-x-0'
-            : 'translate-x-full lg:translate-x-0'
-        }`}
+        className={cn(sidebarVariants({ open: isMobileMenuOpen }))}
       >
         <div className='flex flex-col h-full'>
           {/* Logo */}
-          <div className='flex items-center gap-2 p-4 border-b border-gray-200 dark:border-gray-700'>
-            <div className='bg-emerald-600 p-1.5 rounded-lg'>
-              <BookOpen className='w-5 h-5 text-white' />
+          <div className='flex items-center gap-2 p-4 border-b border-border'>
+            <div className='bg-primary p-1.5 rounded-lg'>
+              <BookOpen className='w-5 h-5 text-primary-foreground' />
             </div>
-            <span className='text-lg text-gray-800 dark:text-gray-100'>
+            <Typography as='div' size='lg' weight='semibold'>
               حلقة
-            </span>
+            </Typography>
           </div>
 
           {/* User Info */}
-          <div className='p-3 border-b border-gray-200 dark:border-gray-700'>
-            <div className='text-sm text-gray-900 dark:text-gray-100'>
+          <div className='p-3 border-b border-border'>
+            <Typography as='div' size='sm' weight='medium'>
               {user.name}
-            </div>
-            <div className='text-xs text-gray-500 dark:text-gray-400'>
+            </Typography>
+            <Typography as='div' size='xs' variant='ghost' color='muted'>
               {roleLabels[user.role]}
-            </div>
+            </Typography>
           </div>
 
           {/* Navigation */}
@@ -121,47 +126,60 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
             {filteredNavigation.map((item) => {
               const isActive = location.pathname === item.href;
               return (
-                <Link
+                <Button
                   key={item.name}
-                  to={item.href}
+                  asChild
+                  variant={isActive ? 'soft' : 'ghost'}
+                  color={isActive ? 'primary' : 'muted'}
+                  size='sm'
+                  className='w-full justify-start gap-2'
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
-                    isActive
-                      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
                 >
-                  <item.icon className='w-4 h-4' />
-                  <span>{item.name}</span>
-                </Link>
+                  <Link to={item.href}>
+                    <item.icon className='w-4 h-4' />
+                    <Typography as='span' size='sm'>
+                      {item.name}
+                    </Typography>
+                  </Link>
+                </Button>
               );
             })}
           </nav>
 
           {/* Theme Toggle */}
-          <div className='p-3 border-t border-gray-200 dark:border-gray-700'>
-            <button
+          <div className='p-3 border-t border-border'>
+            <Button
               onClick={toggleTheme}
-              className='flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full text-sm'
+              variant='ghost'
+              color='muted'
+              size='sm'
+              className='w-full justify-start gap-2'
             >
               {isDark ? (
                 <Sun className='w-4 h-4' />
               ) : (
                 <Moon className='w-4 h-4' />
               )}
-              <span>{isDark ? 'الوضع النهاري' : 'الوضع الليلي'}</span>
-            </button>
+              <Typography as='span' size='sm'>
+                {isDark ? 'الوضع النهاري' : 'الوضع الليلي'}
+              </Typography>
+            </Button>
           </div>
 
           {/* Logout */}
-          <div className='p-3 border-t border-gray-200 dark:border-gray-700'>
-            <button
+          <div className='p-3 border-t border-border'>
+            <Button
               onClick={onLogout}
-              className='flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full text-sm'
+              variant='ghost'
+              color='danger'
+              size='sm'
+              className='w-full justify-start gap-2'
             >
               <LogOut className='w-4 h-4' />
-              <span>تسجيل الخروج</span>
-            </button>
+              <Typography as='span' size='sm'>
+                تسجيل الخروج
+              </Typography>
+            </Button>
           </div>
         </div>
       </div>
@@ -169,7 +187,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
         <div
-          className='lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30'
+          className='lg:hidden fixed inset-0 bg-foreground/45 z-30'
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

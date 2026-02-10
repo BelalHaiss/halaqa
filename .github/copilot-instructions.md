@@ -1,112 +1,149 @@
-## Project
+# Halaqa - manage quran study groups with ease
 
-Monorepo using **pnpm workspaces + Turborepo**
+## 🏗️ Structure
 
-```
-apps/
- ├─ client/   # React + TS (Arabic RTL UI)
- └─ backend/
-packages/
- └─ shared/   # Zod schemas + inferred TS types (source of truth)
-```
-
-Client:
-
-- Vite (SWC) — port `3000`
-- Build output: `build/` (NOT `dist`)
-- UI: Arabic + RTL, shadcn/ui + Tailwind
+**Monorepo:** `apps/client` (React), `apps/backend` (NestJS), `packages/shared` (DTOs only)
 
 ---
 
-## Architecture (Client): MVVM
+## 🌍 Global
 
-Each feature:
-
-```
-modules/<feature>/
- ├─ services/     # async class, ApiResponse<T>
- ├─ viewmodels/   # custom hooks (state + effects)
- ├─ views/        # pure UI components
- └─ index.ts
-```
-
-Flow: **Service → ViewModel → View**
+- **Single source of truth** → `packages/shared`
+- No DTO duplication
+- Customize types via `Pick` / `Omit` / `Partial` only
+- Client & backend share contracts
 
 ---
 
-## Hard Rules (No Exceptions)
+## ⚛️ Client Stack
 
-### Imports
-
-- ✅ Use aliases only: `@/`, `@/modules`, `@/services`, `@/components`
-- ❌ No relative paths (`../../`)
-
-### Types & Validation
-
-- **All types & schemas come from `@halaqa/shared`**
-- Model DTO Type in TS --> Zod Schema that satisfy this ts type
-- Never re-declare types
-- Validation messages **must be Arabic**
-
-### Services
-
-- Singleton class
-- Return: `{ success, data?, error? }`
-- Use `apiClient` only
-- Mock data allowed (Promise + setTimeout)
-
-### ViewModels
-
-- Custom hooks
-- Manage `isLoading`, `error`, `data`
-- Use `toast` from `sonner`
-- No React Query
-
-### Views
-
-- Loading → `<Loader2 className="animate-spin" />`
-- Error → `<Alert variant="destructive" />`
-- No business logic
+React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ---
 
-## Auth & Storage
+## 📦 Client Architecture
 
-- Token + user stored via `storageService`
-- Never use `localStorage` directly
-- 401 → auto logout + redirect `/login`
-- Roles: `admin | moderator | tutor`
-- Protect UI with `withRole()`
-
----
-
-## UI Rules
-
-- Arabic text only
-- RTL layout
-- shadcn/ui components from local `components/ui`
-- Icons: `lucide-react` only
+- **One feature = one module**
+- Modules live in `src/modules/*`
+- No cross-module imports
+- Shared UI → `src/components/ui`
+- Types → `@ionsite/shared` or module-local
 
 ---
 
-## Feature Checklist
+## 🔐 Schemas
 
-1. Zod schema in `packages/shared`
-2. Service
-3. ViewModel hook
-4. View
-5. Export from `index.ts`
+- Zod only in `schema/`
+- Must match shared DTOs
+- Always `satisfies ZodType<SharedDto>`
+- DTO edits via TS utility types only
 
 ---
 
-## Conventions Rules
+## 📋 Forms
 
-- any enum or union must be in capital letters like STATUS_ACTIVE not statusActive
+- react-hook-form for all forms
+- Use `FormField` for dynamic fields
+- Lives in `src/components/ui/form-field.tsx`
 
-## Optional
+---
 
-- shadcn **MCP server** may be used for scaffolding
-- Generated code **must still follow all rules above**
+## 🎨 MVVM
+
+- **View** = JSX only
+- **ViewModel** = logic/state
+- No logic in components
+- Small, focused components
+
+---
+
+## 🎨 Design / Tailwind
+
+- `index.css` = Tailwind source
+- Tokens only, no arbitrary values
+- Minimal layout classes
+- No shadcn overrides
+
+---
+
+## 🧩 shadcn
+
+- shadcn only (via MCP)
+- Use CVA for variants/colors
+- Extend before creating
+
+---
+
+## 📝 Components / HTML
+
+- No native HTML elements
+- Always use reusable components or shadcn
+- Single source of truth
+- No inline styles
+
+---
+
+## 🎯 Component Variants
+
+- Every visual component requires:
+  - `variant`: solid | ghost | outline | soft
+  - `color`: primary | success | danger | muted
+- Use `compoundVariants` for all styling
+- variant + color handled ONLY via compoundVariants
+
+---
+
+## 🔄 Data Fetching
+
+- **GET** → `useApiQuery`
+- **Mutations** → `useApiMutation`
+- Query keys centralized
+- Mutations invalidate cache
+- No raw TanStack hooks
+
+---
+
+## ⚠️ Mutations
+
+- All mutations require `ConfirmDialog` Component
+- No execution without confirmation
+
+## ⚠️ Forbidden Practices
+
+- No UseEffect unless its no other option
+
+---
+
+## 🔧 Backend
+
+- Nest CLI modules if exist or create with `nest g res modules/[name] --no-spec`
+- Shared DTOs only
+- `DatesAsObjects` backend-only
+- Client receives date strings
+- Zod must satisfy shared DTOs
+
+---
+
+## ✅ Review Checklist
+
+- [ ] Module structure
+- [ ] No duplicated types
+- [ ] MVVM respected
+- [ ] shadcn + CVA only
+- [ ] Tokens + minimal Tailwind
+- [ ] Standard API hooks
+- [ ] Cache invalidation
+- [ ] ConfirmDialog present
+
+---
+
+## 💡 Principles
+
+- Modular, DRY, strict separation
+- Consistency > creativity
+- Simple, reusable
+- No READMEs
+- No `DatesAsObjects` on client
 
 ## important - for handling Date
 
