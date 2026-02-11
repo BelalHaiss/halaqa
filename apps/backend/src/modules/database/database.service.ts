@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationQueryType, PaginationResponseMeta } from '@halaqa/shared';
-import { PrismaClient } from 'generated/prisma';
+import { PrismaClient } from 'generated/prisma/client';
 import { mariaDbAdapter } from './database.util';
 
 @Injectable()

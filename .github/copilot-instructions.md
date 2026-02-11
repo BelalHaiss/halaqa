@@ -119,8 +119,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Nest CLI modules if exist or create with `nest g res modules/[name] --no-spec`
 - Shared DTOs only
 - `DatesAsObjects` backend-only
-- Client receives date strings
-- Zod must satisfy shared DTOs
+- Zod schema must satisfy shared DTOs
 
 ---
 

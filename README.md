@@ -91,6 +91,27 @@ Each feature module contains:
 - `/viewmodels` - State management hooks
 - `/views` - React components
 
-## Original Design
+🚀 Run the Project
+1️⃣ Install Dependencies
+pnpm install
 
-This project is based on the Figma design available at: https://www.figma.com/design/0X4wVJqwDrgTz8lg3A5Zaz/Design-Halaqa-Dashboard
+2️⃣ Start Database (MySQL)
+
+Make sure Docker is running, then:
+
+docker compose up -d
+
+3️⃣ Run All Apps (Monorepo)
+
+From the root directory:
+
+pnpm run dev
+
+This will start all 3 apps in development mode.
+
+4️⃣ Seed the Database
+
+Navigate to the backend folder and run:
+
+cd apps/backend
+tsx prisma db seed
