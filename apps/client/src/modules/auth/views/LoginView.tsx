@@ -1,18 +1,17 @@
-import { useState } from 'react';
-import { useAuthViewModel } from '../viewmodels/auth.viewmodel';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useAuthViewModel } from "../viewmodels/auth.viewmodel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { Typography } from '@/components/ui/typography';
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface LoginViewProps {
   onLoginSuccess: () => void;
@@ -20,8 +19,8 @@ interface LoginViewProps {
 
 export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
   const { isLoading, error, login } = useAuthViewModel();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,69 +33,54 @@ export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-muted/30 p-4'>
-      <Card className='w-full max-w-md'>
-        <CardHeader className='text-center'>
-          <CardTitle as='h2' size='2xl'>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center mb-5">
+          <CardTitle as="h2" size="2xl">
             نظام إدارة الحلقات
           </CardTitle>
           <CardDescription>قم بتسجيل الدخول للمتابعة</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className='space-y-4'>
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <Alert variant='soft' color='danger'>
-                <AlertCircle className='h-4 w-4' />
+              <Alert variant="soft" color="danger">
+                <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <div className='space-y-2'>
-              <Label htmlFor='email'>البريد الإلكتروني</Label>
+            <div className="space-y-2">
+              <Label htmlFor="email">البريد الإلكتروني</Label>
               <Input
-                id='email'
-                type='email'
+                id="email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder='admin@halaqa.com'
+                placeholder="admin@halaqa.com"
                 required
                 disabled={isLoading}
-                dir='ltr'
+                dir="ltr"
               />
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='password'>كلمة المرور</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password">كلمة المرور</Label>
               <Input
-                id='password'
-                type='password'
+                id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder='******'
+                placeholder="******"
                 required
                 disabled={isLoading}
-                dir='ltr'
+                dir="ltr"
               />
             </div>
 
-            <Button type='submit' className='w-full' disabled={isLoading}>
-              {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+            <Button type="submit" className="w-full my-5" disabled={isLoading}>
+              {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
-
-            <div className='mt-4 text-center'>
-              <Typography as='div' size='xs' weight='medium' variant='ghost' color='muted'>
-                حسابات تجريبية:
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                مدير: admin@halaqa.com / 123456
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                مشرف: mod@halaqa.com / 123456
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                معلم: tutor1@halaqa.com / 123456
-              </Typography>
-            </div>
           </form>
         </CardContent>
       </Card>
