@@ -2,8 +2,10 @@
 // DTOs (Public Types)
 // ============================================================================
 
-export type UserRole = 'ADMIN' | 'MODERATOR' | 'TUTOR' | 'STUDENT';
+import { ISODateString } from './types/api.types';
 
+export type UserRole = 'ADMIN' | 'MODERATOR' | 'TUTOR' | 'STUDENT';
+export type UserAuthRole = Exclude<UserRole, 'STUDENT'>;
 export interface UserProfile {
   userId: string;
   phone?: string;
@@ -23,8 +25,23 @@ export interface User {
   profile?: UserProfile;
 }
 
+export interface AuthResponseDto {
+  accessToken: string;
+  user: UserAuthType;
+}
+
+export type UserAuthType = {
+  id: string;
+  username: string | null;
+  name: string;
+  role: UserAuthRole;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+  timezone: string;
+};
+
 export interface LoginCredentialsDto {
-  usernameOrEmail: string;
+  username: string;
   password: string;
 }
 
@@ -57,11 +74,6 @@ export interface UpdateUserProfileDto {
   whatsapp?: string;
   telegram?: string;
   notes?: string;
-}
-
-export interface AuthResponseDto {
-  user: User;
-  token: string;
 }
 
 export interface UserFilterDto {

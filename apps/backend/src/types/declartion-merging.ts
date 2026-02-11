@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
+
+import { User } from 'generated/prisma/client';
+
 /* eslint-disable @typescript-eslint/no-namespace */
 export type EnvVariables = {
   DATABASE_URL: string;
@@ -13,5 +16,10 @@ export type EnvVariables = {
 declare global {
   namespace NodeJS {
     interface ProcessEnv extends EnvVariables {}
+  }
+  namespace Express {
+    export interface Request {
+      user?: User;
+    }
   }
 }
