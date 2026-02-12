@@ -19,13 +19,13 @@ interface LoginViewProps {
 
 export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
   const { isLoading, error, login } = useAuthViewModel();
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const result = await login({ usernameOrEmail: email, password });
+    const result = await login({ usernameOrEmail: userName, password });
 
     if (result.success) {
       onLoginSuccess();
@@ -51,12 +51,12 @@ export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="userName">اسم المستخدم</Label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="userName"
+                type="userName"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
                 placeholder="admin@halaqa.com"
                 required
                 disabled={isLoading}
