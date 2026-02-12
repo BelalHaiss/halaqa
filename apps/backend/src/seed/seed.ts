@@ -1,8 +1,16 @@
 import { PrismaClient } from 'generated/prisma/client';
 import { seededAdminData } from './user.seed';
-import { mariaDbAdapter } from 'src/modules/database/database.util';
+import { createMariaDbAdapter } from 'src/modules/database/database.util';
 
-const prisma = new PrismaClient({ adapter: mariaDbAdapter });
+const prisma = new PrismaClient({
+  adapter: createMariaDbAdapter({
+    DATABASE_HOST: process.env.DATABASE_HOST,
+    DATABASE_USER: process.env.DATABASE_USER,
+    DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+    DATABASE_NAME: process.env.DATABASE_NAME,
+    DATABASE_PORT: process.env.DATABASE_PORT,
+  }),
+});
 
 export const seedData = async () => {
   try {
