@@ -1,12 +1,22 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PaginationQueryType, PaginationResponseMeta } from '@halaqa/shared';
 import { PrismaClient } from 'generated/prisma/client';
-import { mariaDbAdapter } from './database.util';
+import { createMariaDbAdapter } from './database.util';
+import { EnvVariables } from 'src/types/declartion-merging';
 
 @Injectable()
 export class DatabaseService extends PrismaClient {
-  constructor() {
-    super({ adapter: mariaDbAdapter });
+  constructor(configService: ConfigService<EnvVariables>) {
+    super({
+      adapter: createMariaDbAdapter({
+        DATABASE_HOST: configService.getOrThrow('DATABASE_HOST'),
+        DATABASE_USER: configService.getOrThrow('DATABASE_USER'),
+        DATABASE_PASSWORD: configService.getOrThrow('DATABASE_PASSWORD'),
+        DATABASE_NAME: configService.getOrThrow('DATABASE_NAME'),
+        DATABASE_PORT: configService.getOrThrow('DATABASE_PORT'),
+      }),
+    });
   }
 
   handleQueryPagination(query: PaginationQueryType) {
