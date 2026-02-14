@@ -7,7 +7,6 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { PaginatedResult, UnifiedApiResponse } from '@halaqa/shared';
-// import { PaginatedResult, UnifiedApiResponse } from 'src/types/util.types';
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<
@@ -37,6 +36,5 @@ export class ResponseInterceptor<T> implements NestInterceptor<
 export const isPaginationResponse = <T>(
   data: PaginatedResult<T> | T,
 ): data is PaginatedResult<T> => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return data && typeof data === 'object' && 'data' in data && 'meta' in data;
 };

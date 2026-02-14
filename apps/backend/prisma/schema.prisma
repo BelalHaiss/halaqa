@@ -79,19 +79,22 @@ model GroupStudent {
 }
 
 model Session {
-  id         String             @id @default(ulid())
-  groupId    String             @map("group_id")
-  startedAt  DateTime
-  status     SessionStatus
-  notes      String?            @db.Text
-  createdAt  DateTime           @default(now()) @map("created_at")
-  updatedAt  DateTime           @updatedAt @map("updated_at")
-  attendance AttendanceRecord[]
-  group      Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  id                String             @id @default(ulid())
+  groupId           String             @map("group_id")
+  startedAt         DateTime
+  originalStartedAt DateTime?          @map("original_started_at")
+  status            SessionStatus
+  notes             String?            @db.Text
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  attendance        AttendanceRecord[]
+  group             Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([groupId])
   @@index([startedAt])
+  @@index([groupId, originalStartedAt])
   @@index([status])
+  @@unique([groupId, startedAt])
   @@map("sessions")
 }
 
