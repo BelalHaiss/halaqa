@@ -1,67 +1,81 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/auth.service';
-import { storageService } from '@/services';
-import { User, LoginCredentialsDto } from '@halaqa/shared';
-import { toast } from 'sonner';
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { storageService } from "@/services";
+import authService from "../services/auth.service";
+import { LoginCredentialsDto } from "@halaqa/shared";
+import { useApp } from "@/contexts/AppContext";
 
 export const useAuthViewModel = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setUser } = useApp();
 
-  const login = async (credentials: LoginCredentialsDto) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await authService.login(credentials);
-
+  const loginMutation = useMutation({
+    mutationFn: (credentials: LoginCredentialsDto) =>
+      authService.login(credentials),
+    onSuccess: (response) => {
       if (response.success && response.data) {
-        const { user, token } = response.data;
+        const { user, accessToken } = response.data;
 
         // Save to storage
-        storageService.saveUser(user);
-        storageService.saveToken(token);
+        storageService.saveToken(accessToken);
+        storageService.saveUser({
+          ...user,
+          username: user.username ?? "",
+        });
 
+        // Update context
+        setUser({
+          ...user,
+          username: user.username ?? "",
+        });
+
+        // Show success message
         toast.success(`مرحباً، ${user.name}`);
 
-        return { success: true, user };
+        // Navigate to home or dashboard
+        navigate("/");
       } else {
-        setError(response.error || 'فشل تسجيل الدخول');
-        toast.error(response.error || 'فشل تسجيل الدخول');
-        return { success: false, error: response.error };
+        // Handle unsuccessful response
+        const errorMessage =
+          response.error || response.message || "فشل تسجيل الدخول";
+        toast.error(errorMessage);
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'حدث خطأ غير متوقع';
-      setError(errorMessage);
+    },
+    onError: (error: Error) => {
+      // Handle error
+      const errorMessage = error.message || "حدث خطأ غير متوقع";
       toast.error(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   const logout = async () => {
     try {
       await authService.logout();
       storageService.clearAll();
-      toast.success('تم تسجيل الخروج بنجاح');
-      navigate('/login');
-    } catch (err: any) {
-      toast.error('حدث خطأ أثناء تسجيل الخروج');
+      setUser(null);
+
+      toast.success("تم تسجيل الخروج بنجاح");
+      navigate("/login");
+    } catch (error: any) {
+      toast.error("حدث خطأ أثناء تسجيل الخروج");
+      // Still logout locally even if API fails
+      storageService.clearAll();
+      setUser(null);
+      navigate("/login");
     }
   };
 
-  const getCurrentUser = (): User | null => {
-    return storageService.getUser();
-  };
-
   return {
-    isLoading,
-    error,
-    login,
+    // Login mutation state
+    login: loginMutation.mutate,
+    loginAsync: loginMutation.mutateAsync,
+    isLoading: loginMutation.isPending,
+    error: loginMutation.error,
+    isError: loginMutation.isError,
+    isSuccess: loginMutation.isSuccess,
+
+    // Other functions
     logout,
-    getCurrentUser
   };
 };

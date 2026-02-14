@@ -1,19 +1,19 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { ApiResponse } from '@halaqa/shared';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { ApiResponse } from "@halaqa/shared";
 
 class ApiClient {
   private client: AxiosInstance;
 
   constructor(
     baseURL: string = import.meta.env.VITE_API_URL ||
-      'http://localhost:3000/api'
+      "http://localhost:5000/api",
   ) {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     this.setupInterceptors();
@@ -23,13 +23,13 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('halaqa_token');
+        const token = localStorage.getItem("halaqa_token");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Response interceptor
@@ -37,31 +37,38 @@ class ApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized access
-          localStorage.removeItem('halaqa_token');
-          localStorage.removeItem('halaqa_user');
-          window.location.href = '/login';
+          const isLoginRequest = error.config?.url?.includes("/auth/login");
+
+          if (!isLoginRequest) {
+            // Only redirect to login if it's NOT the login endpoint
+            localStorage.removeItem("halaqa_token");
+            localStorage.removeItem("halaqa_user");
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
   async get<T>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await this.client.get(url, config);
-      return {
-        success: true,
-        data: response.data
-      };
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.get(
+        url,
+        config,
+      );
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'حدث خطأ غير متوقع'
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "حدث خطأ غير متوقع",
       };
     }
   }
@@ -69,23 +76,23 @@ class ApiClient {
   async post<T>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await this.client.post(
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.post(
         url,
         data,
-        config
+        config,
       );
-      return {
-        success: true,
-        data: response.data
-      };
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'حدث خطأ غير متوقع'
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "حدث خطأ غير متوقع",
       };
     }
   }
@@ -93,42 +100,45 @@ class ApiClient {
   async put<T>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await this.client.put(
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.put(
         url,
         data,
-        config
+        config,
       );
-      return {
-        success: true,
-        data: response.data
-      };
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'حدث خطأ غير متوقع'
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "حدث خطأ غير متوقع",
       };
     }
   }
 
   async delete<T>(
     url: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
-      const response: AxiosResponse<T> = await this.client.delete(url, config);
-      return {
-        success: true,
-        data: response.data
-      };
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.delete(
+        url,
+        config,
+      );
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
         error:
-          error.response?.data?.message || error.message || 'حدث خطأ غير متوقع'
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "حدث خطأ غير متوقع",
       };
     }
   }

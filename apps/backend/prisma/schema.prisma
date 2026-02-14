@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider     = "prisma-client"
   output       = "../generated/prisma"
@@ -12,57 +9,42 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(ulid())
-  username  String?  @unique @db.VarChar(50)
-  name      String   @db.VarChar(100)
-  password  String?  @db.VarChar(255)
-  role      UserRole
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  timezone  String   @default("Africa/Cairo")
-
-  profile    UserProfile?
-  groups     GroupStudent[]
+  id         String             @id @default(ulid())
+  username   String?            @unique @db.VarChar(50)
+  name       String             @db.VarChar(100)
+  password   String?            @db.VarChar(255)
+  role       UserRole
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+  timezone   String             @default("Africa/Cairo")
   attendance AttendanceRecord[]
+  groups     GroupStudent[]
+  profile    UserProfile?
 
   @@index([role])
   @@map("users")
 }
 
-enum UserRole {
-  ADMIN
-  MODERATOR
-  TUTOR
-  STUDENT
-}
-
 model UserProfile {
   userId String  @id @map("user_id")
   notes  String? @db.Text
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
 
-// ============================================================================
-// Groups
-// ============================================================================
-
 model Group {
-  id          String      @id @default(ulid())
-  name        String      @db.VarChar(100)
-  description String?     @db.VarChar(500)
-  tutorId     String      @map("tutor_id")
-  status      GroupStatus @default(ACTIVE)
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-
+  id           String             @id @default(ulid())
+  name         String             @db.VarChar(100)
+  description  String?            @db.VarChar(500)
+  tutorId      String             @map("tutor_id")
+  status       GroupStatus        @default(ACTIVE)
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  timezone     String             @default("Africa/Cairo")
   scheduleDays GroupScheduleDay[]
   students     GroupStudent[]
   sessions     Session[]
-
-  timezone String @default("Africa/Cairo")
 
   @@index([tutorId])
   @@index([status])
@@ -74,8 +56,7 @@ model GroupScheduleDay {
   dayOfWeek       Int    @map("day_of_week") @db.UnsignedTinyInt
   startMinutes    Int    @map("start_minutes") @db.UnsignedSmallInt
   durationMinutes Int    @map("duration_minutes") @db.UnsignedSmallInt
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group           Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@id([groupId, dayOfWeek])
   @@map("group_schedule_days")
@@ -85,52 +66,30 @@ model GroupStudent {
   groupId  String   @map("group_id")
   userId   String   @map("user_id")
   joinedAt DateTime @default(now()) @map("joined_at")
-
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
   @@index([userId])
   @@map("group_students")
 }
 
-enum GroupStatus {
-  ACTIVE
-  INACTIVE
-  COMPLETED
-}
-
-// ============================================================================
-// Sessions
-// ============================================================================
-
 model Session {
-  id        String        @id @default(ulid())
-  groupId   String        @map("group_id")
-  startedAt DateTime
-  status    SessionStatus @default(SCHEDULED)
-  notes     String?       @db.Text
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
-
-  group      Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  id         String             @id @default(ulid())
+  groupId    String             @map("group_id")
+  startedAt  DateTime
+  status     SessionStatus      @default(SCHEDULED)
+  notes      String?            @db.Text
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
   attendance AttendanceRecord[]
+  group      Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   @@index([groupId])
   @@index([startedAt])
   @@index([status])
   @@map("sessions")
 }
-
-enum SessionStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELED
-}
-
-// ============================================================================
-// Attendance
-// ============================================================================
 
 model AttendanceRecord {
   id        String           @id @default(ulid())
@@ -140,14 +99,32 @@ model AttendanceRecord {
   notes     String?          @db.Text
   createdAt DateTime         @default(now()) @map("created_at")
   updatedAt DateTime         @updatedAt @map("updated_at")
-
-  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session   Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
   @@index([userId])
   @@index([status])
   @@map("attendance_records")
+}
+
+enum UserRole {
+  ADMIN
+  MODERATOR
+  TUTOR
+  STUDENT
+}
+
+enum GroupStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELED
 }
 
 enum AttendanceStatus {

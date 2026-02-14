@@ -1,102 +1,98 @@
-import { useState } from 'react';
-import { useAuthViewModel } from '../viewmodels/auth.viewmodel';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useApp } from "@/contexts/AppContext";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
-import { Typography } from '@/components/ui/typography';
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuthViewModel } from "../viewmodels/auth.viewmodel";
+import { LoginFormData, loginSchema } from "../schema/login.schema";
+import { FormField } from "@/components/forms/form-field";
+import { FormError } from "@/components/forms/form-error";
 
-interface LoginViewProps {
-  onLoginSuccess: () => void;
-}
+export const LoginView = () => {
+  const navigate = useNavigate();
+  const { user } = useApp(); // Check if user is already authenticated
+  const { login, isLoading, error, isError } = useAuthViewModel();
 
-export const LoginView = ({ onLoginSuccess }: LoginViewProps) => {
-  const { isLoading, error, login } = useAuthViewModel();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // If user is already logged in, redirect to home
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Initialize React Hook Form with Zod validation
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+    mode: "onBlur",
+  });
 
-    const result = await login({ usernameOrEmail: email, password });
-
-    if (result.success) {
-      onLoginSuccess();
-    }
+  // Form submission handler
+  const onSubmit = (data: LoginFormData) => {
+    login(data, {
+      onSuccess: () => {
+        // Navigate to home after successful login
+        navigate("/", { replace: true });
+      },
+    });
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-muted/30 p-4'>
-      <Card className='w-full max-w-md'>
-        <CardHeader className='text-center'>
-          <CardTitle as='h2' size='2xl'>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center mb-5">
+          <CardTitle as="h2" size="2xl">
             نظام إدارة الحلقات
           </CardTitle>
           <CardDescription>قم بتسجيل الدخول للمتابعة</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className='space-y-4'>
-            {error && (
-              <Alert variant='soft' color='danger'>
-                <AlertCircle className='h-4 w-4' />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Display API errors */}
+            {isError && error && (
+              <FormError error={{ message: error.message }} />
             )}
 
-            <div className='space-y-2'>
-              <Label htmlFor='email'>البريد الإلكتروني</Label>
-              <Input
-                id='email'
-                type='email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder='admin@halaqa.com'
-                required
-                disabled={isLoading}
-                dir='ltr'
-              />
-            </div>
+            {/* Username Field */}
+            <FormField
+              control={control}
+              name="username"
+              label="اسم المستخدم"
+              type="text"
+              placeholder="admin"
+              disabled={isLoading}
+              id="username"
+              inputClassName="text-left"
+            />
 
-            <div className='space-y-2'>
-              <Label htmlFor='password'>كلمة المرور</Label>
-              <Input
-                id='password'
-                type='password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder='******'
-                required
-                disabled={isLoading}
-                dir='ltr'
-              />
-            </div>
+            {/* Password Field */}
+            <FormField
+              control={control}
+              name="password"
+              label="كلمة المرور"
+              type="password"
+              placeholder="********"
+              disabled={isLoading}
+              id="password"
+              inputClassName="text-left"
+            />
 
-            <Button type='submit' className='w-full' disabled={isLoading}>
-              {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
+            {/* Submit Button */}
+            <Button type="submit" className="w-full my-5" disabled={isLoading}>
+              {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
-
-            <div className='mt-4 text-center'>
-              <Typography as='div' size='xs' weight='medium' variant='ghost' color='muted'>
-                حسابات تجريبية:
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                مدير: admin@halaqa.com / 123456
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                مشرف: mod@halaqa.com / 123456
-              </Typography>
-              <Typography as='div' size='xs' variant='ghost' color='muted'>
-                معلم: tutor1@halaqa.com / 123456
-              </Typography>
-            </div>
           </form>
         </CardContent>
       </Card>

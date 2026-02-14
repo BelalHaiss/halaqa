@@ -1,52 +1,52 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { LoginView } from '@/modules/auth';
-import { DashboardView } from '@/modules/dashboard';
-import { GroupsView, GroupDetailsView } from '@/modules/groups';
-import { SessionsView } from '@/modules/sessions';
-import { AttendanceView } from '@/modules/attendance';
-import { UsersView } from '@/modules/users';
-import { ProtectedLayout } from '@/components/ProtectedLayout';
+import { createBrowserRouter } from "react-router-dom";
+import { LoginView } from "@/modules/auth";
+import { DashboardView } from "@/modules/dashboard";
+import { GroupsView, GroupDetailsView } from "@/modules/groups";
+import { SessionsView } from "@/modules/sessions";
+import { AttendanceView } from "@/modules/attendance";
+import { UsersView } from "@/modules/users";
+import { ProtectedLayout } from "@/components/ProtectedLayout";
 
 export const router = createBrowserRouter([
   {
-    path: '/login',
-    element: <LoginView onLoginSuccess={() => window.location.reload()} />
+    path: "/login",
+    element: <LoginView />,
   },
   {
-    path: '/',
+    path: "/",
     element: <ProtectedLayout />,
     children: [
       {
         index: true,
-        element: <DashboardView />
+        element: <DashboardView />,
       },
       {
-        path: 'groups',
-        element: <GroupsView />
+        path: "groups",
+        element: <GroupsView />,
       },
       {
-        path: 'groups/:id',
-        element: <GroupDetailsView />
+        path: "groups/:id",
+        element: <GroupDetailsView />,
       },
       {
-        path: 'sessions',
-        element: <SessionsView />
+        path: "sessions",
+        element: <SessionsView />,
       },
       {
-        path: 'attendance/:sessionId',
-        element: <AttendanceView />
+        path: "attendance/:sessionId",
+        element: <AttendanceView />,
       },
       {
-        path: 'users',
-        element: <UsersView />
-      }
-    ]
+        path: "users",
+        element: <UsersView />,
+      },
+    ],
   },
   {
-    path: '*',
+    path: "*",
     lazy: async () => {
-      const { Navigate } = await import('react-router-dom');
-      return { Component: () => <Navigate to='/' replace /> };
-    }
-  }
+      const { Navigate } = await import("react-router-dom");
+      return { Component: () => <Navigate to="/" replace /> };
+    },
+  },
 ]);
