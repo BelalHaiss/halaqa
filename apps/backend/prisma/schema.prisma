@@ -9,17 +9,18 @@ datasource db {
 }
 
 model User {
-  id         String             @id @default(ulid())
-  username   String?            @unique @db.VarChar(50)
-  name       String             @db.VarChar(100)
-  password   String?            @db.VarChar(255)
-  role       UserRole
-  createdAt  DateTime           @default(now()) @map("created_at")
-  updatedAt  DateTime           @updatedAt @map("updated_at")
-  timezone   String             @default("Africa/Cairo")
-  attendance AttendanceRecord[]
-  groups     GroupStudent[]
-  profile    UserProfile?
+  id            String             @id @default(ulid())
+  username      String?            @unique @db.VarChar(50)
+  name          String             @db.VarChar(100)
+  password      String?            @db.VarChar(255)
+  role          UserRole
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  timezone      String             @default("Africa/Cairo")
+  attendance    AttendanceRecord[]
+  studentGroups GroupStudent[]
+  profile       UserProfile?
+  tutorGroups   Group[]
 
   @@index([role])
   @@map("users")
@@ -45,6 +46,9 @@ model Group {
   scheduleDays GroupScheduleDay[]
   students     GroupStudent[]
   sessions     Session[]
+
+  //  we should have relation for tutor and user
+  tutor User @relation(fields: [tutorId], references: [id], onDelete: Cascade)
 
   @@index([tutorId])
   @@index([status])
@@ -78,7 +82,7 @@ model Session {
   id         String             @id @default(ulid())
   groupId    String             @map("group_id")
   startedAt  DateTime
-  status     SessionStatus      @default(SCHEDULED)
+  status     SessionStatus
   notes      String?            @db.Text
   createdAt  DateTime           @default(now()) @map("created_at")
   updatedAt  DateTime           @updatedAt @map("updated_at")
@@ -122,9 +126,10 @@ enum GroupStatus {
 }
 
 enum SessionStatus {
-  SCHEDULED
+  RESCHEDULED
   COMPLETED
   CANCELED
+  MISSED
 }
 
 enum AttendanceStatus {
