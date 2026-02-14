@@ -12,6 +12,7 @@ import {
   Moon,
   Sun,
   UserCog,
+  Settings,
 } from "lucide-react";
 import { useTheme } from "../contexts/ThemeContext";
 import { cva } from "class-variance-authority";
@@ -115,13 +116,22 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
           </div>
 
           {/* User Info */}
-          <div className="p-3 border-b border-border">
-            <Typography as="div" size="sm" weight="medium">
-              {user.name}
-            </Typography>
-            <Typography as="div" size="xs" variant="ghost" color="muted">
-              {roleLabels[user.role]}
-            </Typography>
+          <div className="p-3 border-b border-border flex items-center justify-between">
+            <div>
+              <Typography as="div" size="sm" weight="medium">
+                {user.name}
+              </Typography>
+              <Typography as="div" size="xs" variant="ghost" color="muted">
+                {roleLabels[user.role]}
+              </Typography>
+            </div>
+
+            <Link
+              to="/profile"
+              className="p-1 rounded-md hover:bg-muted transition"
+            >
+              <Settings className="w-4 h-4 text-muted-foreground" />
+            </Link>
           </div>
 
           {/* Navigation */}

@@ -6,6 +6,7 @@ import { SessionsView } from "@/modules/sessions";
 import { AttendanceView } from "@/modules/attendance";
 import { UsersView } from "@/modules/users";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
+import { ProfileView } from "./modules/profile/views/ProfileView";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <UsersView />,
+      },
+      {
+        path: "profile", // ← Add profile route
+        element: <ProfileView />,
       },
     ],
   },
