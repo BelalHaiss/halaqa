@@ -1,6 +1,6 @@
 // Generic API query hook with unified error handling
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
-import type { ApiSuccessResponse } from '@ionsite/shared';
+import type { UnifiedApiResponse } from '@halaqa/shared';
 import type { ApiError } from './useApiMutation';
 
 /**
@@ -16,11 +16,11 @@ import type { ApiError } from './useApiMutation';
  */
 export function useApiQuery<TResponse>(
   options: Omit<
-    UseQueryOptions<ApiSuccessResponse<TResponse>, ApiError>,
+    UseQueryOptions<UnifiedApiResponse<TResponse>, ApiError>,
     'initialData'
   > & { initialData?: () => undefined }
 ) {
-  return useQuery<ApiSuccessResponse<TResponse>, ApiError>({
+  return useQuery<UnifiedApiResponse<TResponse>, ApiError>({
     ...options
   });
 }

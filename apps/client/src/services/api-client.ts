@@ -121,6 +121,30 @@ class ApiClient {
     }
   }
 
+  async patch<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response: AxiosResponse<ApiResponse<T>> = await this.client.patch(
+        url,
+        data,
+        config,
+      );
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          "حدث خطأ غير متوقع",
+      };
+    }
+  }
+
   async delete<T>(
     url: string,
     config?: AxiosRequestConfig,

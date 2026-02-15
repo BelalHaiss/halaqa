@@ -29,7 +29,6 @@ export const LoginView = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {

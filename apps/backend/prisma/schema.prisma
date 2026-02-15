@@ -19,19 +19,11 @@ model User {
   timezone      String             @default("Africa/Cairo")
   attendance    AttendanceRecord[]
   studentGroups GroupStudent[]
-  profile       UserProfile?
+  notes         String?            @db.Text
   tutorGroups   Group[]
 
   @@index([role])
   @@map("users")
-}
-
-model UserProfile {
-  userId String  @id @map("user_id")
-  notes  String? @db.Text
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_profiles")
 }
 
 model Group {
@@ -90,11 +82,11 @@ model Session {
   attendance        AttendanceRecord[]
   group             Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
+  @@unique([groupId, startedAt])
   @@index([groupId])
   @@index([startedAt])
   @@index([groupId, originalStartedAt])
   @@index([status])
-  @@unique([groupId, startedAt])
   @@map("sessions")
 }
 

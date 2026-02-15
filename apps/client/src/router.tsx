@@ -5,6 +5,7 @@ import { GroupsView, GroupDetailsView } from "@/modules/groups";
 import { SessionsView } from "@/modules/sessions";
 import { AttendanceView } from "@/modules/attendance";
 import { UsersView } from "@/modules/users";
+import { LearnersView } from "@/modules/learners";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { ProfileView } from "./modules/profile/views/ProfileView";
 
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <UsersView />,
+      },
+      {
+        path: "learners",
+        element: <LearnersView />,
       },
       {
         path: "profile", // ← Add profile route

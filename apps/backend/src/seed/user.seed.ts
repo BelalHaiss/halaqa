@@ -13,6 +13,7 @@ export const seededUserData = async () => {
     ]),
     password: await argon.hash(faker.internet.password()),
     username: faker.internet.username(),
+    notes: null,
   };
   return user;
 };
@@ -23,6 +24,7 @@ export const seededAdminData = async () => {
     role: 'ADMIN',
     password: await argon.hash('12345678'),
     username: 'admin',
+    notes: null,
   };
   return user;
 };

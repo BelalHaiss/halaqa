@@ -107,6 +107,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 - All mutations require `ConfirmDialog` Component
 - No execution without confirmation
+- after mutation fire `toast` with success or error message
 
 ## ⚠️ Forbidden Practices
 
@@ -152,3 +153,4 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Schedule Definition → Store session time as startMinutes (minutes from midnight in Group.timezone) and convert to UTC only when creating the actual DateTime
 - User Timezone (Display Layer) → Convert stored UTC DateTime to User.timezone only for UI display.
 - in shared app we have date.util that has luxon helper method for working with date use it or edit it if needed don't add any date package or helper in client or backend app only this date.util should handle all date manipulation and conversion logic in the project.
+- for Timezones we have timezone.util in shared app that has helper everything for working with timezones use it or edit it required

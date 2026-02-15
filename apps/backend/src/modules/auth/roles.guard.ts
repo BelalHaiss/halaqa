@@ -8,7 +8,7 @@ import {
 import type { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { Roles } from 'src/decorators/roles.decorator';
-import { UserRole } from 'generated/prisma/wasm';
+import { UserRole } from 'generated/prisma/client';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

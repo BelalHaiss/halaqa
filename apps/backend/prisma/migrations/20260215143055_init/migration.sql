@@ -8,18 +8,11 @@ CREATE TABLE `users` (
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
     `timezone` VARCHAR(191) NOT NULL DEFAULT 'Africa/Cairo',
+    `notes` TEXT NULL,
 
     UNIQUE INDEX `users_username_key`(`username`),
     INDEX `users_role_idx`(`role`),
     PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `user_profiles` (
-    `user_id` VARCHAR(191) NOT NULL,
-    `notes` TEXT NULL,
-
-    PRIMARY KEY (`user_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -63,14 +56,17 @@ CREATE TABLE `sessions` (
     `id` VARCHAR(191) NOT NULL,
     `group_id` VARCHAR(191) NOT NULL,
     `startedAt` DATETIME(3) NOT NULL,
-    `status` ENUM('SCHEDULED', 'COMPLETED', 'CANCELED') NOT NULL DEFAULT 'SCHEDULED',
+    `original_started_at` DATETIME(3) NULL,
+    `status` ENUM('RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED') NOT NULL,
     `notes` TEXT NULL,
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
     INDEX `sessions_group_id_idx`(`group_id`),
     INDEX `sessions_startedAt_idx`(`startedAt`),
+    INDEX `sessions_group_id_original_started_at_idx`(`group_id`, `original_started_at`),
     INDEX `sessions_status_idx`(`status`),
+    UNIQUE INDEX `sessions_group_id_startedAt_key`(`group_id`, `startedAt`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -91,7 +87,7 @@ CREATE TABLE `attendance_records` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `user_profiles` ADD CONSTRAINT `user_profiles_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `groups` ADD CONSTRAINT `groups_tutor_id_fkey` FOREIGN KEY (`tutor_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `group_schedule_days` ADD CONSTRAINT `group_schedule_days_group_id_fkey` FOREIGN KEY (`group_id`) REFERENCES `groups`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

@@ -7,6 +7,7 @@ import {
   Calendar,
   LogOut,
   BookOpen,
+  GraduationCap,
   Menu,
   X,
   Moon,
@@ -71,6 +72,12 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       href: "/users",
       icon: UserCog,
       roles: ["ADMIN", "MODERATOR"],
+    },
+    {
+      name: "المتعلمون",
+      href: "/learners",
+      icon: GraduationCap,
+      roles: ["ADMIN", "MODERATOR", "TUTOR"],
     },
   ];
 
