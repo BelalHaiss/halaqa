@@ -1,7 +1,14 @@
-import { User, UserRole } from "@halaqa/shared";
+import {
+  DEFAULT_TIMEZONE,
+  getTimezoneLabel,
+  TIMEZONES,
+  User,
+  UserRole,
+} from "@halaqa/shared";
 import { users as mockUsers } from "@/lib/mockData";
 import { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
+import { roleColorMap } from "@/lib/utils";
 import {
   UserPlus,
   Edit2,
@@ -30,13 +37,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { withRole } from "@/hoc/withRole";
-import { userSchema } from "../schema/user.schema";
 import {
-  DEFAULT_TIMEZONE,
-  getTimezoneLabel,
-  TIMEZONES,
-} from "../../../../../../packages/shared/src/utils/timestamps";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { userSchema } from "../schema/user.schema";
+import { withRole } from "@/hoc/withRole";
 
 interface UserFormData {
   name: string;
@@ -77,16 +88,6 @@ function UsersView() {
     MODERATOR: UserCog,
     TUTOR: GraduationCap,
     STUDENT: GraduationCap,
-  };
-
-  const roleColors: Record<string, string> = {
-    ADMIN:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-    MODERATOR:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    TUTOR:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
-    STUDENT: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
   };
 
   const handleOpenDialog = (userToEdit?: User) => {
@@ -171,7 +172,6 @@ function UsersView() {
     }
   };
 
-  // Filter users based on search
   const filteredUsers = users.filter((userItem) =>
     userItem.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -342,94 +342,84 @@ function UsersView() {
         />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
-                  الاسم
-                </th>
-                <th className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
-                  اسم الحساب
-                </th>
-                <th className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
-                  الدور
-                </th>
-                <th className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
-                  المنطقة الزمنية
-                </th>
-                <th className="px-4 py-3 text-left text-xs text-gray-700 dark:text-gray-300">
-                  الإجراءات
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredUsers.map((userItem) => {
-                const RoleIcon = roleIcons[userItem.role];
-                const userTimezone =
-                  (userItem as any).timezone || DEFAULT_TIMEZONE;
+      <Table className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <TableHeader className="bg-gray-50 dark:bg-gray-900/50">
+          <TableRow>
+            <TableHead className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
+              الاسم
+            </TableHead>
+            <TableHead className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
+              اسم الحساب
+            </TableHead>
+            <TableHead className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
+              الدور
+            </TableHead>
+            <TableHead className="px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300">
+              المنطقة الزمنية
+            </TableHead>
+            <TableHead className="px-4 py-3 text-left text-xs text-gray-700 dark:text-gray-300">
+              الإجراءات
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredUsers.map((userItem) => {
+            const RoleIcon = roleIcons[userItem.role];
+            const userTimezone = (userItem as any).timezone || DEFAULT_TIMEZONE;
 
-                return (
-                  <tr
-                    key={userItem.id}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-gray-900 dark:text-gray-100">
-                        {userItem.name}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col text-xs text-gray-600 dark:text-gray-400">
-                        <span className="text-sm text-gray-900 dark:text-gray-100">
-                          {userItem.username}{" "}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${roleColors[userItem.role]}`}
-                      >
-                        <RoleIcon className="w-3 h-3" />
-                        {roleLabels[userItem.role]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                        {getTimezoneLabel(userTimezone)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenDialog(userItem)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(userItem.id)}
-                          disabled={
-                            userItem.id === user.id || userItem.role === "ADMIN"
-                          }
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            return (
+              <TableRow>
+                <TableCell className="px-4 py-3">
+                  <div className="text-sm text-gray-900 dark:text-gray-100">
+                    {userItem.name}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="flex flex-col text-xs text-gray-600 dark:text-gray-400">
+                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                      {userItem.username}{" "}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <Badge variant="soft" color={roleColorMap[userItem.role]}>
+                    <RoleIcon className="w-3 h-3" />
+                    {roleLabels[userItem.role]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    {getTimezoneLabel(userTimezone)}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleOpenDialog(userItem)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(userItem.id)}
+                      disabled={
+                        userItem.id === user.id || userItem.role === "ADMIN"
+                      }
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       {filteredUsers.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
