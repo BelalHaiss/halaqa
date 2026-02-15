@@ -1,8 +1,5 @@
+import { DEFAULT_TIMEZONE, TIMEZONES } from "@halaqa/shared";
 import { z } from "zod";
-import {
-  DEFAULT_TIMEZONE,
-  TIMEZONES,
-} from "../../../../../../packages/shared/src/utils/timestamps";
 
 export const userSchema = z.object({
   name: z
