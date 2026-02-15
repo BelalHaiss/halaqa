@@ -5,6 +5,9 @@ import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { roleColorMap } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -87,7 +90,7 @@ export function ProfileView() {
   };
 
   // Handle password change
-  const handlePasswordChange = async (data: ChangePasswordFormData) => {
+  const handlePasswordChange = async () => {
     setIsSubmitting(true);
 
     try {
@@ -132,18 +135,20 @@ export function ProfileView() {
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
+            <Avatar size="lg">
+              <AvatarFallback className="text-2xl font-bold">
+                {user.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {user.name}
               </h2>
               <div className="flex items-center gap-2 mt-1">
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <Badge variant="soft" color={roleColorMap[user.role]}>
                   <Shield className="w-3 h-3" />
                   {roleLabels[user.role]}
-                </span>
+                </Badge>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   •
                 </span>
@@ -211,8 +216,7 @@ export function ProfileView() {
 
                 {/* Timezone */}
                 <div className="space-y-2">
-                  <Label htmlFor="timezone" className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
+                  <Label htmlFor="timezone" className="flex items-center">
                     المنطقة الزمنية
                   </Label>
                   <Select
