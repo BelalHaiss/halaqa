@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RolesGuard } from './modules/auth/roles.guard';
+import { SessionModule } from './modules/session/session.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RolesGuard } from './modules/auth/roles.guard';
     DatabaseModule,
     AuthModule,
     UserModule,
+    SessionModule,
   ],
   providers: [
     {

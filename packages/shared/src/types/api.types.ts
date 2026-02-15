@@ -91,8 +91,14 @@ export type UnifiedApiResponse<T> = ApiSuccessResponse<T>;
 // Response DTO type for type-safe API responses
 export type ResponseDto<T> = UnifiedApiResponse<T>;
 
-// branding the string type to create a distinct type for ISO date strings, improving type safety and clarity in the codebase. This helps ensure that only valid ISO date strings are used where expected, reducing potential bugs and enhancing code readability.
+// Full ISO timestamp string (UTC), e.g. "2026-02-15T08:30:00.000Z".
 export type ISODateString = string & { __isoDateBrand: true };
+
+// Calendar date in ISO-like format, e.g. "2026-02-15" (YYYY-MM-DD).
+export type ISODateOnlyString = string & { __isoDateOnlyBrand: true };
+
+// 24-hour time string, e.g. "08:30" (HH:mm).
+export type TimeHHMMString = string & { __timeHHMMBrand: true };
 
 // normalize date strings to Date objects in DTOs for better type safety and easier date manipulation in the application. This utility type recursively transforms all ISODateString fields in a given type T into Date objects, while preserving the structure of the original type.
 type ToDate<T> = T extends ISODateString

@@ -120,6 +120,8 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Shared DTOs only
 - `DatesAsObjects` backend-only
 - Zod schema must satisfy shared DTOs
+- we have 2 global guards applied AuthGuard, RolesGuard but we have decorators for customization them
+- we have zod-validation pipe for any DTO or Query and it should only applied Route parameter not route handler
 
 ---
 

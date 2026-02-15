@@ -81,9 +81,9 @@ export function formatDateTime(utcDate: string, timezone: string): string {
  * @param timezone - IANA timezone
  * @returns Day of week
  */
-export function getDayOfWeek(utcDate: string, timezone: string): number {
+export function getTodayDayOfWeek(timezone: string): number {
   // Luxon uses 1-7 (Monday-Sunday), convert to 0-6 (Sunday-Saturday)
-  const luxonDay = fromUTC(utcDate, timezone).weekday;
+  const luxonDay = DateTime.now().setZone(timezone).weekday;
   return luxonDay === 7 ? 0 : luxonDay;
 }
 
