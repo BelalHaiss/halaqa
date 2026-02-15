@@ -1,7 +1,7 @@
-import { DEFAULT_TIMEZONE, TIMEZONES } from "@halaqa/shared";
 import { z } from "zod";
+import { timezoneFieldSchema } from "@/lib/validation/timezone.schema";
 
-export const userSchema = z.object({
+const userBaseSchema = z.object({
   name: z
     .string()
     .min(3, "الاسم يجب أن يكون 3 أحرف على الأقل")
@@ -13,18 +13,13 @@ export const userSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, "يسمح فقط بالحروف والأرقام و _"),
 
   role: z.enum(["ADMIN", "MODERATOR", "TUTOR", "STUDENT"]),
-  timezone: z
-    .string()
-    .refine(
-      (val) => TIMEZONES.some((tz) => tz.value === val),
-      "يرجى اختيار منطقة زمنية صحيحة",
-    )
-    .default(DEFAULT_TIMEZONE),
   password: z
     .string()
     .min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
     .optional()
     .or(z.literal("")), // allow empty on edit
 });
+
+export const userSchema = z.intersection(userBaseSchema, timezoneFieldSchema);
 
 export type UserFormSchema = z.infer<typeof userSchema>;

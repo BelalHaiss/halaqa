@@ -69,7 +69,6 @@ export const SearchInput = ({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        variant={variant ?? 'outline'}
         color={color ?? 'muted'}
         className='pr-9'
       />

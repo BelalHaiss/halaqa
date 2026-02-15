@@ -1,6 +1,7 @@
 import { PrismaClient } from 'generated/prisma/client';
-import { seededAdminData } from './user.seed';
+import { seededAdminData, seededUserData } from './user.seed';
 import { createMariaDbAdapter } from 'src/modules/database/database.util';
+import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient({
   adapter: createMariaDbAdapter({
@@ -19,6 +20,11 @@ export const seedData = async () => {
       where: { username: adminData.username! },
       update: {},
       create: adminData,
+    });
+    const usersSeed = faker.helpers.multiple(seededUserData, { count: 50 });
+
+    await prisma.user.createMany({
+      data: await Promise.all(usersSeed),
     });
     console.log('Data seeded successfully');
   } catch (error) {

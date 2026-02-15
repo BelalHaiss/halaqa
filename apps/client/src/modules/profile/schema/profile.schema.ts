@@ -1,23 +1,20 @@
-import { DEFAULT_TIMEZONE, TIMEZONES } from "@halaqa/shared";
 import { z } from "zod";
+import { timezoneFieldSchema } from "@/lib/validation/timezone.schema";
 
 /**
  * Schema for updating user profile
  */
-export const profileSchema = z.object({
+const profileBaseSchema = z.object({
   username: z
     .string()
     .min(1, "اسم المستخدم مطلوب")
     .min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
-
-  timezone: z
-    .string()
-    .refine(
-      (val) => TIMEZONES.some((tz) => tz.value === val),
-      "يرجى اختيار منطقة زمنية صحيحة",
-    )
-    .default(DEFAULT_TIMEZONE),
 });
+
+export const profileSchema = z.intersection(
+  profileBaseSchema,
+  timezoneFieldSchema,
+);
 
 /**
  * Schema for changing password

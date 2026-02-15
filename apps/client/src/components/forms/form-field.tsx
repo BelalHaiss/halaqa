@@ -14,15 +14,30 @@ import {
 } from '../ui/field';
 import { PasswordInput } from '../ui/password-input';
 import { Input } from '../ui/input';
+import { Textarea } from '../ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../ui/select';
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
 
 export interface IFormField {
   name: string;
   label?: string | ReactNode;
-  type: 'text' | 'email' | 'password' | 'checkbox';
+  type: 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea';
   placeholder?: string;
   disabled?: boolean;
   id?: string;
   inputClassName?: string;
+  rows?: number;
+  options?: SelectOption[];
 }
 
 interface FormFieldProps<T extends FieldValues> extends IFormField {
@@ -39,7 +54,9 @@ function FormFieldComponent<T extends FieldValues>({
   disabled,
   id,
   inputClassName,
-  showError = true
+  showError = true,
+  rows,
+  options
 }: FormFieldProps<T>) {
   const fieldId = id || name;
 
@@ -59,6 +76,43 @@ function FormFieldComponent<T extends FieldValues>({
           disabled={disabled}
           aria-invalid={invalid}
           className={inputClassName}
+        />
+      );
+    }
+
+    if (type === 'select') {
+      return (
+        <Select value={value} onValueChange={onChange} disabled={disabled}>
+          <SelectTrigger
+            id={fieldId}
+            aria-invalid={invalid}
+            className={inputClassName}
+          >
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options?.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+
+    if (type === 'textarea') {
+      return (
+        <Textarea
+          id={fieldId}
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value || ''}
+          onChange={onChange}
+          onBlur={onBlur}
+          aria-invalid={invalid}
+          className={inputClassName}
+          rows={rows}
         />
       );
     }

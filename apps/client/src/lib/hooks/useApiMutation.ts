@@ -1,6 +1,6 @@
 // Generic API mutation hook with unified error handling
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
-import type { ApiSuccessResponse } from '@ionsite/shared';
+import type { UnifiedApiResponse } from '@halaqa/shared';
 
 // Error type returned from axios interceptor
 export interface ApiError {
@@ -23,11 +23,11 @@ export interface ApiError {
  */
 export function useApiMutation<TRequest, TResponse>(
   options: Omit<
-    UseMutationOptions<ApiSuccessResponse<TResponse>, ApiError, TRequest>,
+    UseMutationOptions<UnifiedApiResponse<TResponse>, ApiError, TRequest>,
     'mutationKey'
   >
 ) {
-  return useMutation<ApiSuccessResponse<TResponse>, ApiError, TRequest>({
+  return useMutation<UnifiedApiResponse<TResponse>, ApiError, TRequest>({
     ...options
   });
 }
