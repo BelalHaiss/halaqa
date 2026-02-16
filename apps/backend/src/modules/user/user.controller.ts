@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import type {
+  CountDto,
   CreateLearnerDto,
   LearnerDto,
   QueryLearnersDto,
@@ -16,7 +17,9 @@ import type {
   UpdateLearnerDto,
 } from '@halaqa/shared';
 import { UserRole } from 'generated/prisma/client';
+import type { User as UserEntity } from 'generated/prisma/client';
 import { Roles } from 'src/decorators/roles.decorator';
+import { User } from 'src/decorators/user.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   createLearnerSchema,
@@ -47,7 +50,7 @@ export class UserController {
   }
 
   @Patch('learner/:id')
-  @Roles([UserRole.ADMIN, UserRole.MODERATOR])
+  @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
   updateLearner(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateLearnerSchema))
@@ -66,5 +69,15 @@ export class UserController {
   async deleteUser(@Param('id') id: string): Promise<{ success: boolean }> {
     await this.userService.delete(id);
     return { success: true };
+  }
+
+  @Get('stats/learners-count')
+  getLearnersCount(@User() user: UserEntity): Promise<CountDto> {
+    return this.userService.getLearnersCountDto(user);
+  }
+
+  @Get('stats/tutors-count')
+  getTutorsCount(@User() user: UserEntity): Promise<CountDto> {
+    return this.userService.getTutorsCountDto(user);
   }
 }

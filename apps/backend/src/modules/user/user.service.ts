@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import {
+  CountDto,
   CreateLearnerDto,
   DEFAULT_TIMEZONE,
   ISODateString,
@@ -9,7 +10,7 @@ import {
   QueryLearnersResponseDto,
   UpdateLearnerDto,
 } from '@halaqa/shared';
-import { Prisma, UserRole } from 'generated/prisma/client';
+import { Prisma, User, UserRole } from 'generated/prisma/client';
 
 @Injectable()
 export class UserService {
@@ -128,6 +129,57 @@ export class UserService {
     if (deletedLearnersCount.count === 0) {
       throw new NotFoundException('Learner not found');
     }
+  }
+
+  async getTutorsCount(): Promise<number> {
+    return this.prismaService.user.count({
+      where: {
+        role: UserRole.TUTOR,
+      },
+    });
+  }
+
+  async getLearnersCount(): Promise<number> {
+    return this.prismaService.user.count({
+      where: {
+        role: UserRole.STUDENT,
+      },
+    });
+  }
+
+  async getLearnersCountByTutor(tutorId: string): Promise<number> {
+    const learners = await this.prismaService.groupStudent.findMany({
+      where: {
+        group: {
+          tutorId,
+        },
+      },
+      distinct: ['userId'],
+      select: {
+        userId: true,
+      },
+    });
+
+    return learners.length;
+  }
+
+  async getTutorsCountDto(user: User): Promise<CountDto> {
+    if (user.role === UserRole.TUTOR) {
+      return { count: 1 };
+    }
+
+    const count = await this.getTutorsCount();
+    return { count };
+  }
+
+  async getLearnersCountDto(user: User): Promise<CountDto> {
+    if (user.role !== UserRole.TUTOR) {
+      const count = await this.getLearnersCount();
+      return { count };
+    }
+
+    const count = await this.getLearnersCountByTutor(user.id);
+    return { count };
   }
 
   private toLearnerDto(user: {

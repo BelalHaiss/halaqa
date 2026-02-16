@@ -10,15 +10,45 @@ export interface GroupScheduleDay {
   durationMinutes: number;
 }
 
-export interface Group {
+export interface CountDto {
+  count: number;
+}
+
+export interface GroupTutorSummaryDto {
+  id: string;
+  name: string;
+}
+
+export interface GroupStudentSummaryDto {
+  id: string;
+  name: string;
+  timezone: string;
+  notes?: string;
+}
+
+export interface GroupSummaryDto {
   id: string;
   name: string;
   description?: string;
   tutorId: string;
-  timezone: string; // IANA timezone
+  timezone: string;
   status: GroupStatus;
   scheduleDays: GroupScheduleDay[];
-  students: string[]; // user IDs with STUDENT role
+  studentsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupDetailsDto {
+  id: string;
+  name: string;
+  description?: string;
+  tutorId: string;
+  tutor: GroupTutorSummaryDto;
+  timezone: string;
+  status: GroupStatus;
+  scheduleDays: GroupScheduleDay[];
+  students: GroupStudentSummaryDto[];
   createdAt: string;
   updatedAt: string;
 }
@@ -33,7 +63,6 @@ export interface CreateGroupDto {
 }
 
 export interface UpdateGroupDto {
-  id: string;
   name?: string;
   description?: string;
   tutorId?: string;
@@ -42,18 +71,7 @@ export interface UpdateGroupDto {
   scheduleDays?: GroupScheduleDay[];
 }
 
-export interface AddStudentToGroupDto {
-  groupId: string;
-  userId: string;
-}
-
-export interface RemoveStudentFromGroupDto {
-  groupId: string;
-  userId: string;
-}
-
-export interface GroupFilterDto {
+export interface UpdateGroupSettingsDto {
   status?: GroupStatus;
-  tutorId?: string;
-  search?: string;
+  scheduleDays?: GroupScheduleDay[];
 }

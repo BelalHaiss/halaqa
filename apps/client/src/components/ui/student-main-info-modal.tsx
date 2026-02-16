@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
+import { Typography } from '@/components/ui/typography';
 import {
   studentMainInfoFormSchema,
   type StudentMainInfoFormValues
@@ -26,17 +27,29 @@ import {
 
 export type StudentMainInfoMode = 'view' | 'edit' | 'create';
 
-export type StudentMainInfoSubmitArgs = {
-  mode: 'create' | 'edit';
-  learnerId?: string;
-  data: CreateLearnerDto | UpdateLearnerDto;
-};
+export type StudentMainInfoLearner = Pick<
+  LearnerDto,
+  'id' | 'name' | 'timezone' | 'contact'
+>;
+
+export type StudentMainInfoSubmitArgs =
+  | {
+      mode: 'create';
+      addToGroupId?: string;
+      data: CreateLearnerDto;
+    }
+  | {
+      mode: 'edit';
+      learnerId?: string;
+      data: UpdateLearnerDto;
+    };
 
 type StudentMainInfoModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: StudentMainInfoMode;
-  learner?: LearnerDto | null;
+  learner?: StudentMainInfoLearner | null;
+  addToGroupId?: string;
   onSubmit?: (args: StudentMainInfoSubmitArgs) => Promise<void> | void;
   isLoading?: boolean;
 };
@@ -46,6 +59,7 @@ export function StudentMainInfoModal({
   onOpenChange,
   mode,
   learner,
+  addToGroupId,
   onSubmit,
   isLoading = false
 }: StudentMainInfoModalProps) {
@@ -84,6 +98,7 @@ export function StudentMainInfoModal({
     const submitData: StudentMainInfoSubmitArgs = isCreateMode
       ? {
           mode: 'create',
+          addToGroupId,
           data: {
             name: values.name.trim(),
             timezone: values.timezone,
@@ -195,9 +210,9 @@ export function StudentMainInfoModal({
             />
 
             {errorMessage ? (
-              <p className='text-sm text-danger' role='alert'>
+              <Typography as='div' size='sm' color='danger' role='alert'>
                 {errorMessage}
-              </p>
+              </Typography>
             ) : null}
 
             <DialogFooter>

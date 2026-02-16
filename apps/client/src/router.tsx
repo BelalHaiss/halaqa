@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import { LoginView } from "@/modules/auth";
-import { DashboardView } from "@/modules/dashboard";
 import { GroupsView, GroupDetailsView } from "@/modules/groups";
 import { SessionsView } from "@/modules/sessions";
 import { AttendanceView } from "@/modules/attendance";
@@ -8,6 +7,7 @@ import { UsersView } from "@/modules/users";
 import { LearnersView } from "@/modules/learners";
 import { ProtectedLayout } from "@/components/ProtectedLayout";
 import { ProfileView } from "./modules/profile/views/ProfileView";
+import { HistoryView } from "./modules/history/views/HistoryView";
 
 export const router = createBrowserRouter([
   {
@@ -20,7 +20,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardView />,
+        element: <GroupsView />,
       },
       {
         path: "groups",
@@ -49,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: "profile", // ← Add profile route
         element: <ProfileView />,
+      },
+      {
+        path: "history",
+        element: <HistoryView />,
       },
     ],
   },

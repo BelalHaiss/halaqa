@@ -117,10 +117,13 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## 🔧 Backend
 
-- Nest CLI modules if exist or create with `nest g res modules/[name] --no-spec`
+- always use existing modules if exist or create with Nest CLI `nest g res modules/[name] --no-spec`
 - Shared DTOs only
 - `DatesAsObjects` backend-only
 - Zod schema must satisfy shared DTOs
+- we have user decorator that extract user info from request and attach it to request object use it in your controllers don't add any custom logic
+- must use prisma transactions for multi-step operations or operations that modify multiple tables
+- Use an Orchestrator module for multi-domain workflows, and wrap all related writes in a single Prisma transaction for atomicity
 
 ---
 
