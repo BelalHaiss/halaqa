@@ -1,41 +1,30 @@
-import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
+import { Link } from 'react-router-dom';
+import { BookOpen, GraduationCap, Loader2, Plus, Users } from 'lucide-react';
+import { startMinutesToTime } from '@halaqa/shared';
 import { useApp } from '@/contexts/AppContext';
-import { Plus, Users as UsersIcon, Loader2 } from 'lucide-react';
-import { GroupStatus, startMinutesToTime } from '@halaqa/shared';
-import { Button } from '@/components/ui/button';
-import { SearchInput } from '@/components/ui/search-input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { StatusDropdown } from '@/components/ui/status-dropdown';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { Typography } from '@/components/ui/typography';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { dayNames } from '@/lib/mockData';
-import CreateGroupModal from '@/components/CreateGroupModal';
+import { dayNames } from '../constants';
+import { StatsCountCard } from '../components/StatsCountCard';
+import { GroupFormModal } from '../components/GroupFormModal';
+import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
 
 export const GroupsView = () => {
   const { user } = useApp();
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [pendingStatusChange, setPendingStatusChange] = useState<{
-    groupId: string;
-    groupName: string;
-    status: GroupStatus;
-  } | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  if (!user) return null;
-  const {
-    groups,
-    isLoading,
-    error,
-    searchQuery,
-    setSearchQuery,
-    createGroup,
-    updateGroupStatus,
-  } = useGroupsViewModel(user);
+  if (!user) {
+    return null;
+  }
 
-  if (isLoading) {
+  const vm = useGroupsViewModel(user);
+
+  if (vm.isLoadingGroups) {
     return (
       <div className='flex items-center justify-center h-64'>
         <Loader2 className='w-8 h-8 animate-spin text-primary' />
@@ -43,164 +32,159 @@ export const GroupsView = () => {
     );
   }
 
-  if (error) {
+  if (vm.groupsError) {
     return (
       <Alert variant='soft' color='danger'>
-        <AlertDescription>{error}</AlertDescription>
+        <AlertDescription>{vm.groupsError}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div>
+    <div className='space-y-6'>
+      <section className='space-y-3 rounded-2xl border border-primary/20 bg-linear-to-l from-primary/5 via-background to-success/5 p-4'>
+        <div className='flex items-center justify-between'>
+          <Typography as='h2' size='lg' weight='semibold'>
+            ملخص الحلقات
+          </Typography>
+          <Typography as='div' size='xs' variant='ghost' color='muted'>
+            إحصائيات مباشرة عن المتعلمين والحلقات
+          </Typography>
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          <StatsCountCard
+            icon={GraduationCap}
+            data={{ count: vm.learnersCount, title: 'إجمالي المتعلمين' }}
+            isLoading={vm.isLoadingLearnersCount}
+            variant='soft'
+            color='primary'
+          />
+          {user.role !== 'TUTOR' ? (
+            <StatsCountCard
+              icon={Users}
+              data={{ count: vm.tutorsCount, title: 'إجمالي معلمي القرآن' }}
+              isLoading={vm.isLoadingTutorsCount}
+              variant='soft'
+              color='success'
+            />
+          ) : null}
+          <StatsCountCard
+            icon={BookOpen}
+            data={{ count: vm.groupsCount, title: 'إجمالي الحلقات' }}
+            isLoading={vm.isLoadingGroupsCount}
+            variant='outline'
+            color='muted'
+          />
+        </div>
+      </section>
       <PageHeader
         title='الحلقات'
         description='إدارة حلقات تحفيظ القرآن'
         actions={
-          user.role === 'ADMIN' || user.role === 'MODERATOR' ? (
-            <Button onClick={() => setShowCreateModal(true)} className='gap-2'>
+          vm.canManageGroups ? (
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className='gap-2'
+            >
               <Plus className='w-4 h-4' />
-              <Typography as='span' size='sm'>
-                إضافة حلقة
-              </Typography>
+              إضافة حلقة
             </Button>
           ) : null
         }
       />
 
-      {/* Search */}
-      <div className='mb-4'>
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder='بحث عن حلقة...'
-        />
-      </div>
+      <div className='h-px bg-border' />
 
-      {/* Groups Grid */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        {groups.map((group) => {
+        {vm.groups.map((group) => {
           const scheduleDays = group.scheduleDays
-            .map((sd) => dayNames[sd.dayOfWeek])
-            .join(' و ');
-
-          const groupStatus = group.status;
-          const canEdit = user.role === 'ADMIN' || user.role === 'MODERATOR';
+            .map((scheduleDay) => dayNames[scheduleDay.dayOfWeek])
+            .join(' - ');
 
           return (
-            <div key={group.id} className='relative group'>
-              <Link
-                to={`/groups/${group.id}`}
-                className='block transition-shadow hover:shadow-md'
-              >
-                <Card>
-                  <CardContent className='p-4'>
-                    <div className='flex items-start justify-between mb-3'>
-                      <div className='bg-primary/10 p-2 rounded-lg'>
-                        <UsersIcon className='w-5 h-5 text-primary' />
-                      </div>
+            <Link
+              key={group.id}
+              to={`/groups/${group.id}`}
+              className='block transition-shadow hover:shadow-md'
+            >
+              <Card>
+                <CardContent className='p-4 space-y-3'>
+                  <div className='flex items-start justify-between'>
+                    <div className='bg-primary/10 p-2 rounded-lg'>
+                      <Users className='w-5 h-5 text-primary' />
                     </div>
+                    <StatusBadge status={group.status} />
+                  </div>
 
-                    <Typography as='h3' size='lg' weight='semibold' className='mb-2'>
-                      {group.name}
-                    </Typography>
+                  <Typography as='h3' size='lg' weight='semibold'>
+                    {group.name}
+                  </Typography>
 
-                    <div className='space-y-1.5'>
-                      <div className='flex items-center justify-between'>
-                        <Typography as='div' size='xs' variant='ghost' color='muted'>
-                          عدد الطلاب:
-                        </Typography>
-                        <Typography as='div' size='xs' weight='medium'>
-                          {group.students.length}
-                        </Typography>
-                      </div>
-                      <div className='flex items-center justify-between'>
-                        <Typography as='div' size='xs' variant='ghost' color='muted'>
-                          الموعد:
-                        </Typography>
-                        <Typography as='div' size='xs' weight='medium'>
-                          {group.scheduleDays[0]
-                            ? startMinutesToTime(group.scheduleDays[0].startMinutes)
-                            : 'غير محدد'}
-                        </Typography>
-                      </div>
-                      <div className='pt-1.5 border-t border-border'>
-                        <Typography as='div' size='xs' variant='ghost' color='muted'>
-                          {scheduleDays}
-                        </Typography>
-                      </div>
+                  <div className='space-y-1.5'>
+                    <div className='flex items-center justify-between'>
+                      <Typography
+                        as='div'
+                        size='xs'
+                        variant='ghost'
+                        color='muted'
+                      >
+                        عدد الطلاب
+                      </Typography>
+                      <Typography as='div' size='xs' weight='medium'>
+                        {group.studentsCount}
+                      </Typography>
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-
-              {/* Status Dropdown - positioned absolutely */}
-              <div
-                className='absolute top-4 left-4 z-10'
-                onClick={(e) => e.preventDefault()}
-              >
-                <StatusDropdown
-                  currentStatus={groupStatus}
-                  onStatusChange={(status) =>
-                    setPendingStatusChange({
-                      groupId: group.id,
-                      groupName: group.name,
-                      status,
-                    })
-                  }
-                  disabled={!canEdit}
-                />
-              </div>
-            </div>
+                    <div className='flex items-center justify-between'>
+                      <Typography
+                        as='div'
+                        size='xs'
+                        variant='ghost'
+                        color='muted'
+                      >
+                        الوقت
+                      </Typography>
+                      <Typography as='div' size='xs' weight='medium'>
+                        {group.scheduleDays[0]
+                          ? startMinutesToTime(
+                              group.scheduleDays[0].startMinutes
+                            )
+                          : 'غير محدد'}
+                      </Typography>
+                    </div>
+                    <div className='pt-1.5 border-t border-border'>
+                      <Typography
+                        as='div'
+                        size='xs'
+                        variant='ghost'
+                        color='muted'
+                      >
+                        {scheduleDays || 'لا توجد أيام محددة'}
+                      </Typography>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>
 
-      {groups.length === 0 && (
+      {vm.groups.length === 0 ? (
         <div className='text-center py-12'>
-          <UsersIcon className='w-12 h-12 mx-auto mb-3 opacity-50' />
+          <Users className='w-12 h-12 mx-auto mb-3 opacity-50' />
           <Typography as='div' size='sm' variant='ghost' color='muted'>
             لا توجد حلقات
           </Typography>
         </div>
-      )}
+      ) : null}
 
-      {showCreateModal && (
-        <CreateGroupModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onCreateGroup={createGroup}
-        />
-      )}
-
-      <ConfirmDialog
-        open={Boolean(pendingStatusChange)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setPendingStatusChange(null);
-          }
-        }}
-        title='تأكيد تغيير الحالة'
-        description={
-          pendingStatusChange
-            ? `هل تريد تغيير حالة "${pendingStatusChange.groupName}"؟`
-            : 'هل تريد تغيير حالة الحلقة؟'
-        }
-        confirmText='تأكيد'
-        cancelText='إلغاء'
-        onConfirm={async () => {
-          if (!pendingStatusChange) {
-            return;
-          }
-
-          await updateGroupStatus(
-            pendingStatusChange.groupId,
-            pendingStatusChange.status
-          );
-          setPendingStatusChange(null);
-        }}
-        variant='solid'
-        color='primary'
+      <GroupFormModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        mode='create'
+        tutors={vm.tutors}
+        isLoading={vm.isCreatingGroup || vm.isLoadingTutors}
+        onSubmit={vm.createGroup}
       />
     </div>
   );

@@ -6,7 +6,7 @@ import {
   Group,
   Session,
   timeToStartMinutes,
-  User,
+  User
 } from '@halaqa/shared';
 
 // Extended User type for mock data with groupId and joinDate (for students)
@@ -16,7 +16,10 @@ export interface StudentUser extends User {
 }
 
 // Extended Group type for mock data with schedule helper
-export interface GroupWithSchedule extends Omit<Group, 'createdAt' | 'updatedAt'> {
+export interface GroupWithSchedule extends Omit<
+  Group,
+  'createdAt' | 'updatedAt'
+> {
   schedule: {
     days: number[];
     startMinutes: number;
@@ -38,7 +41,7 @@ export const users: User[] = [
     role: 'ADMIN',
     timezone: DEFAULT_TIMEZONE,
     createdAt: now,
-    updatedAt: now,
+    updatedAt: now
   },
   {
     id: '2',
@@ -48,7 +51,7 @@ export const users: User[] = [
     role: 'MODERATOR',
     timezone: DEFAULT_TIMEZONE,
     createdAt: now,
-    updatedAt: now,
+    updatedAt: now
   },
   {
     id: '3',
@@ -58,7 +61,7 @@ export const users: User[] = [
     role: 'TUTOR',
     timezone: DEFAULT_TIMEZONE,
     createdAt: now,
-    updatedAt: now,
+    updatedAt: now
   },
   {
     id: '4',
@@ -68,8 +71,8 @@ export const users: User[] = [
     role: 'TUTOR',
     timezone: DEFAULT_TIMEZONE,
     createdAt: now,
-    updatedAt: now,
-  },
+    updatedAt: now
+  }
 ];
 
 // Mock Students (Users with STUDENT role)
@@ -90,8 +93,8 @@ export const students: StudentUser[] = [
       phone: '0501234567',
       whatsapp: '966501234567',
       telegram: '@abdullah_m',
-      notes: 'متفوق في الحفظ',
-    },
+      notes: 'متفوق في الحفظ'
+    }
   },
   {
     id: 's2',
@@ -107,8 +110,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's2',
       phone: '0501234568',
-      whatsapp: '966501234568',
-    },
+      whatsapp: '966501234568'
+    }
   },
   {
     id: 's3',
@@ -125,8 +128,8 @@ export const students: StudentUser[] = [
       userId: 's3',
       phone: '0501234569',
       whatsapp: '966501234569',
-      telegram: '@yousef_k',
-    },
+      telegram: '@yousef_k'
+    }
   },
   {
     id: 's4',
@@ -142,8 +145,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's4',
       phone: '0501234570',
-      whatsapp: '966501234570',
-    },
+      whatsapp: '966501234570'
+    }
   },
   {
     id: 's5',
@@ -159,8 +162,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's5',
       phone: '0501234571',
-      telegram: '@hamza_s',
-    },
+      telegram: '@hamza_s'
+    }
   },
   {
     id: 's6',
@@ -177,8 +180,8 @@ export const students: StudentUser[] = [
       userId: 's6',
       phone: '0501234572',
       whatsapp: '966501234572',
-      notes: 'حافظة لجزء عم',
-    },
+      notes: 'حافظة لجزء عم'
+    }
   },
   {
     id: 's7',
@@ -195,8 +198,8 @@ export const students: StudentUser[] = [
       userId: 's7',
       phone: '0501234573',
       whatsapp: '966501234573',
-      telegram: '@mariam_a',
-    },
+      telegram: '@mariam_a'
+    }
   },
   {
     id: 's8',
@@ -212,8 +215,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's8',
       phone: '0501234574',
-      whatsapp: '966501234574',
-    },
+      whatsapp: '966501234574'
+    }
   },
   {
     id: 's9',
@@ -230,8 +233,8 @@ export const students: StudentUser[] = [
       userId: 's9',
       phone: '0501234575',
       whatsapp: '966501234575',
-      telegram: '@zainab_a',
-    },
+      telegram: '@zainab_a'
+    }
   },
   {
     id: 's10',
@@ -247,8 +250,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's10',
       phone: '0501234576',
-      whatsapp: '966501234576',
-    },
+      whatsapp: '966501234576'
+    }
   },
   {
     id: 's11',
@@ -264,8 +267,8 @@ export const students: StudentUser[] = [
     profile: {
       userId: 's11',
       phone: '0501234577',
-      telegram: '@noor_d',
-    },
+      telegram: '@noor_d'
+    }
   },
   {
     id: 's12',
@@ -283,9 +286,9 @@ export const students: StudentUser[] = [
       phone: '0501234578',
       whatsapp: '966501234578',
       telegram: '@asmaa_k',
-      notes: 'مميزة في التجويد',
-    },
-  },
+      notes: 'مميزة في التجويد'
+    }
+  }
 ];
 
 // Mock Groups
@@ -295,40 +298,76 @@ export const groups: GroupWithSchedule[] = [
     name: 'حلقة الفجر للأطفال',
     tutorId: '3',
     timezone: DEFAULT_TIMEZONE,
-    schedule: { days: [0, 2], startMinutes: timeToStartMinutes('17:00'), duration: 60 },
+    schedule: {
+      days: [0, 2],
+      startMinutes: timeToStartMinutes('17:00'),
+      duration: 60
+    },
     scheduleDays: [
-      { dayOfWeek: 0, startMinutes: timeToStartMinutes('17:00'), durationMinutes: 60 },
-      { dayOfWeek: 2, startMinutes: timeToStartMinutes('17:00'), durationMinutes: 60 },
+      {
+        dayOfWeek: 0,
+        startMinutes: timeToStartMinutes('17:00'),
+        durationMinutes: 60
+      },
+      {
+        dayOfWeek: 2,
+        startMinutes: timeToStartMinutes('17:00'),
+        durationMinutes: 60
+      }
     ],
     students: ['s1', 's2', 's3', 's4', 's5'],
-    status: 'ACTIVE',
+    status: 'ACTIVE'
   },
   {
     id: 'g2',
     name: 'حلقة النساء المسائية',
     tutorId: '4',
     timezone: DEFAULT_TIMEZONE,
-    schedule: { days: [1, 3], startMinutes: timeToStartMinutes('18:30'), duration: 90 },
+    schedule: {
+      days: [1, 3],
+      startMinutes: timeToStartMinutes('18:30'),
+      duration: 90
+    },
     scheduleDays: [
-      { dayOfWeek: 1, startMinutes: timeToStartMinutes('18:30'), durationMinutes: 90 },
-      { dayOfWeek: 3, startMinutes: timeToStartMinutes('18:30'), durationMinutes: 90 },
+      {
+        dayOfWeek: 1,
+        startMinutes: timeToStartMinutes('18:30'),
+        durationMinutes: 90
+      },
+      {
+        dayOfWeek: 3,
+        startMinutes: timeToStartMinutes('18:30'),
+        durationMinutes: 90
+      }
     ],
     students: ['s6', 's7', 's8', 's9'],
-    status: 'ACTIVE',
+    status: 'ACTIVE'
   },
   {
     id: 'g3',
     name: 'حلقة الشباب',
     tutorId: '3',
     timezone: DEFAULT_TIMEZONE,
-    schedule: { days: [4, 5], startMinutes: timeToStartMinutes('20:00'), duration: 60 },
+    schedule: {
+      days: [4, 5],
+      startMinutes: timeToStartMinutes('20:00'),
+      duration: 60
+    },
     scheduleDays: [
-      { dayOfWeek: 4, startMinutes: timeToStartMinutes('20:00'), durationMinutes: 60 },
-      { dayOfWeek: 5, startMinutes: timeToStartMinutes('20:00'), durationMinutes: 60 },
+      {
+        dayOfWeek: 4,
+        startMinutes: timeToStartMinutes('20:00'),
+        durationMinutes: 60
+      },
+      {
+        dayOfWeek: 5,
+        startMinutes: timeToStartMinutes('20:00'),
+        durationMinutes: 60
+      }
     ],
     students: ['s10', 's11', 's12'],
-    status: 'INACTIVE',
-  },
+    status: 'INACTIVE'
+  }
 ];
 
 // Mock Sessions (generate for current week)
@@ -341,7 +380,9 @@ export const generateSessions = (): Session[] => {
     const dayUTC = shiftUTCByDays(nowUTC, i);
 
     groups.forEach((group) => {
-      const dayOfWeek = Number(formatDate(dayUTC, `WEEKDAY_INDEX:${group.timezone}`));
+      const dayOfWeek = Number(
+        formatDate(dayUTC, `WEEKDAY_INDEX:${group.timezone}`)
+      );
       if (group.schedule.days.includes(dayOfWeek)) {
         const isoDate = formatDate(dayUTC, `ISO_DATE:${group.timezone}`);
         const startedAt = buildSessionStartedAtUTC(
@@ -351,17 +392,26 @@ export const generateSessions = (): Session[] => {
         );
 
         const status: Session['status'] =
-          i < -1 ? 'COMPLETED' : i === -1 ? 'MISSED' : i % 5 === 0 ? 'CANCELED' : 'RESCHEDULED';
+          i < -1
+            ? 'COMPLETED'
+            : i === -1
+              ? 'MISSED'
+              : i % 5 === 0
+                ? 'CANCELED'
+                : 'RESCHEDULED';
 
         sessions.push({
           id: `session-${group.id}-${isoDate}`,
           groupId: group.id,
           startedAt,
-          originalStartedAt: status === 'RESCHEDULED' ? shiftUTCByDays(startedAt, -1) : undefined,
+          originalStartedAt:
+            status === 'RESCHEDULED'
+              ? shiftUTCByDays(startedAt, -1)
+              : undefined,
           status,
           notes: status === 'RESCHEDULED' ? 'تم إعادة جدولة الجلسة' : undefined,
           createdAt: now,
-          updatedAt: now,
+          updatedAt: now
         });
       }
     });
@@ -370,4 +420,12 @@ export const generateSessions = (): Session[] => {
   return sessions;
 };
 
-export const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+export const dayNames = [
+  'الأحد',
+  'الاثنين',
+  'الثلاثاء',
+  'الأربعاء',
+  'الخميس',
+  'الجمعة',
+  'السبت'
+];
