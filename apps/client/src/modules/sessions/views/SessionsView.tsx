@@ -2,18 +2,108 @@ import { useState } from 'react';
 import { groups, generateSessions, users, dayNames } from '@/lib/mockData';
 import { useApp } from '@/contexts/AppContext';
 import {
+  buildSessionStartedAtUTC,
+  formatDate,
+  getNowAsUTC,
+} from '@halaqa/shared';
+import {
   Calendar as CalendarIcon,
   List,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { withRole } from '@/hoc/withRole';
 
+const getMonthCursorUTC = (timezone: string, utcDate: string = getNowAsUTC()): string => {
+  const [year, month] = formatDate(utcDate, `ISO_DATE:${timezone}`)
+    .split('-')
+    .map(Number);
+  const monthStart = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-01`;
+  return buildSessionStartedAtUTC(monthStart, timezone, 0);
+};
+
+const shiftMonthCursorUTC = (
+  monthCursorUTC: string,
+  timezone: string,
+  months: number
+): string => {
+  const [year, month] = formatDate(monthCursorUTC, `ISO_DATE:${timezone}`)
+    .split('-')
+    .map(Number);
+  const monthIndex = year * 12 + (month - 1) + months;
+  const shiftedYear = Math.floor(monthIndex / 12);
+  const shiftedMonth = ((monthIndex % 12) + 12) % 12 + 1;
+  const shiftedISODate = `${String(shiftedYear).padStart(4, '0')}-${String(shiftedMonth).padStart(2, '0')}-01`;
+  return buildSessionStartedAtUTC(shiftedISODate, timezone, 0);
+};
+
+const getMonthCalendarInfo = (
+  monthCursorUTC: string,
+  timezone: string
+): {
+  year: number;
+  month: number;
+  daysInMonth: number;
+  startingDayOfWeek: number;
+} => {
+  const [year, month] = formatDate(monthCursorUTC, `ISO_DATE:${timezone}`)
+    .split('-')
+    .map(Number);
+  const isLeapYear =
+    (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const daysInMonth =
+    month === 2
+      ? isLeapYear
+        ? 29
+        : 28
+      : [4, 6, 9, 11].includes(month)
+        ? 30
+        : 31;
+
+  return {
+    year,
+    month,
+    daysInMonth,
+    startingDayOfWeek: Number(formatDate(monthCursorUTC, `WEEKDAY_INDEX:${timezone}`)),
+  };
+};
+
+const getUTCDateForMonthDay = (
+  monthCursorUTC: string,
+  timezone: string,
+  day: number
+): string => {
+  const [year, month] = formatDate(monthCursorUTC, `ISO_DATE:${timezone}`)
+    .split('-')
+    .map(Number);
+  const isoDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return buildSessionStartedAtUTC(isoDate, timezone, 0);
+};
+
+const isSameMonthInTimezone = (
+  firstUTC: string,
+  secondUTC: string,
+  timezone: string
+): boolean =>
+  formatDate(firstUTC, `ISO_DATE:${timezone}`).slice(0, 7) ===
+  formatDate(secondUTC, `ISO_DATE:${timezone}`).slice(0, 7);
+
+const isSameDayInTimezone = (
+  firstUTC: string,
+  secondUTC: string,
+  timezone: string
+): boolean =>
+  formatDate(firstUTC, `ISO_DATE:${timezone}`) ===
+  formatDate(secondUTC, `ISO_DATE:${timezone}`);
+
 function SessionsView() {
   const { user } = useApp();
+  const timezone = user?.timezone || 'Africa/Cairo';
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [monthCursorUTC, setMonthCursorUTC] = useState(() =>
+    getMonthCursorUTC(timezone)
+  );
 
   if (!user) return null;
 
@@ -28,63 +118,52 @@ function SessionsView() {
   );
 
   // Get current month sessions for list view
-  const currentMonth = currentDate.getMonth();
-  const currentYear = currentDate.getFullYear();
   const monthSessions = filteredSessions
-    .filter((s) => {
-      const sessionDate = new Date(s.date);
-      return (
-        sessionDate.getMonth() === currentMonth &&
-        sessionDate.getFullYear() === currentYear
-      );
-    })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .filter((session) =>
+      isSameMonthInTimezone(session.startedAt, monthCursorUTC, timezone)
+    )
+    .sort((a, b) => a.startedAt.localeCompare(b.startedAt));
 
   // Calendar logic
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-
-    return { daysInMonth, startingDayOfWeek };
-  };
-
-  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
+  const { daysInMonth, startingDayOfWeek } = getMonthCalendarInfo(
+    monthCursorUTC,
+    timezone
+  );
 
   const previousMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1)
-    );
+    setMonthCursorUTC((current) => shiftMonthCursorUTC(current, timezone, -1));
   };
 
   const nextMonth = () => {
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1)
-    );
+    setMonthCursorUTC((current) => shiftMonthCursorUTC(current, timezone, 1));
   };
 
   const getSessionsForDate = (day: number) => {
-    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return filteredSessions.filter((s) => s.date === dateStr);
+    const dayUTC = getUTCDateForMonthDay(monthCursorUTC, timezone, day);
+    return filteredSessions.filter((session) =>
+      isSameDayInTimezone(session.startedAt, dayUTC, timezone)
+    );
   };
 
-  const monthNames = [
-    'يناير',
-    'فبراير',
-    'مارس',
-    'أبريل',
-    'مايو',
-    'يونيو',
-    'يوليو',
-    'أغسطس',
-    'سبتمبر',
-    'أكتوبر',
-    'نوفمبر',
-    'ديسمبر'
-  ];
+  const statusLabelMap: Record<
+    'COMPLETED' | 'CANCELED' | 'MISSED' | 'RESCHEDULED',
+    string
+  > = {
+    COMPLETED: 'منتهية',
+    CANCELED: 'ملغية',
+    MISSED: 'فاتت',
+    RESCHEDULED: 'معاد جدولتها',
+  };
+
+  const statusColorMap: Record<
+    'COMPLETED' | 'CANCELED' | 'MISSED' | 'RESCHEDULED',
+    string
+  > = {
+    COMPLETED: 'text-green-600 dark:text-green-400',
+    CANCELED: 'text-red-600 dark:text-red-400',
+    MISSED: 'text-red-600 dark:text-red-400',
+    RESCHEDULED: 'text-blue-600 dark:text-blue-400',
+  };
 
   return (
     <div>
@@ -134,7 +213,7 @@ function SessionsView() {
             <ChevronLeft className='w-5 h-5' />
           </button>
           <h2 className='text-lg text-gray-800 dark:text-gray-100'>
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            {formatDate(monthCursorUTC, `MONTH_YEAR:${timezone}:ar-SA`)}
           </h2>
           <button
             onClick={previousMonth}
@@ -157,9 +236,11 @@ function SessionsView() {
                 {monthSessions.map((session) => {
                   const group = groups.find((g) => g.id === session.groupId);
                   const tutor = users.find((u) => u.id === group?.tutorId);
-                  const sessionDate = new Date(session.date);
-                  const dayName = dayNames[sessionDate.getDay()];
-                  const dateStr = sessionDate.toLocaleDateString('ar-SA');
+                  const dayName = dayNames[
+                    Number(formatDate(session.startedAt, `WEEKDAY_INDEX:${timezone}`))
+                  ];
+                  const dateStr = formatDate(session.startedAt, `ISO_DATE:${timezone}`);
+                  const timeStr = formatDate(session.startedAt, `TIME_SIMPLE:${timezone}`);
 
                   return (
                     <Link
@@ -186,18 +267,12 @@ function SessionsView() {
                         </div>
                         <div className='text-left'>
                           <div className='text-sm text-gray-800 dark:text-gray-100'>
-                            {session.time}
+                            {timeStr}
                           </div>
                           <div
-                            className={`text-xs ${
-                              session.status === 'COMPLETED'
-                                ? 'text-green-600 dark:text-green-400'
-                                : 'text-red-600 dark:text-red-400'
-                            }`}
+                            className={`text-xs ${statusColorMap[session.status]}`}
                           >
-                            {session.status === 'COMPLETED'
-                              ? 'منتهية'
-                              : 'ملغية'}
+                            {statusLabelMap[session.status]}
                           </div>
                         </div>
                       </div>
@@ -227,11 +302,8 @@ function SessionsView() {
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const daySessions = getSessionsForDate(day);
-              const today = new Date();
-              const isToday =
-                day === today.getDate() &&
-                currentDate.getMonth() === today.getMonth() &&
-                currentDate.getFullYear() === today.getFullYear();
+              const dayUTC = getUTCDateForMonthDay(monthCursorUTC, timezone, day);
+              const isToday = isSameDayInTimezone(dayUTC, getNowAsUTC(), timezone);
 
               return (
                 <div
@@ -243,15 +315,17 @@ function SessionsView() {
                   }`}
                 >
                   <div
-                    className={`text-xs md:text-sm mb-1 ${isToday ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'}`}
+                    className={`text-xs md:text-sm mb-1 ${
+                      isToday
+                        ? 'text-emerald-700 dark:text-emerald-400'
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}
                   >
                     {day}
                   </div>
                   <div className='space-y-1'>
                     {daySessions.slice(0, 2).map((session) => {
-                      const group = groups.find(
-                        (g) => g.id === session.groupId
-                      );
+                      const group = groups.find((g) => g.id === session.groupId);
                       return (
                         <Link
                           key={session.id}
@@ -259,7 +333,7 @@ function SessionsView() {
                           className='block text-[10px] md:text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1 py-0.5 rounded truncate hover:bg-blue-200 dark:hover:bg-blue-900/50'
                           title={group?.name}
                         >
-                          {session.time}
+                          {formatDate(session.startedAt, `TIME_SIMPLE:${timezone}`)}
                         </Link>
                       );
                     })}

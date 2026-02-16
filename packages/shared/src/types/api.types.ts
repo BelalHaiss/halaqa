@@ -55,6 +55,7 @@ export enum HttpStatus {
   INSUFFICIENT_STORAGE = 507,
   LOOP_DETECTED = 508
 }
+
 export type PaginationQueryType = {
   page?: number;
   limit?: number;
@@ -68,6 +69,7 @@ export type PaginationResponseMeta = {
     totalPages: number;
   };
 };
+
 export type PaginatedResult<T> = {
   data: T;
 } & PaginationResponseMeta;
@@ -77,24 +79,17 @@ type ApiSuccessResponse<T> = {
   data: T;
 } & Partial<PaginationResponseMeta>;
 
-export type ApiErrorResponse = {
-  success: false;
-  message: string;
-  timestamp: string;
-  statusCode: HttpStatus;
-  path: string;
-  fields?: { field: string; message: string }[];
-};
-
 export type UnifiedApiResponse<T> = ApiSuccessResponse<T>;
 
-// Response DTO type for type-safe API responses
-export type ResponseDto<T> = UnifiedApiResponse<T>;
+export type ViewMode = 'list' | 'grid' | 'calendar';
 
-// branding the string type to create a distinct type for ISO date strings, improving type safety and clarity in the codebase. This helps ensure that only valid ISO date strings are used where expected, reducing potential bugs and enhancing code readability.
+export interface LoadingState {
+  isLoading: boolean;
+  error?: string;
+}
+
 export type ISODateString = string & { __isoDateBrand: true };
 
-// normalize date strings to Date objects in DTOs for better type safety and easier date manipulation in the application. This utility type recursively transforms all ISODateString fields in a given type T into Date objects, while preserving the structure of the original type.
 type ToDate<T> = T extends ISODateString
   ? Date
   : T extends null

@@ -2,13 +2,13 @@
 // DTOs (Public Types)
 // ============================================================================
 
-export type SessionStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELED';
+export type SessionStatus = 'RESCHEDULED' | 'COMPLETED' | 'CANCELED' | 'MISSED';
 
 export interface Session {
   id: string;
   groupId: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
+  startedAt: string; // UTC datetime
+  originalStartedAt?: string;
   status: SessionStatus;
   notes?: string;
   createdAt: string;
@@ -17,15 +17,16 @@ export interface Session {
 
 export interface CreateSessionDto {
   groupId: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
+  startedAt: string;
+  originalStartedAt?: string;
+  status?: SessionStatus;
   notes?: string;
 }
 
 export interface UpdateSessionDto {
   id: string;
-  date?: string;
-  time?: string;
+  startedAt?: string;
+  originalStartedAt?: string;
   status?: SessionStatus;
   notes?: string;
 }
@@ -33,6 +34,6 @@ export interface UpdateSessionDto {
 export interface SessionFilterDto {
   groupId?: string;
   status?: SessionStatus;
-  dateFrom?: string;
-  dateTo?: string;
+  startedAtFrom?: string;
+  startedAtTo?: string;
 }

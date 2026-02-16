@@ -5,7 +5,6 @@ export * from './learner.types';
 export * from './group.types';
 export * from './session.types';
 export * from './attendance.types';
-export * from './common.types';
 
 // Export utilities
 export * from './utils/date.util';

@@ -29,24 +29,3 @@ export const createLearnerSchema = z.intersection(
   createLearnerBaseSchema,
   timezoneFieldSchema
 ) satisfies ZodType<CreateLearnerDto>;
-
-/**
- * Schema for student main info form
- * Used in the modal form with separate notes field
- */
-export const studentMainInfoFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
-    .max(100, 'الاسم طويل جدًا'),
-  timezone: z.string().trim(),
-  notes: z.string().trim().max(2000, 'الملاحظات طويلة جدًا').default('')
-});
-
-/**
- * Type inference for the form
- */
-export type StudentMainInfoFormValues = z.infer<
-  typeof studentMainInfoFormSchema
->;

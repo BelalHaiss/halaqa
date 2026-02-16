@@ -1,111 +1,134 @@
-import { useState, useEffect } from 'react';
-import { groupService } from '../services/group.service';
-import { Group, User, GroupStatus, CreateGroupDto } from '@halaqa/shared';
+import { useState } from 'react';
+import { CreateGroupDto, Group, GroupStatus, User } from '@halaqa/shared';
 import { toast } from 'sonner';
+import { useApiMutation } from '@/lib/hooks/useApiMutation';
+import { useApiQuery } from '@/lib/hooks/useApiQuery';
+import { queryClient, queryKeys } from '@/lib/query-client';
+import { groupService } from '../services/group.service';
 
 export const useGroupsViewModel = (currentUser: User) => {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQueryState] = useState('');
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
-  const loadGroups = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
+  const groupsQuery = useApiQuery<Group[]>({
+    queryKey: queryKeys.groups.list({
+      userId: currentUser.id,
+      role: currentUser.role
+    }),
+    queryFn: async () => {
       const response = await groupService.getAllGroups();
+      const groups = response.data;
 
-      if (response.success && response.data) {
-        // Filter by user role
-        const filteredGroups =
-          currentUser.role === 'TUTOR'
-            ? response.data.filter((g) => g.tutorId === currentUser.id)
-            : response.data;
+      const filteredGroups =
+        currentUser.role === 'TUTOR'
+          ? groups.filter((group) => group.tutorId === currentUser.id)
+          : groups;
 
-        setGroups(filteredGroups);
-      } else {
-        setError(response.error || 'فشل تحميل الحلقات');
-      }
-    } catch (err: any) {
-      setError(err.message || 'حدث خطأ غير متوقع');
-    } finally {
-      setIsLoading(false);
+      return {
+        success: true,
+        data: filteredGroups
+      };
     }
+  });
+
+  const createGroupMutation = useApiMutation<CreateGroupDto, Group>({
+    mutationFn: async (group) => {
+      return groupService.createGroup(group);
+    },
+    onSuccess: async () => {
+      toast.success('تم إضافة الحلقة بنجاح');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل إضافة الحلقة');
+    }
+  });
+
+  const deleteGroupMutation = useApiMutation<string, void>({
+    mutationFn: async (id) => {
+      return groupService.deleteGroup(id);
+    },
+    onSuccess: async () => {
+      toast.success('تم حذف الحلقة بنجاح');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل حذف الحلقة');
+    }
+  });
+
+  const updateGroupStatusMutation = useApiMutation<
+    { groupId: string; status: GroupStatus },
+    Group
+  >({
+    mutationFn: async ({ groupId, status }) => {
+      return groupService.updateGroupStatus(groupId, status);
+    },
+    onSuccess: async () => {
+      toast.success('تم تحديث حالة الحلقة بنجاح');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل تحديث حالة الحلقة');
+    }
+  });
+
+  const setSearchQuery = (value: string) => {
+    setSearchQueryState(value);
   };
 
   const createGroup = async (group: CreateGroupDto) => {
     try {
-      const response = await groupService.createGroup(group);
-
-      if (response.success && response.data) {
-        setGroups([...groups, response.data]);
-        toast.success('تم إضافة الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل إضافة الحلقة');
-        return { success: false, error: response.error };
-      }
-    } catch (err: any) {
-      toast.error('حدث خطأ غير متوقع');
-      return { success: false, error: err.message };
+      await createGroupMutation.mutateAsync(group);
+      return { success: true as const };
+    } catch (error) {
+      return {
+        success: false as const,
+        error: error instanceof Error ? error.message : 'فشل إضافة الحلقة'
+      };
     }
   };
 
   const deleteGroup = async (id: string) => {
     try {
-      const response = await groupService.deleteGroup(id);
-
-      if (response.success) {
-        setGroups(groups.filter((g) => g.id !== id));
-        toast.success('تم حذف الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل حذف الحلقة');
-        return { success: false };
-      }
-    } catch (err: any) {
-      toast.error('حدث خطأ غير متوقع');
-      return { success: false };
+      await deleteGroupMutation.mutateAsync(id);
+      return { success: true as const };
+    } catch (error) {
+      return {
+        success: false as const,
+        error: error instanceof Error ? error.message : 'فشل حذف الحلقة'
+      };
     }
   };
 
   const updateGroupStatus = async (groupId: string, status: GroupStatus) => {
     try {
-      const response = await groupService.updateGroupStatus(groupId, status);
-
-      if (response.success && response.data) {
-        // Update the local state
-        setGroups(groups.map((g) => (g.id === groupId ? { ...g, status } : g)));
-        toast.success('تم تحديث حالة الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل تحديث حالة الحلقة');
-        return { success: false, error: response.error };
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'حدث خطأ غير متوقع');
-      return { success: false, error: err.message };
+      await updateGroupStatusMutation.mutateAsync({ groupId, status });
+      return { success: true as const };
+    } catch (error) {
+      return {
+        success: false as const,
+        error: error instanceof Error ? error.message : 'فشل تحديث حالة الحلقة'
+      };
     }
   };
 
+  const groups = groupsQuery.data?.data ?? [];
   const filteredGroups = groups.filter((group) =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return {
     groups: filteredGroups,
-    isLoading,
-    error,
+    isLoading: groupsQuery.isPending,
+    isRefreshing: groupsQuery.isFetching,
+    error: groupsQuery.error?.message ?? null,
     searchQuery,
     setSearchQuery,
     createGroup,
     deleteGroup,
     updateGroupStatus,
-    refreshGroups: loadGroups
+    refreshGroups: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
+    isUpdatingGroupStatus: updateGroupStatusMutation.isPending
   };
 };

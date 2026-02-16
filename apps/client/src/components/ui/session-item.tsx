@@ -1,4 +1,8 @@
-import { Session, SessionStatus } from '@halaqa/shared';
+import {
+  formatDate,
+  Session,
+  SessionStatus,
+} from '@halaqa/shared';
 import { Calendar, Clock, FileText } from 'lucide-react';
 import { StatusBadge, StatusType } from './status-badge';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -8,6 +12,7 @@ import { Typography } from '@/components/ui/typography';
 
 interface SessionItemProps {
   session: Session;
+  timezone?: string;
   onClick?: (session: Session) => void;
   className?: string;
 }
@@ -62,18 +67,9 @@ const sessionItemVariants = cva(
   }
 );
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ar-SA', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long'
-  });
-};
-
 export const SessionItem = ({
   session,
+  timezone,
   onClick,
   className,
   variant = 'outline',
@@ -89,8 +85,12 @@ export const SessionItem = ({
   const statusMap: Record<SessionStatus, StatusType> = {
     COMPLETED: 'COMPLETED',
     CANCELED: 'CANCELED',
-    SCHEDULED: 'SCHEDULED'
+    RESCHEDULED: 'RESCHEDULED',
+    MISSED: 'MISSED',
   };
+
+  const displayTimezone =
+    timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
   return (
     <div
@@ -111,12 +111,12 @@ export const SessionItem = ({
           </div>
           <div>
             <Typography as='div' size='sm' weight='medium'>
-              {formatDate(session.date)}
+              {formatDate(session.startedAt, `DATE_WITH_WEEKDAY:${displayTimezone}`)}
             </Typography>
             <div className='flex items-center gap-1 mt-0.5'>
               <Clock className='w-3 h-3' />
               <Typography as='div' size='xs' variant='ghost' color='muted'>
-                {session.time}
+                {formatDate(session.startedAt, `TIME_SIMPLE:${displayTimezone}`)}
               </Typography>
             </div>
           </div>

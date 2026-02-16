@@ -12,29 +12,29 @@ import { SessionItem } from '@/components/ui/session-item';
 import { StatusDropdown } from '@/components/ui/status-dropdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { dayNames } from '@/lib/mockData';
-import { User } from '@halaqa/shared';
+import { GroupStatus, startMinutesToTime } from '@halaqa/shared';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
+import { useApp } from '@/contexts/AppContext';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
-export const GroupDetailsView = ({ user }: { user?: User }) => {
+export const GroupDetailsView = () => {
+  const { user } = useApp();
   const { id } = useParams<{ id: string }>();
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    groupId: string;
+    groupName: string;
+    status: GroupStatus;
+  } | null>(null);
 
-  const { group, students, tutor, isLoading, error } = useGroupDetailsViewModel(
-    id!
-  );
+  if (!user || !id) {
+    return null;
+  }
 
-  const { updateGroupStatus } = useGroupsViewModel(
-    user || {
-      id: '',
-      username: 'guest',
-      name: '',
-      email: '',
-      role: 'TUTOR',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  );
+  const { group, students, tutor, isLoading, error } = useGroupDetailsViewModel(id);
+
+  const { updateGroupStatus } = useGroupsViewModel(user);
 
   const {
     sessions,
@@ -42,7 +42,7 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
     error: sessionsError,
     searchQuery: sessionSearchQuery,
     setSearchQuery: setSessionSearchQuery
-  } = useSessionsViewModel(id!);
+  } = useSessionsViewModel(id);
 
   if (isLoading) {
     return (
@@ -72,7 +72,7 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
   );
 
   const groupStatus = group.status;
-  const canEdit = user && (user.role === 'ADMIN' || user.role === 'MODERATOR');
+  const canEdit = user.role === 'ADMIN' || user.role === 'MODERATOR';
 
   return (
     <div className='space-y-6'>
@@ -83,7 +83,13 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
         actions={
           <StatusDropdown
             currentStatus={groupStatus}
-            onStatusChange={(status) => updateGroupStatus(group.id, status)}
+            onStatusChange={(status) =>
+              setPendingStatusChange({
+                groupId: group.id,
+                groupName: group.name,
+                status,
+              })
+            }
             disabled={!canEdit}
           />
         }
@@ -116,7 +122,9 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
               الوقت:
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
-              {group.scheduleDays[0]?.time || 'غير محدد'}
+              {group.scheduleDays[0]
+                ? startMinutesToTime(group.scheduleDays[0].startMinutes)
+                : 'غير محدد'}
             </Typography>
           </div>
           <div className='flex items-center justify-between'>
@@ -231,7 +239,11 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
               ) : (
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                   {sessions.map((session) => (
-                    <SessionItem key={session.id} session={session} />
+                    <SessionItem
+                      key={session.id}
+                      session={session}
+                      timezone={user.timezone || group.timezone}
+                    />
                   ))}
                 </div>
               )}
@@ -239,6 +251,36 @@ export const GroupDetailsView = ({ user }: { user?: User }) => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ConfirmDialog
+        open={Boolean(pendingStatusChange)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingStatusChange(null);
+          }
+        }}
+        title='تأكيد تغيير الحالة'
+        description={
+          pendingStatusChange
+            ? `هل تريد تغيير حالة "${pendingStatusChange.groupName}"؟`
+            : 'هل تريد تغيير حالة الحلقة؟'
+        }
+        confirmText='تأكيد'
+        cancelText='إلغاء'
+        onConfirm={async () => {
+          if (!pendingStatusChange) {
+            return;
+          }
+
+          await updateGroupStatus(
+            pendingStatusChange.groupId,
+            pendingStatusChange.status
+          );
+          setPendingStatusChange(null);
+        }}
+        variant='solid'
+        color='primary'
+      />
     </div>
   );
 };

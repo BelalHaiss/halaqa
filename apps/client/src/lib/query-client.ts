@@ -86,5 +86,18 @@ export const queryKeys = {
     all: ['reports'] as const,
     lists: () => [...queryKeys.reports.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.reports.lists(), query] as const
+  },
+
+  // Dashboard queries
+  dashboard: {
+    all: ['dashboard'] as const,
+    stats: (userId: string, role: string) =>
+      [...queryKeys.dashboard.all, 'stats', userId, role] as const
+  },
+
+  // Profile queries
+  profile: {
+    all: ['profile'] as const,
+    me: () => [...queryKeys.profile.all, 'me'] as const
   }
 } as const;

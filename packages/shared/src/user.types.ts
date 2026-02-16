@@ -20,6 +20,7 @@ export interface User {
   name: string;
   email?: string;
   role: UserRole;
+  timezone: string;
   createdAt: string;
   updatedAt: string;
   profile?: UserProfile;
@@ -50,6 +51,7 @@ export interface CreateUserDto {
   name: string;
   email?: string;
   role: UserRole;
+  timezone: string;
   password: string;
   profile?: {
     phone?: string;
@@ -65,8 +67,27 @@ export interface UpdateUserDto {
   name?: string;
   email?: string;
   role?: UserRole;
+  timezone?: string;
   password?: string;
 }
+
+export interface UpdateProfileDto {
+  username: string;
+  timezone: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
+
+export type UserFormDto = Omit<
+  Pick<CreateUserDto, 'name' | 'username' | 'role' | 'password' | 'timezone'>,
+  'password'
+> & {
+  password?: string;
+};
 
 export interface UpdateUserProfileDto {
   userId: string;

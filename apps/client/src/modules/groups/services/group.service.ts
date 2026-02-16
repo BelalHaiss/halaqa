@@ -1,9 +1,10 @@
 import {
-  Group,
+  UnifiedApiResponse,
   CreateGroupDto,
-  UpdateGroupDto,
-  ApiResponse,
-  GroupStatus
+  getNowAsUTC,
+  Group,
+  GroupStatus,
+  UpdateGroupDto
 } from '@halaqa/shared';
 import {
   groups as mockGroups,
@@ -12,18 +13,21 @@ import {
 } from '@/lib/mockData';
 
 export class GroupService {
-  async getAllGroups(): Promise<ApiResponse<Group[]>> {
+  async getAllGroups(): Promise<UnifiedApiResponse<Group[]>> {
+    const now = getNowAsUTC();
+
     // Mock implementation - convert GroupWithSchedule to Group
     const groups: Group[] = mockGroups.map((g) => ({
       id: g.id,
       name: g.name,
       description: g.description,
       tutorId: g.tutorId,
+      timezone: g.timezone,
       status: g.status,
       scheduleDays: g.scheduleDays,
       students: g.students,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     }));
 
     return Promise.resolve({
@@ -32,39 +36,41 @@ export class GroupService {
     });
   }
 
-  async getGroupById(id: string): Promise<ApiResponse<Group>> {
+  async getGroupById(id: string): Promise<UnifiedApiResponse<Group>> {
+    const now = getNowAsUTC();
     const group = mockGroups.find((g) => g.id === id);
-    if (group) {
-      const convertedGroup: Group = {
-        id: group.id,
-        name: group.name,
-        description: group.description,
-        tutorId: group.tutorId,
-        status: group.status,
-        scheduleDays: group.scheduleDays,
-        students: group.students,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      return Promise.resolve({
-        success: true,
-        data: convertedGroup
-      });
+    if (!group) {
+      throw new Error('الحلقة غير موجودة');
     }
+
+    const convertedGroup: Group = {
+      id: group.id,
+      name: group.name,
+      description: group.description,
+      tutorId: group.tutorId,
+      timezone: group.timezone,
+      status: group.status,
+      scheduleDays: group.scheduleDays,
+      students: group.students,
+      createdAt: now,
+      updatedAt: now
+    };
     return Promise.resolve({
-      success: false,
-      error: 'الحلقة غير موجودة'
+      success: true,
+      data: convertedGroup
     });
   }
 
-  async createGroup(group: CreateGroupDto): Promise<ApiResponse<Group>> {
+  async createGroup(group: CreateGroupDto): Promise<UnifiedApiResponse<Group>> {
+    const now = getNowAsUTC();
+
     const newGroup: Group = {
       id: `${mockGroups.length + 1}`,
       ...group,
       status: group.status || 'ACTIVE',
       students: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now
     };
 
     return Promise.resolve({
@@ -73,22 +79,22 @@ export class GroupService {
     });
   }
 
-  async updateGroup(group: UpdateGroupDto): Promise<ApiResponse<Group>> {
+  async updateGroup(group: UpdateGroupDto): Promise<UnifiedApiResponse<Group>> {
+    const now = getNowAsUTC();
+
     // Mock - would need proper conversion in real app
     const existingGroup = mockGroups.find((g) => g.id === group.id);
     if (!existingGroup) {
-      return Promise.resolve({
-        success: false,
-        error: 'الحلقة غير موجودة'
-      });
+      throw new Error('الحلقة غير موجودة');
     }
 
     const updatedGroup: Group = {
       ...existingGroup,
       ...group,
       id: group.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      timezone: group.timezone || existingGroup.timezone,
+      createdAt: now,
+      updatedAt: now
     };
 
     return Promise.resolve({
@@ -97,9 +103,10 @@ export class GroupService {
     });
   }
 
-  async deleteGroup(_id: string): Promise<ApiResponse<void>> {
+  async deleteGroup(_id: string): Promise<UnifiedApiResponse<void>> {
     return Promise.resolve({
-      success: true
+      success: true,
+      data: undefined
     });
   }
 
@@ -117,16 +124,15 @@ export class GroupService {
   async updateGroupStatus(
     groupId: string,
     status: GroupStatus
-  ): Promise<ApiResponse<Group>> {
+  ): Promise<UnifiedApiResponse<Group>> {
+    const now = getNowAsUTC();
+
     // Mock implementation - in real app would call API
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       setTimeout(() => {
         const groupIndex = mockGroups.findIndex((g) => g.id === groupId);
         if (groupIndex === -1) {
-          resolve({
-            success: false,
-            error: 'الحلقة غير موجودة'
-          });
+          reject(new Error('الحلقة غير موجودة'));
           return;
         }
 
@@ -139,11 +145,12 @@ export class GroupService {
           name: updatedGroup.name,
           description: updatedGroup.description,
           tutorId: updatedGroup.tutorId,
+          timezone: updatedGroup.timezone,
           status: updatedGroup.status,
           scheduleDays: updatedGroup.scheduleDays,
           students: updatedGroup.students,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          createdAt: now,
+          updatedAt: now
         };
 
         resolve({

@@ -1,73 +1,84 @@
-import { useState, useEffect } from 'react';
-import { groupService } from '../services/group.service';
 import { Group, User as UserType } from '@halaqa/shared';
-import { StudentUser } from '@/lib/mockData';
 import { toast } from 'sonner';
+import { useApiMutation } from '@/lib/hooks/useApiMutation';
+import { useApiQuery } from '@/lib/hooks/useApiQuery';
+import { queryClient, queryKeys } from '@/lib/query-client';
+import { StudentUser } from '@/lib/mockData';
+import { groupService } from '../services/group.service';
 
 export const useGroupDetailsViewModel = (groupId: string) => {
-  const [group, setGroup] = useState<Group | null>(null);
-  const [students, setStudents] = useState<StudentUser[]>([]);
-  const [tutor, setTutor] = useState<UserType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadGroupDetails();
-  }, [groupId]);
-
-  const loadGroupDetails = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await groupService.getGroupById(groupId);
-
-      if (response.success && response.data) {
-        setGroup(response.data);
-
-        // Load related data
-        const groupStudents = await groupService.getGroupStudents(groupId);
-        setStudents(groupStudents as StudentUser[]);
-
-        const groupTutor = await groupService.getGroupTutor(
-          response.data.tutorId
-        );
-        setTutor(groupTutor as UserType);
-      } else {
-        setError(response.error || 'فشل تحميل بيانات الحلقة');
-      }
-    } catch (err: any) {
-      setError(err.message || 'حدث خطأ غير متوقع');
-    } finally {
-      setIsLoading(false);
+  const groupQuery = useApiQuery<Group>({
+    queryKey: queryKeys.groups.detail(groupId),
+    enabled: Boolean(groupId),
+    queryFn: async () => {
+      return groupService.getGroupById(groupId);
     }
-  };
+  });
+
+  const studentsQuery = useApiQuery<StudentUser[]>({
+    queryKey: [...queryKeys.groups.detail(groupId), 'students'] as const,
+    enabled: Boolean(groupId),
+    queryFn: async () => ({
+      success: true,
+      data: await groupService.getGroupStudents(groupId)
+    })
+  });
+
+  const tutorId = groupQuery.data?.data?.tutorId;
+  const tutorQuery = useApiQuery<UserType | null>({
+    queryKey: [...queryKeys.groups.detail(groupId), 'tutor', tutorId] as const,
+    enabled: Boolean(groupId && tutorId),
+    queryFn: async () => ({
+      success: true,
+      data: tutorId
+        ? ((await groupService.getGroupTutor(tutorId)) ?? null)
+        : null
+    })
+  });
+
+  const updateGroupMutation = useApiMutation<
+    Partial<Group> & { id: string },
+    Group
+  >({
+    mutationFn: async (payload) => {
+      return groupService.updateGroup(payload);
+    },
+    onSuccess: async () => {
+      toast.success('تم تحديث الحلقة بنجاح');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل تحديث الحلقة');
+    }
+  });
 
   const updateGroup = async (updatedGroup: Partial<Group> & { id: string }) => {
     try {
-      const response = await groupService.updateGroup(updatedGroup as any);
-
-      if (response.success && response.data) {
-        setGroup(response.data);
-        toast.success('تم تحديث الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل تحديث الحلقة');
-        return { success: false };
-      }
-    } catch (err: any) {
-      toast.error('حدث خطأ غير متوقع');
-      return { success: false };
+      await updateGroupMutation.mutateAsync(updatedGroup);
+      return { success: true as const };
+    } catch (error) {
+      return {
+        success: false as const,
+        error: error instanceof Error ? error.message : 'فشل تحديث الحلقة'
+      };
     }
   };
 
   return {
-    group,
-    students,
-    tutor,
-    isLoading,
-    error,
+    group: groupQuery.data?.data ?? null,
+    students: studentsQuery.data?.data ?? [],
+    tutor: tutorQuery.data?.data ?? null,
+    isLoading:
+      groupQuery.isPending || studentsQuery.isPending || tutorQuery.isPending,
+    error:
+      groupQuery.error?.message ||
+      studentsQuery.error?.message ||
+      tutorQuery.error?.message ||
+      null,
     updateGroup,
-    refreshGroup: loadGroupDetails
+    refreshGroup: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.groups.detail(groupId)
+      })
   };
 };

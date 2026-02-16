@@ -1,62 +1,63 @@
-import { useState, useEffect } from 'react';
 import { Session } from '@halaqa/shared';
+import { useState } from 'react';
+import { useApiQuery } from '@/lib/hooks/useApiQuery';
+import { queryClient, queryKeys } from '@/lib/query-client';
 import { sessionService } from '../services/session.service';
 
 export const useSessionsViewModel = (groupId: string) => {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchSessions = async () => {
-      if (!groupId) return;
-
-      setIsLoading(true);
-      setError(null);
-
+  const sessionsQuery = useApiQuery<Session[]>({
+    queryKey: queryKeys.sessions.list({ groupId }),
+    enabled: Boolean(groupId),
+    queryFn: async () => {
       const response = await sessionService.getSessionsByGroupId(groupId);
+      const sessions = response.data;
 
-      if (response.success && response.data) {
-        // Sort sessions by date descending (newest first)
-        const sortedSessions = response.data.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setSessions(sortedSessions);
-      } else {
-        setError(response.error || 'فشل في جلب الجلسات');
-      }
+      const sortedSessions = [...sessions].sort((a, b) =>
+        b.startedAt.localeCompare(a.startedAt)
+      );
 
-      setIsLoading(false);
-    };
+      return {
+        success: true,
+        data: sortedSessions
+      };
+    }
+  });
 
-    fetchSessions();
-  }, [groupId]);
+  const sessions = sessionsQuery.data?.data ?? [];
 
-  // Filter sessions based on search query
   const filteredSessions = sessions.filter((session) => {
-    if (!searchQuery) return true;
+    if (!searchQuery) {
+      return true;
+    }
 
     const query = searchQuery.toLowerCase();
     return (
-      session.date.includes(query) ||
-      session.time.includes(query) ||
+      session.startedAt.toLowerCase().includes(query) ||
       session.notes?.toLowerCase().includes(query) ||
-      session.status.includes(query)
+      session.status.toLowerCase().includes(query)
     );
   });
 
-  // Get only past sessions (done or canceled)
   const pastSessions = filteredSessions.filter(
-    (session) => session.status === 'COMPLETED' || session.status === 'CANCELED'
+    (session) =>
+      session.status === 'COMPLETED' ||
+      session.status === 'CANCELED' ||
+      session.status === 'MISSED'
   );
 
   return {
     sessions: pastSessions,
     allSessions: filteredSessions,
-    isLoading,
-    error,
+    isLoading: sessionsQuery.isPending,
+    isRefreshing: sessionsQuery.isFetching,
+    error: sessionsQuery.error?.message ?? null,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    refreshSessions: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.sessions.list({ groupId })
+      })
   };
 };

@@ -1,4 +1,5 @@
 import { Phone, MessageCircle, Send } from 'lucide-react';
+import { DEFAULT_TIMEZONE, formatDate } from '@halaqa/shared';
 import { StudentUser } from '../lib/mockData';
 
 interface StudentProfileProps {
@@ -104,7 +105,10 @@ export default function StudentProfile({
       {student.joinDate && (
         <div className='text-sm text-gray-600 dark:text-gray-400'>
           تاريخ الانضمام:{' '}
-          {new Date(student.joinDate).toLocaleDateString('ar-SA')}
+          {formatDate(
+            `${student.joinDate}T00:00:00.000Z`,
+            `DATE_MED:${student.timezone || DEFAULT_TIMEZONE}`
+          )}
         </div>
       )}
     </div>

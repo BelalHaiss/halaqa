@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
 import { useApp } from '@/contexts/AppContext';
 import { Plus, Users as UsersIcon, Loader2 } from 'lucide-react';
+import { GroupStatus, startMinutesToTime } from '@halaqa/shared';
 import { Button } from '@/components/ui/button';
 import { SearchInput } from '@/components/ui/search-input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,12 +11,18 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { StatusDropdown } from '@/components/ui/status-dropdown';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { dayNames } from '@/lib/mockData';
 import CreateGroupModal from '@/components/CreateGroupModal';
 
 export const GroupsView = () => {
   const { user } = useApp();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    groupId: string;
+    groupName: string;
+    status: GroupStatus;
+  } | null>(null);
 
   if (!user) return null;
   const {
@@ -24,7 +31,8 @@ export const GroupsView = () => {
     error,
     searchQuery,
     setSearchQuery,
-    updateGroupStatus
+    createGroup,
+    updateGroupStatus,
   } = useGroupsViewModel(user);
 
   if (isLoading) {
@@ -111,7 +119,9 @@ export const GroupsView = () => {
                           الموعد:
                         </Typography>
                         <Typography as='div' size='xs' weight='medium'>
-                          {group.scheduleDays[0]?.time || 'غير محدد'}
+                          {group.scheduleDays[0]
+                            ? startMinutesToTime(group.scheduleDays[0].startMinutes)
+                            : 'غير محدد'}
                         </Typography>
                       </div>
                       <div className='pt-1.5 border-t border-border'>
@@ -132,7 +142,11 @@ export const GroupsView = () => {
                 <StatusDropdown
                   currentStatus={groupStatus}
                   onStatusChange={(status) =>
-                    updateGroupStatus(group.id, status)
+                    setPendingStatusChange({
+                      groupId: group.id,
+                      groupName: group.name,
+                      status,
+                    })
                   }
                   disabled={!canEdit}
                 />
@@ -155,8 +169,39 @@ export const GroupsView = () => {
         <CreateGroupModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
+          onCreateGroup={createGroup}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingStatusChange)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingStatusChange(null);
+          }
+        }}
+        title='تأكيد تغيير الحالة'
+        description={
+          pendingStatusChange
+            ? `هل تريد تغيير حالة "${pendingStatusChange.groupName}"؟`
+            : 'هل تريد تغيير حالة الحلقة؟'
+        }
+        confirmText='تأكيد'
+        cancelText='إلغاء'
+        onConfirm={async () => {
+          if (!pendingStatusChange) {
+            return;
+          }
+
+          await updateGroupStatus(
+            pendingStatusChange.groupId,
+            pendingStatusChange.status
+          );
+          setPendingStatusChange(null);
+        }}
+        variant='solid'
+        color='primary'
+      />
     </div>
   );
 };

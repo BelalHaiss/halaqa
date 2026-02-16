@@ -27,7 +27,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Modules live in `src/modules/*`
 - No cross-module imports
 - Shared UI → `src/components/ui`
-- Types → `@ionsite/shared` or module-local
+- Types → `@halaqa/shared` or module-local
 
 ---
 
@@ -42,9 +42,9 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## 📋 Forms
 
-- react-hook-form for all forms
+- you must use react-hook-form for any forms small or large
 - Use `FormField` for dynamic fields
-- Lives in `src/components/ui/form-field.tsx`
+- Lives in `src/components/forms/form-field.tsx`
 
 ---
 

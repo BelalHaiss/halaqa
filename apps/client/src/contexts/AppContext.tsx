@@ -10,6 +10,7 @@ import { storageService } from '@/services';
 
 interface AppContextType {
   user: User | null;
+  isAuthenticated: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
 }
@@ -42,7 +43,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, logout }}>
+    <AppContext.Provider
+      value={{ user, isAuthenticated: !!user, setUser, logout }}
+    >
       {children}
     </AppContext.Provider>
   );

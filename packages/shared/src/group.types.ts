@@ -4,9 +4,9 @@
 
 export type GroupStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
 
-export interface ScheduleDay {
+export interface GroupScheduleDay {
   dayOfWeek: number; // 0 = Sunday, 6 = Saturday
-  time: string; // HH:mm format
+  startMinutes: number; // minutes from midnight in group timezone
   durationMinutes: number;
 }
 
@@ -15,8 +15,9 @@ export interface Group {
   name: string;
   description?: string;
   tutorId: string;
+  timezone: string; // IANA timezone
   status: GroupStatus;
-  scheduleDays: ScheduleDay[];
+  scheduleDays: GroupScheduleDay[];
   students: string[]; // user IDs with STUDENT role
   createdAt: string;
   updatedAt: string;
@@ -26,8 +27,9 @@ export interface CreateGroupDto {
   name: string;
   description?: string;
   tutorId: string;
+  timezone: string;
   status?: GroupStatus;
-  scheduleDays: ScheduleDay[];
+  scheduleDays: GroupScheduleDay[];
 }
 
 export interface UpdateGroupDto {
@@ -35,8 +37,9 @@ export interface UpdateGroupDto {
   name?: string;
   description?: string;
   tutorId?: string;
+  timezone?: string;
   status?: GroupStatus;
-  scheduleDays?: ScheduleDay[];
+  scheduleDays?: GroupScheduleDay[];
 }
 
 export interface AddStudentToGroupDto {

@@ -22,7 +22,7 @@ import {
 import {
   studentMainInfoFormSchema,
   type StudentMainInfoFormValues
-} from '@/modules/learners/schema/learner.schema';
+} from '@/components/ui/student-main-info.schema';
 
 export type StudentMainInfoMode = 'view' | 'edit' | 'create';
 

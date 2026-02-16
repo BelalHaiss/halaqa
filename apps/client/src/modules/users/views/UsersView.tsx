@@ -1,4 +1,11 @@
-import { DEFAULT_TIMEZONE, TIMEZONES, User, UserRole } from '@halaqa/shared';
+import {
+  DEFAULT_TIMEZONE,
+  getNowAsUTC,
+  TIMEZONES,
+  User,
+  UserFormDto,
+  UserRole,
+} from '@halaqa/shared';
 import { users as mockUsers } from '@/lib/mockData';
 import { useState } from 'react';
 import { useApp } from '@/contexts/AppContext';
@@ -41,16 +48,9 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { userSchema } from '../schema/user.schema';
 import { withRole } from '@/hoc/withRole';
-
-interface UserFormData {
-  name: string;
-  username: string;
-  role: UserRole;
-  password?: string;
-  timezone: string;
-}
 
 function UsersView() {
   const { user } = useApp();
@@ -61,13 +61,16 @@ function UsersView() {
   const [editingUser, setEditingUser] = useState<(typeof mockUsers)[0] | null>(
     null
   );
-  const [formData, setFormData] = useState<UserFormData>({
+  const [formData, setFormData] = useState<UserFormDto>({
     name: '',
     username: '',
     role: 'TUTOR',
     password: '',
     timezone: DEFAULT_TIMEZONE
   });
+  const [pendingFormData, setPendingFormData] = useState<UserFormDto | null>(null);
+  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
+  const [pendingDeleteUser, setPendingDeleteUser] = useState<User | null>(null);
 
   if (!user) return null;
 
@@ -93,7 +96,7 @@ function UsersView() {
         username: userToEdit.username || '',
         role: userToEdit.role,
         password: '',
-        timezone: (userToEdit as any).timezone || DEFAULT_TIMEZONE
+        timezone: userToEdit.timezone || DEFAULT_TIMEZONE
       });
     } else {
       setEditingUser(null);
@@ -107,6 +110,45 @@ function UsersView() {
     }
     setIsDialogOpen(true);
     setErrors({});
+    setPendingFormData(null);
+    setConfirmSaveOpen(false);
+  };
+
+  const saveUser = (data: UserFormDto) => {
+    if (editingUser) {
+      const now = getNowAsUTC();
+      setUsers(
+        users.map((u) =>
+          u.id === editingUser.id
+            ? {
+                ...u,
+                name: data.name,
+                username: data.username,
+                role: data.role,
+                timezone: data.timezone,
+                updatedAt: now
+              }
+            : u
+        )
+      );
+    } else {
+      const now = getNowAsUTC();
+      const newUser: User = {
+        id: `u${users.length + 1}`,
+        name: data.name,
+        username: data.username,
+        role: data.role,
+        timezone: data.timezone,
+        createdAt: now,
+        updatedAt: now
+      };
+
+      setUsers([...users, newUser]);
+    }
+
+    setIsDialogOpen(false);
+    setConfirmSaveOpen(false);
+    setPendingFormData(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -125,46 +167,12 @@ function UsersView() {
     }
 
     setErrors({});
-
-    const data = result.data;
-
-    if (editingUser) {
-      setUsers(
-        users.map((u) =>
-          u.id === editingUser.id
-            ? {
-                ...u,
-                name: data.name,
-                username: data.username,
-                role: data.role,
-                timezone: data.timezone,
-                updatedAt: new Date().toISOString(),
-                ...(data.password ? { password: data.password } : {})
-              }
-            : u
-        )
-      );
-    } else {
-      const newUser: User & { timezone: string } = {
-        id: `u${users.length + 1}`,
-        name: data.name,
-        username: data.username,
-        role: data.role,
-        timezone: data.timezone,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      setUsers([...users, newUser]);
-    }
-
-    setIsDialogOpen(false);
+    setPendingFormData(result.data);
+    setConfirmSaveOpen(true);
   };
 
-  const handleDelete = (userId: string) => {
-    if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
-      setUsers(users.filter((u) => u.id !== userId));
-    }
+  const handleDelete = (userToDelete: User) => {
+    setPendingDeleteUser(userToDelete);
   };
 
   const filteredUsers = users.filter((userItem) =>
@@ -360,10 +368,10 @@ function UsersView() {
         <TableBody>
           {filteredUsers.map((userItem) => {
             const RoleIcon = roleIcons[userItem.role];
-            const userTimezone = (userItem as any).timezone || DEFAULT_TIMEZONE;
+            const userTimezone = userItem.timezone || DEFAULT_TIMEZONE;
 
             return (
-              <TableRow>
+              <TableRow key={userItem.id}>
                 <TableCell className='px-4 py-3'>
                   <div className='text-sm text-gray-900 dark:text-gray-100'>
                     {userItem.name}
@@ -403,7 +411,7 @@ function UsersView() {
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => handleDelete(userItem.id)}
+                      onClick={() => handleDelete(userItem)}
                       disabled={
                         userItem.id === user.id || userItem.role === 'ADMIN'
                       }
@@ -424,6 +432,55 @@ function UsersView() {
           {searchQuery ? 'لا توجد نتائج للبحث' : 'لا يوجد مستخدمون'}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmSaveOpen}
+        onOpenChange={setConfirmSaveOpen}
+        title={editingUser ? 'تأكيد حفظ التعديلات' : 'تأكيد إضافة المستخدم'}
+        description={
+          editingUser
+            ? 'هل تريد حفظ التعديلات على بيانات المستخدم؟'
+            : 'هل تريد إضافة المستخدم الجديد؟'
+        }
+        confirmText={editingUser ? 'حفظ' : 'إضافة'}
+        cancelText='إلغاء'
+        variant='solid'
+        color='primary'
+        onConfirm={() => {
+          if (!pendingFormData) {
+            return;
+          }
+
+          saveUser(pendingFormData);
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(pendingDeleteUser)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingDeleteUser(null);
+          }
+        }}
+        title='تأكيد حذف المستخدم'
+        description={
+          pendingDeleteUser
+            ? `هل أنت متأكد من حذف "${pendingDeleteUser.name}"؟`
+            : 'هل أنت متأكد من حذف هذا المستخدم؟'
+        }
+        confirmText='حذف'
+        cancelText='إلغاء'
+        variant='solid'
+        color='danger'
+        onConfirm={() => {
+          if (!pendingDeleteUser) {
+            return;
+          }
+
+          setUsers(users.filter((item) => item.id !== pendingDeleteUser.id));
+          setPendingDeleteUser(null);
+        }}
+      />
     </div>
   );
 }

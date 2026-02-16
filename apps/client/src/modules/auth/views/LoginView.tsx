@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +16,6 @@ import { FormField } from "@/components/forms/form-field";
 import { FormError } from "@/components/forms/form-error";
 
 export const LoginView = () => {
-  const navigate = useNavigate();
   const { user } = useApp(); // Check if user is already authenticated
   const { login, isLoading, error, isError } = useAuthViewModel();
 
@@ -40,12 +39,7 @@ export const LoginView = () => {
 
   // Form submission handler
   const onSubmit = (data: LoginFormData) => {
-    login(data, {
-      onSuccess: () => {
-        // Navigate to home after successful login
-        navigate("/", { replace: true });
-      },
-    });
+    login(data);
   };
 
   return (

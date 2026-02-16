@@ -75,6 +75,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit"
+    "lint": "pnpm exec eslint \"src/**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit"
   }
 }

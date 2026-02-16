@@ -15,7 +15,7 @@ const statusConfig: Record<
   ACTIVE: { label: 'نشط', variant: 'soft', color: 'success' },
   INACTIVE: { label: 'غير نشط', variant: 'soft', color: 'muted' },
   COMPLETED: { label: 'مكتمل', variant: 'soft', color: 'primary' },
-  SCHEDULED: { label: 'مجدولة', variant: 'soft', color: 'primary' },
+  RESCHEDULED: { label: 'أعيدت جدولتها', variant: 'soft', color: 'muted' },
   CANCELED: { label: 'ملغية', variant: 'soft', color: 'danger' },
   ATTENDED: { label: 'حضر', variant: 'soft', color: 'success' },
   MISSED: { label: 'غاب', variant: 'soft', color: 'danger' },

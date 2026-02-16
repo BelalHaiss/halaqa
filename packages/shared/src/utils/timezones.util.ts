@@ -152,6 +152,149 @@ export const TIMEZONES: TimezoneOption[] = [
     value: 'Africa/Mogadishu',
     label: 'الصومال',
     country: 'SO'
+  },
+
+  // Turkey
+  {
+    value: 'Europe/Istanbul',
+    label: 'تركيا',
+    country: 'TR'
+  },
+
+  // Iran
+  {
+    value: 'Asia/Tehran',
+    label: 'إيران',
+    country: 'IR'
+  },
+
+  // Pakistan
+  {
+    value: 'Asia/Karachi',
+    label: 'باكستان',
+    country: 'PK'
+  },
+
+  // Afghanistan
+  {
+    value: 'Asia/Kabul',
+    label: 'أفغانستان',
+    country: 'AF'
+  },
+
+  // Bangladesh
+  {
+    value: 'Asia/Dhaka',
+    label: 'بنغلاديش',
+    country: 'BD'
+  },
+
+  // Indonesia
+  {
+    value: 'Asia/Jakarta',
+    label: 'إندونيسيا',
+    country: 'ID'
+  },
+
+  // Malaysia
+  {
+    value: 'Asia/Kuala_Lumpur',
+    label: 'ماليزيا',
+    country: 'MY'
+  },
+
+  // Azerbaijan
+  {
+    value: 'Asia/Baku',
+    label: 'أذربيجان',
+    country: 'AZ'
+  },
+
+  // USA
+  {
+    value: 'America/New_York',
+    label: 'الولايات المتحدة (نيويورك)',
+    country: 'US'
+  },
+  {
+    value: 'America/Chicago',
+    label: 'الولايات المتحدة (شيكاغو)',
+    country: 'US'
+  },
+  {
+    value: 'America/Los_Angeles',
+    label: 'الولايات المتحدة (لوس أنجلوس)',
+    country: 'US'
+  },
+
+  // UK
+  {
+    value: 'Europe/London',
+    label: 'المملكة المتحدة',
+    country: 'GB'
+  },
+
+  // Germany
+  {
+    value: 'Europe/Berlin',
+    label: 'ألمانيا',
+    country: 'DE'
+  },
+
+  // France
+  {
+    value: 'Europe/Paris',
+    label: 'فرنسا',
+    country: 'FR'
+  },
+
+  // China
+  {
+    value: 'Asia/Shanghai',
+    label: 'الصين',
+    country: 'CN'
+  },
+
+  // Japan
+  {
+    value: 'Asia/Tokyo',
+    label: 'اليابان',
+    country: 'JP'
+  },
+
+  // India
+  {
+    value: 'Asia/Kolkata',
+    label: 'الهند',
+    country: 'IN'
+  },
+
+  // Australia
+  {
+    value: 'Australia/Sydney',
+    label: 'أستراليا',
+    country: 'AU'
+  },
+
+  // Brazil
+  {
+    value: 'America/Sao_Paulo',
+    label: 'البرازيل',
+    country: 'BR'
+  },
+
+  // Canada
+  {
+    value: 'America/Toronto',
+    label: 'كندا',
+    country: 'CA'
+  },
+
+  // Russia
+  {
+    value: 'Europe/Moscow',
+    label: 'روسيا',
+    country: 'RU'
   }
 ];
 
