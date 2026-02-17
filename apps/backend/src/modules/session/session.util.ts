@@ -1,10 +1,8 @@
-import { getNowAsUTC, fromUTC } from '@halaqa/shared';
+import { getNowAsUTC, fromUTC, formatSessionDateAndTime } from '@halaqa/shared';
 import type {
-  ISODateOnlyString,
   SessionComputedStatus,
   SessionDetailsDTO,
   SessionSummaryDTO,
-  TimeHHMMString,
   UpdateSessionActionDTO,
 } from '@halaqa/shared';
 import type { Prisma, User } from 'generated/prisma/client';
@@ -187,19 +185,6 @@ export function canSessionBeRescheduled(args: {
 }
 
 // ============================================================================
-// Date/Time Formatting
-// ============================================================================
-
-/** Format UTC Date to user timezone date and time strings */
-export function formatSessionDateAndTime(startedAt: Date, timezone: string) {
-  const dateTime = fromUTC(startedAt.toISOString(), timezone);
-
-  return {
-    date: dateTime.toFormat('yyyy-LL-dd') as ISODateOnlyString,
-    time: dateTime.toFormat('HH:mm') as TimeHHMMString,
-  };
-}
-
 // ============================================================================
 // Session Mapping (DTO Converters)
 // ============================================================================
@@ -225,8 +210,8 @@ export function mapSessionSummary(args: {
       buildVirtualSessionId(args.groupId, args.startedAt),
     groupName: args.groupName,
     tutorName: args.tutorName,
-    date,
-    time,
+    date: date,
+    time: time,
     sessionStatus: resolveSessionStatus({
       startedAt: args.startedAt,
       sessionRecord: args.sessionRecord,
@@ -265,8 +250,8 @@ export function mapSessionDetails(args: {
       sessionRecord: args.sessionRecord,
       nowUtcIso: args.nowUtcIso,
     }),
-    date,
-    time,
+    date: date,
+    time: time,
     originalStartedAt: args.sessionRecord.originalStartedAt
       ? (args.sessionRecord.originalStartedAt.toISOString() as SessionDetailsDTO['originalStartedAt'])
       : null,
@@ -311,8 +296,8 @@ export function mapVirtualSessionDetails(args: {
       nowUtcIso: args.nowUtcIso,
     }),
     canBeRescheduled: true,
-    date,
-    time,
+    date: date,
+    time: time,
     originalStartedAt: null,
     students: args.group.students.map((item) => ({
       id: item.user.id,

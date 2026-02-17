@@ -4,8 +4,9 @@ import {
   DateRangeQueryType,
   PaginationQueryType,
   PaginationResponseMeta,
+  getStartAndEndOfDay,
 } from '@halaqa/shared';
-import { Prisma, PrismaClient, User } from 'generated/prisma/client';
+import { Prisma, PrismaClient } from 'generated/prisma/client';
 import { createMariaDbAdapter } from './database.util';
 import { EnvVariables } from 'src/types/declartion-merging';
 
@@ -34,35 +35,16 @@ export class DatabaseService extends PrismaClient {
     const dateRangeFilter: Prisma.DateTimeFilter = {};
 
     if (query.fromDate) {
-      const { startDate } = this.getStartAndEndOfDayForDate(
-        query.fromDate,
-        timezone,
-      );
-      dateRangeFilter.gte = startDate;
+      const { startAsJSDate } = getStartAndEndOfDay(timezone, query.fromDate);
+      dateRangeFilter.gte = startAsJSDate;
     }
 
     if (query.toDate) {
-      const { endDate } = this.getStartAndEndOfDayForDate(
-        query.toDate,
-        timezone,
-      );
-      dateRangeFilter.lte = endDate;
+      const { endAsJSDate } = getStartAndEndOfDay(timezone, query.toDate);
+      dateRangeFilter.lte = endAsJSDate;
     }
 
     return dateRangeFilter;
-  }
-
-  private getStartAndEndOfDayForDate(
-    dateStr: string,
-    timezone: string,
-  ): { startDate: Date; endDate: Date } {
-    // Import the shared date util function
-    const { DateTime } = require('luxon');
-    const dt = DateTime.fromISO(dateStr, { zone: timezone });
-    return {
-      startDate: dt.startOf('day').toJSDate(),
-      endDate: dt.endOf('day').toJSDate(),
-    };
   }
 
   handleQueryPagination(query: PaginationQueryType) {

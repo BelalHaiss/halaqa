@@ -1,86 +1,84 @@
-import { DateTime, DateTimeFormatOptions } from 'luxon';
+import { DateTime } from 'luxon';
+import { ISODateOnlyString, TimeHHMMString } from '../types/api.types';
 
-/**
- * Date utility functions using Luxon
- * All timestamps stored in DB should be UTC
- * Groups have IANA timezone (e.g. Africa/Cairo)
- * Users may have optional timezone for display
- */
+export type DateInput = string | Date;
 
-/**
- * Get current UTC timestamp for database storage
- * @returns ISO string in UTC
- */
+export type DateFormatToken =
+  | 'ISO_UTC'
+  | 'DATE_MED'
+  | 'TIME_SIMPLE'
+  | 'ISO_DATE'
+  | 'WEEKDAY_INDEX'
+  | 'DATE_WITH_WEEKDAY'
+  | 'MONTH_YEAR'
+  | `SHIFT_DAYS:${number}`
+  | `ISO_UTC:${string}`
+  | `DATE_MED:${string}`
+  | `TIME_SIMPLE:${string}`
+  | `ISO_DATE:${string}`
+  | `WEEKDAY_INDEX:${string}`
+  | `DATE_WITH_WEEKDAY:${string}`
+  | `DATE_WITH_WEEKDAY:${string}:${string}`
+  | `MONTH_YEAR:${string}`
+  | `MONTH_YEAR:${string}:${string}`;
+
+const DEFAULT_LOCALE = 'ar-SA';
+
 export function getNowAsUTC(): string {
-  return DateTime.utc().toISO()!;
+  return DateTime.utc().toISO() || '';
 }
 
-/**
- * Convert a date to UTC for database storage
- * @param date - Date string, Date object, or Luxon DateTime
- * @returns ISO string in UTC
- */
-export function toUTC(date: string | Date | DateTime): string {
-  if (date instanceof DateTime) {
-    return date.toUTC().toISO()!;
+export function formatDate(
+  date: DateInput,
+  formatToken: DateFormatToken
+): string {
+  const [token, value, locale] = formatToken.split(':');
+  const parsedDate =
+    date instanceof Date
+      ? DateTime.fromJSDate(date)
+      : DateTime.fromISO(date, { setZone: true });
+  const zonedDate = value ? parsedDate.setZone(value) : parsedDate.toUTC();
+
+  switch (token) {
+    case 'SHIFT_DAYS':
+      return (
+        parsedDate
+          .toUTC()
+          .plus({ days: Number(value || '0') })
+          .toISO() || ''
+      );
+    case 'ISO_UTC':
+      return parsedDate.toUTC().toISO() || '';
+    case 'DATE_MED':
+      return zonedDate.toLocaleString(DateTime.DATE_MED);
+    case 'TIME_SIMPLE':
+      return zonedDate.toLocaleString(DateTime.TIME_SIMPLE);
+    case 'ISO_DATE':
+      return zonedDate.toISODate() || '';
+    case 'WEEKDAY_INDEX': {
+      const weekday = zonedDate.weekday;
+      return String(weekday === 7 ? 0 : weekday);
+    }
+    case 'DATE_WITH_WEEKDAY':
+      return zonedDate.setLocale(locale || DEFAULT_LOCALE).toLocaleString({
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    case 'MONTH_YEAR':
+      return zonedDate
+        .setLocale(locale || DEFAULT_LOCALE)
+        .toFormat('LLLL yyyy');
+    default:
+      return zonedDate.toISO() || '';
   }
-  if (date instanceof Date) {
-    return DateTime.fromJSDate(date).toUTC().toISO()!;
-  }
-  return DateTime.fromISO(date).toUTC().toISO()!;
 }
 
-/**
- * Convert UTC timestamp to specific timezone
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone (e.g., 'Africa/Cairo')
- * @returns DateTime in specified timezone
- */
 export function fromUTC(utcDate: string, timezone: string): DateTime {
   return DateTime.fromISO(utcDate, { zone: 'utc' }).setZone(timezone);
 }
 
-/**
- * Format date for display in user's timezone
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone
- * @param format - Luxon format options
- * @returns Formatted date string
- */
-export function formatDate(
-  utcDate: string,
-  timezone: string,
-  format: DateTimeFormatOptions = DateTime.DATE_MED
-): string {
-  return fromUTC(utcDate, timezone).toLocaleString(format);
-}
-
-/**
- * Format time for display
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone
- * @returns Formatted time string (e.g., "10:30 AM")
- */
-export function formatTime(utcDate: string, timezone: string): string {
-  return fromUTC(utcDate, timezone).toLocaleString(DateTime.TIME_SIMPLE);
-}
-
-/**
- * Format date and time for display
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone
- * @returns Formatted date-time string
- */
-export function formatDateTime(utcDate: string, timezone: string): string {
-  return fromUTC(utcDate, timezone).toLocaleString(DateTime.DATETIME_MED);
-}
-
-/**
- * Get day of week (0-6, where 0 is Sunday)
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone
- * @returns Day of week
- */
 export function getTodayDayOfWeek(timezone: string): number {
   // Luxon uses 1-7 (Monday-Sunday), convert to 0-6 (Sunday-Saturday)
   const luxonDay = DateTime.now().setZone(timezone).weekday;
@@ -88,41 +86,57 @@ export function getTodayDayOfWeek(timezone: string): number {
 }
 
 /**
- * Check if a date is today in specified timezone
- * @param utcDate - UTC date string
+ * Format UTC Date to user timezone date and time strings
+ * @param startedAt - UTC date (string or Date object)
  * @param timezone - IANA timezone
- * @returns true if date is today
+ * @returns Object with date (YYYY-MM-DD) and time (HH:mm)
  */
-export function isToday(utcDate: string, timezone: string): boolean {
-  const date = fromUTC(utcDate, timezone);
-  const today = DateTime.now().setZone(timezone);
-  return date.hasSame(today, 'day');
-}
+export function formatSessionDateAndTime(
+  startedAt: Date | string,
+  timezone: string
+) {
+  const utcString =
+    startedAt instanceof Date ? startedAt.toISOString() : startedAt;
+  const dateTime = fromUTC(utcString, timezone);
 
-export function getStartAndEndOfDay(timezone: string, date?: DateTime) {
-  const dt = date || DateTime.now().setZone(timezone);
   return {
-    startAsDatetime: dt.startOf('day'),
-    endAsDatetime: dt.endOf('day'),
-    startAsJSDate: dt.startOf('day').toJSDate(),
-    endAsJSDate: dt.endOf('day').toJSDate()
+    date: dateTime.toFormat('yyyy-LL-dd') as ISODateOnlyString,
+    time: dateTime.toFormat('HH:mm') as TimeHHMMString
   };
 }
 
 /**
- * Get start and end of day for a specific date string
- * @param dateStr - Date string in YYYY-MM-DD format
+ * Get start and end of day in timezone
  * @param timezone - IANA timezone
- * @returns Start and end of day as JS Date objects
+ * @param date - Optional date string or DateTime (defaults to today)
+ * @returns Object with DateTime and JS Date objects for start/end of day
  */
-export function getStartAndEndOfDayForDate(
-  dateStr: string,
-  timezone: string
-): { startDate: Date; endDate: Date } {
-  const dt = DateTime.fromISO(dateStr, { zone: timezone });
+export function getStartAndEndOfDay(
+  timezone: string,
+  date?: string | DateTime
+): {
+  startAsDatetime: DateTime;
+  startAsJSDate: Date;
+  endAsDatetime: DateTime;
+  endAsJSDate: Date;
+} {
+  let dt: DateTime;
+  if (typeof date === 'string') {
+    dt = DateTime.fromISO(date, { zone: timezone });
+  } else if (date) {
+    dt = date;
+  } else {
+    dt = DateTime.now().setZone(timezone);
+  }
+
+  const startOfDay = dt.startOf('day');
+  const endOfDay = dt.endOf('day');
+
   return {
-    startDate: dt.startOf('day').toJSDate(),
-    endDate: dt.endOf('day').toJSDate()
+    startAsDatetime: startOfDay,
+    endAsDatetime: endOfDay,
+    startAsJSDate: startOfDay.toUTC().toJSDate(),
+    endAsJSDate: endOfDay.toUTC().toJSDate()
   };
 }
 
@@ -141,35 +155,4 @@ export function combineDateTime(
   const date = DateTime.fromISO(dateStr, { zone: timezone });
   const [hours, minutes] = timeStr.split(':').map(Number);
   return date.set({ hour: hours, minute: minutes }).toUTC().toISO()!;
-}
-
-/**
- * Get relative time string (e.g., "2 hours ago", "in 3 days")
- * @param utcDate - UTC date string
- * @param timezone - IANA timezone
- * @returns Relative time string
- */
-export function getRelativeTime(utcDate: string, timezone: string): string {
-  const date = fromUTC(utcDate, timezone);
-  return date.toRelative() || '';
-}
-
-/**
- * Calculate duration between two dates
- * @param startUTC - Start date in UTC
- * @param endUTC - End date in UTC
- * @returns Duration object
- */
-export function getDuration(startUTC: string, endUTC: string) {
-  const start = DateTime.fromISO(startUTC);
-  const end = DateTime.fromISO(endUTC);
-  return end.diff(start, ['hours', 'minutes']);
-}
-
-/**
- * Get browser's timezone
- * @returns IANA timezone string
- */
-export function getBrowserTimezone(): string {
-  return DateTime.local().zoneName;
 }
