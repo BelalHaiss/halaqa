@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaginationQueryType, PaginationResponseMeta } from '@halaqa/shared';
-import { PrismaClient } from 'generated/prisma/client';
+import {
+  DateRangeQueryType,
+  PaginationQueryType,
+  PaginationResponseMeta,
+} from '@halaqa/shared';
+import { Prisma, PrismaClient, User } from 'generated/prisma/client';
 import { createMariaDbAdapter } from './database.util';
 import { EnvVariables } from 'src/types/declartion-merging';
 
@@ -17,6 +21,48 @@ export class DatabaseService extends PrismaClient {
         DATABASE_PORT: configService.getOrThrow('DATABASE_PORT'),
       }),
     });
+  }
+
+  handleDateRangeFilter(
+    query: DateRangeQueryType,
+    timezone: string,
+  ): Prisma.DateTimeFilter | undefined {
+    if (!query.fromDate && !query.toDate) {
+      return undefined;
+    }
+
+    const dateRangeFilter: Prisma.DateTimeFilter = {};
+
+    if (query.fromDate) {
+      const { startDate } = this.getStartAndEndOfDayForDate(
+        query.fromDate,
+        timezone,
+      );
+      dateRangeFilter.gte = startDate;
+    }
+
+    if (query.toDate) {
+      const { endDate } = this.getStartAndEndOfDayForDate(
+        query.toDate,
+        timezone,
+      );
+      dateRangeFilter.lte = endDate;
+    }
+
+    return dateRangeFilter;
+  }
+
+  private getStartAndEndOfDayForDate(
+    dateStr: string,
+    timezone: string,
+  ): { startDate: Date; endDate: Date } {
+    // Import the shared date util function
+    const { DateTime } = require('luxon');
+    const dt = DateTime.fromISO(dateStr, { zone: timezone });
+    return {
+      startDate: dt.startOf('day').toJSDate(),
+      endDate: dt.endOf('day').toJSDate(),
+    };
   }
 
   handleQueryPagination(query: PaginationQueryType) {

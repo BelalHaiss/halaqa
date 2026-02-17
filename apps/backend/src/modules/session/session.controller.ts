@@ -1,16 +1,21 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { UserRole } from 'generated/prisma/client';
 import type {
   SessionDetailsDTO,
   SessionSummaryDTO,
   UpdateSessionActionDTO,
+  SessionQueryDTO,
+  PaginatedResult,
 } from '@halaqa/shared';
 import type { User as AuthenticatedUser } from 'generated/prisma/client';
 import { Roles } from 'src/decorators/roles.decorator';
 import { User } from 'src/decorators/user.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import { SessionService } from './session.service';
-import { updateSessionActionSchema } from './validation/session.validation';
+import {
+  updateSessionActionSchema,
+  sessionQuerySchema,
+} from './validation/session.validation';
 
 @Controller('sessions')
 @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
@@ -25,10 +30,11 @@ export class SessionController {
   }
 
   @Get('history')
-  async getSessionsHistory(
+  async querySessions(
+    @Query(new ZodValidationPipe(sessionQuerySchema)) query: SessionQueryDTO,
     @User() user: AuthenticatedUser,
-  ): Promise<SessionSummaryDTO[]> {
-    return this.sessionService.getSessionsHistory(user);
+  ): Promise<PaginatedResult<SessionSummaryDTO[]>> {
+    return this.sessionService.querySessions(query, user);
   }
 
   @Get(':id')

@@ -10,9 +10,26 @@ import type {
 import type { Prisma, User } from 'generated/prisma/client';
 import { SessionStatus, UserRole } from 'generated/prisma/client';
 
+// Virtual sessions represent planned occurrences without DB records
 const VIRTUAL_SESSION_PREFIX = 'virtual';
+// Sessions marked MISSED if not acted upon 12hrs after start
 const MISSED_THRESHOLD_HOURS = 12;
+// Missed sessions can be rescheduled within 12hrs window
 const RECENTLY_MISSED_WINDOW_HOURS = 12;
+
+/**
+ * Branded type for virtual session identifiers.
+ * Format: `virtual:${groupId}:${ISO8601_UTC_DateTime}`
+ * Example: `virtual:abc123:2024-01-15T10:30:00.000Z`
+ *
+ * @remarks
+ * - The datetime component is ALWAYS in UTC (ISO 8601 format with 'Z' suffix)
+ * - Used to identify planned session occurrences that don't have DB records yet
+ * - Can be parsed back using `parseVirtualSessionId()`
+ */
+export type VirtualSessionId = string & {
+  readonly __brand: 'VirtualSessionId';
+};
 
 type ScheduleDayLike = {
   dayOfWeek: number;
@@ -74,26 +91,46 @@ type VirtualSessionGroupLike = {
   }[];
 };
 
+/**
+ * Create virtual session ID for planned occurrences without DB record.
+ *
+ * @param groupId - The ID of the group this session belongs to
+ * @param startedAt - The session start time (will be converted to UTC ISO 8601)
+ * @returns A branded virtual session ID in format `virtual:${groupId}:${ISO8601_UTC}`
+ *
+ * @remarks
+ * - The returned datetime is ALWAYS in UTC format via `Date.toISOString()`
+ * - Use `parseVirtualSessionId()` to extract groupId and startedAt back
+ */
 export function buildVirtualSessionId(
   groupId: string,
   startedAt: Date,
-): string {
-  const payload = `${groupId}|${startedAt.toISOString()}`;
-  return `${VIRTUAL_SESSION_PREFIX}:${Buffer.from(payload).toString('base64url')}`;
+): VirtualSessionId {
+  return `${VIRTUAL_SESSION_PREFIX}:${groupId}:${startedAt.toISOString()}` as VirtualSessionId;
 }
 
-// Virtual IDs allow us to represent planned sessions that do not have a DB row yet.
+/**
+ * Parse virtual session ID back to its components.
+ *
+ * @param id - The virtual session ID to parse (or any string)
+ * @returns Parsed groupId and startedAt (as UTC Date), or null if invalid
+ *
+ * @remarks
+ * - Returns null if ID doesn't match expected format
+ * - The returned `startedAt` is a Date object created from the UTC ISO string
+ */
 export function parseVirtualSessionId(id: string) {
   if (!id.startsWith(`${VIRTUAL_SESSION_PREFIX}:`)) {
     return null;
   }
 
-  const encodedPayload = id.slice(VIRTUAL_SESSION_PREFIX.length + 1);
-  const decodedPayload = Buffer.from(encodedPayload, 'base64url').toString(
-    'utf-8',
-  );
-  const [groupId, startedAtRaw] = decodedPayload.split('|');
-  const startedAt = new Date(startedAtRaw);
+  const parts = id.split(':');
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const groupId = parts[1];
+  const startedAt = new Date(parts[2]);
 
   if (!groupId || Number.isNaN(startedAt.getTime())) {
     return null;
@@ -102,6 +139,11 @@ export function parseVirtualSessionId(id: string) {
   return { groupId, startedAt };
 }
 
+// ============================================================================
+// Status Resolution
+// ============================================================================
+
+/** Determine session status based on record and time */
 export function resolveSessionStatus(args: {
   startedAt: Date;
   sessionRecord?: SessionRecordLike | null;
@@ -118,6 +160,7 @@ export function resolveSessionStatus(args: {
   return nowUtc.toMillis() >= missedAfter.toMillis() ? 'MISSED' : 'SCHEDULED';
 }
 
+/** Check if missed session can still be rescheduled (within 12hr window) */
 export function canSessionBeRescheduled(args: {
   sessionRecord?: SessionRecordLike | null;
   nowUtcIso?: string;
@@ -143,6 +186,11 @@ export function canSessionBeRescheduled(args: {
   );
 }
 
+// ============================================================================
+// Date/Time Formatting
+// ============================================================================
+
+/** Format UTC Date to user timezone date and time strings */
 export function formatSessionDateAndTime(startedAt: Date, timezone: string) {
   const dateTime = fromUTC(startedAt.toISOString(), timezone);
 
@@ -152,6 +200,11 @@ export function formatSessionDateAndTime(startedAt: Date, timezone: string) {
   };
 }
 
+// ============================================================================
+// Session Mapping (DTO Converters)
+// ============================================================================
+
+/** Map session to summary DTO for list views */
 export function mapSessionSummary(args: {
   groupId: string;
   groupName: string;
@@ -182,6 +235,7 @@ export function mapSessionSummary(args: {
   };
 }
 
+/** Map session record to detailed DTO */
 export function mapSessionDetails(args: {
   sessionRecord: SessionDetailsRecordLike;
   userTimezone: string;
@@ -229,6 +283,7 @@ export function mapSessionDetails(args: {
   };
 }
 
+/** Map virtual (planned) session to detailed DTO */
 export function mapVirtualSessionDetails(args: {
   sessionId: string;
   group: VirtualSessionGroupLike;
@@ -267,6 +322,11 @@ export function mapVirtualSessionDetails(args: {
   };
 }
 
+// ============================================================================
+// Planned Occurrence Helpers
+// ============================================================================
+
+/** Build planned session start time for a specific day */
 export function buildPlannedStartedAtForDay(
   dayStartUtcIso: string,
   groupTimezone: string,
@@ -279,7 +339,7 @@ export function buildPlannedStartedAtForDay(
     .toJSDate();
 }
 
-// Grouping once avoids repeated O(n) scans when mapping sessions by group.
+/** Group session records by groupId for efficient lookups */
 export function groupSessionRecordsByGroup<T extends { groupId: string }>(
   sessionRecords: T[],
 ): Map<string, T[]> {
@@ -297,25 +357,11 @@ export function groupSessionRecordsByGroup<T extends { groupId: string }>(
   return grouped;
 }
 
-export function findSessionRecordForOccurrence<
-  T extends { startedAt: Date; originalStartedAt?: Date | null },
->(sessionRecords: T[], occurrenceStartedAt: Date): T | undefined {
-  const occurrenceMillis = occurrenceStartedAt.getTime();
+// ============================================================================
+// Occurrence Tracking (for Missed Session Detection)
+// ============================================================================
 
-  return (
-    sessionRecords.find(
-      (record) => record.originalStartedAt?.getTime() === occurrenceMillis,
-    ) ??
-    sessionRecords.find(
-      (record) => record.startedAt.getTime() === occurrenceMillis,
-    )
-  );
-}
-
-export function getOccurrenceKey(groupId: string, startedAt: Date): string {
-  return `${groupId}|${startedAt.toISOString()}`;
-}
-
+/** Collect all occurrence keys from session records */
 export function collectOccurrenceKeys(
   sessionRecords: {
     groupId: string;
@@ -326,32 +372,33 @@ export function collectOccurrenceKeys(
   const keys = new Set<string>();
 
   for (const sessionRecord of sessionRecords) {
-    keys.add(getOccurrenceKey(sessionRecord.groupId, sessionRecord.startedAt));
+    const key = `${sessionRecord.groupId}|${sessionRecord.startedAt.toISOString()}`;
+    keys.add(key);
 
     if (sessionRecord.originalStartedAt) {
-      keys.add(
-        getOccurrenceKey(
-          sessionRecord.groupId,
-          sessionRecord.originalStartedAt,
-        ),
-      );
+      const originalKey = `${sessionRecord.groupId}|${sessionRecord.originalStartedAt.toISOString()}`;
+      keys.add(originalKey);
     }
   }
 
   return keys;
 }
 
+/** Filter out occurrences that already have session records */
 export function filterMissingOccurrences<
   T extends { groupId: string; startedAt: Date },
 >(plannedOccurrences: T[], existingKeys: Set<string>): T[] {
-  return plannedOccurrences.filter(
-    (occurrence) =>
-      !existingKeys.has(
-        getOccurrenceKey(occurrence.groupId, occurrence.startedAt),
-      ),
-  );
+  return plannedOccurrences.filter((occurrence) => {
+    const key = `${occurrence.groupId}|${occurrence.startedAt.toISOString()}`;
+    return !existingKeys.has(key);
+  });
 }
 
+// ============================================================================
+// Query Builders
+// ============================================================================
+
+/** Build Prisma where clause for group scope based on user role and day */
 export function buildGroupScopeWhere(
   user: Pick<User, 'id' | 'role'>,
   dayOfWeek: number,
@@ -374,29 +421,11 @@ export function buildGroupScopeWhere(
   return where;
 }
 
-export function occurrenceMatchesGroupSchedule(
-  occurrenceStartedAt: Date,
-  groupTimezone: string,
-  scheduleDays: ScheduleDayLike[],
-): boolean {
-  const occurrenceInGroupTimezone = fromUTC(
-    occurrenceStartedAt.toISOString(),
-    groupTimezone,
-  );
-  const occurrenceDayOfWeek =
-    occurrenceInGroupTimezone.weekday === 7
-      ? 0
-      : occurrenceInGroupTimezone.weekday;
-  const occurrenceStartMinutes =
-    occurrenceInGroupTimezone.hour * 60 + occurrenceInGroupTimezone.minute;
+// ============================================================================
+// Validation Helpers
+// ============================================================================
 
-  return scheduleDays.some(
-    (scheduleDay) =>
-      scheduleDay.dayOfWeek === occurrenceDayOfWeek &&
-      scheduleDay.startMinutes === occurrenceStartMinutes,
-  );
-}
-
+/** Find first student ID in attendance that doesn't belong to group */
 export function findInvalidAttendanceStudentId(
   attendance: UpdateSessionActionDTO['attendance'],
   groupStudentIds: Set<string>,
@@ -410,6 +439,7 @@ export function findInvalidAttendanceStudentId(
   return null;
 }
 
+/** Check if originalStartedAt should be set when recording attendance early */
 export function shouldSetOriginalStartedAtForAttendance(args: {
   nowUtcMillis: number;
   startedAt: Date;
@@ -420,6 +450,11 @@ export function shouldSetOriginalStartedAtForAttendance(args: {
   );
 }
 
+// ============================================================================
+// Occurrence Generation (for Cron/Missed Sessions)
+// ============================================================================
+
+/** Generate all planned session occurrences for a group within date range */
 export function generatePlannedOccurrencesForRange(
   group: GroupScheduleLike,
   rangeStartUtcIso: string,

@@ -60,6 +60,10 @@ export type PaginationQueryType = {
   limit?: number;
 };
 
+export type DateRangeQueryType = {
+  fromDate?: string;
+  toDate?: string;
+};
 export type PaginationResponseMeta = {
   meta: {
     total: number;

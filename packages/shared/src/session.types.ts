@@ -1,89 +1,51 @@
-// ============================================================================
-// DTOs (Public Types)
-// ============================================================================
-
 import { AttendanceStatus } from './attendance.types';
 import {
   ISODateOnlyString,
   ISODateString,
   TimeHHMMString,
+  PaginationQueryType,
+  DateRangeQueryType
 } from './types/api.types';
 
-export type SessionStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELED';
-
-export interface Session {
-  id: string;
-  groupId: string;
-  date: ISODateOnlyString; // Calendar date in YYYY-MM-DD
-  time: TimeHHMMString; // 24-hour time in HH:mm
-  status: SessionStatus;
-  notes?: string;
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
-}
-
-export interface CreateSessionDto {
-  groupId: string;
-  date: ISODateOnlyString; // Calendar date in YYYY-MM-DD
-  time: TimeHHMMString; // 24-hour time in HH:mm
-  notes?: string;
-}
-
-export interface UpdateSessionDto {
-  id: string;
-  date?: ISODateOnlyString;
-  time?: TimeHHMMString;
-  status?: SessionStatus;
-  notes?: string;
-}
-
-export interface SessionFilterDto {
-  groupId?: string;
-  status?: SessionStatus;
-  dateFrom?: string;
-  dateTo?: string;
-}
-
 // ============================================================================
-// Session Calendar / Attendance Flow DTOs
+// Session Status Types
 // ============================================================================
 
+/** Status stored in database for session records */
 export type SessionRecordStatus =
   | 'RESCHEDULED'
   | 'COMPLETED'
   | 'CANCELED'
   | 'MISSED';
 
+/** Computed status including virtual 'SCHEDULED' for planned sessions */
 export type SessionComputedStatus = SessionRecordStatus | 'SCHEDULED';
 
+// ============================================================================
+// Session DTOs
+// ============================================================================
+
+/** Summary view for session lists (today/history) */
 export interface SessionSummaryDTO {
   id: string;
   groupName: string;
   tutorName: string;
-  date: ISODateOnlyString; // Calendar date in YYYY-MM-DD
-  time: TimeHHMMString; // 24-hour time in HH:mm
+  date: ISODateOnlyString;
+  time: TimeHHMMString;
   sessionStatus: SessionComputedStatus;
 }
 
+/** Detailed view for single session with attendance */
 export interface SessionDetailsDTO {
   id: string;
-  groupInfo: {
-    id: string;
-    name: string;
-  };
-  tutorInfo: {
-    id: string;
-    name: string;
-  };
+  groupInfo: { id: string; name: string };
+  tutorInfo: { id: string; name: string };
   status: SessionComputedStatus;
   canBeRescheduled: boolean;
-  date: ISODateOnlyString; // Calendar date in YYYY-MM-DD
-  time: TimeHHMMString; // 24-hour time in HH:mm
+  date: ISODateOnlyString;
+  time: TimeHHMMString;
   originalStartedAt: ISODateString | null;
-  students: {
-    id: string;
-    name: string;
-  }[];
+  students: { id: string; name: string }[];
   attendance: {
     studentId: string;
     studentName: string;
@@ -91,6 +53,20 @@ export interface SessionDetailsDTO {
     notes?: string;
   }[];
 }
+
+// ============================================================================
+// Session Query DTOs
+// ============================================================================
+
+export type SessionQueryDTO = PaginationQueryType &
+  DateRangeQueryType & {
+    status?: SessionRecordStatus;
+    groupId?: string;
+  };
+
+// ============================================================================
+// Session Update DTOs
+// ============================================================================
 
 export type UpdateSessionActionType = 'CANCEL' | 'RESCHEDULE' | 'ATTENDANCE';
 

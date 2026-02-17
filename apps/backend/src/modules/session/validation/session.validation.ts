@@ -3,6 +3,7 @@ import type {
   ISODateOnlyString,
   TimeHHMMString,
   UpdateSessionActionDTO,
+  SessionQueryDTO,
 } from '@halaqa/shared';
 import z, { ZodType } from 'zod';
 
@@ -36,3 +37,12 @@ export const updateSessionActionSchema = z.discriminatedUnion('action', [
     attendance: z.array(attendanceItemSchema).min(1),
   }),
 ]) satisfies ZodType<UpdateSessionActionDTO>;
+
+export const sessionQuerySchema = z.object({
+  page: z.coerce.number().positive().optional(),
+  limit: z.coerce.number().positive().max(100).optional(),
+  fromDate: z.string().regex(DATE_ONLY_FORMAT_REGEX).optional(),
+  toDate: z.string().regex(DATE_ONLY_FORMAT_REGEX).optional(),
+  status: z.enum(['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED']).optional(),
+  groupId: z.string().optional(),
+}) satisfies ZodType<SessionQueryDTO>;

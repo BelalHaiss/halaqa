@@ -99,26 +99,31 @@ export function isToday(utcDate: string, timezone: string): boolean {
   return date.hasSame(today, 'day');
 }
 
-/**
- * Get start of day in timezone (as UTC)
- * @param timezone - IANA timezone
- * @param date - Optional date (defaults to today)
- * @returns UTC ISO string for start of day
- */
-export function getStartOfDay(timezone: string, date?: DateTime): string {
+export function getStartAndEndOfDay(timezone: string, date?: DateTime) {
   const dt = date || DateTime.now().setZone(timezone);
-  return dt.startOf('day').toUTC().toISO()!;
+  return {
+    startAsDatetime: dt.startOf('day'),
+    endAsDatetime: dt.endOf('day'),
+    startAsJSDate: dt.startOf('day').toJSDate(),
+    endAsJSDate: dt.endOf('day').toJSDate()
+  };
 }
 
 /**
- * Get end of day in timezone (as UTC)
+ * Get start and end of day for a specific date string
+ * @param dateStr - Date string in YYYY-MM-DD format
  * @param timezone - IANA timezone
- * @param date - Optional date (defaults to today)
- * @returns UTC ISO string for end of day
+ * @returns Start and end of day as JS Date objects
  */
-export function getEndOfDay(timezone: string, date?: DateTime): string {
-  const dt = date || DateTime.now().setZone(timezone);
-  return dt.endOf('day').toUTC().toISO()!;
+export function getStartAndEndOfDayForDate(
+  dateStr: string,
+  timezone: string
+): { startDate: Date; endDate: Date } {
+  const dt = DateTime.fromISO(dateStr, { zone: timezone });
+  return {
+    startDate: dt.startOf('day').toJSDate(),
+    endDate: dt.endOf('day').toJSDate()
+  };
 }
 
 /**
