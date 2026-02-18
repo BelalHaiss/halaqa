@@ -1,18 +1,26 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Loader2, Plus, Users } from 'lucide-react';
-import { startMinutesToTime } from '@halaqa/shared';
-import { useApp } from '@/contexts/AppContext';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/page-header';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { Typography } from '@/components/ui/typography';
-import { dayNames } from '../constants';
-import { StatsCountCard } from '../components/StatsCountCard';
-import { GroupFormModal } from '../components/GroupFormModal';
-import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { BookOpen, GraduationCap, Loader2, Plus, Users } from "lucide-react";
+import { startMinutesToTime, GroupSummaryDto } from "@halaqa/shared";
+import { useApp } from "@/contexts/AppContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Typography } from "@/components/ui/typography";
+import { dayNames, STATUS_LABELS, STATUS_ORDER } from "../constants";
+import { StatsCountCard } from "../components/StatsCountCard";
+import { GroupFormModal } from "../components/GroupFormModal";
+import { useGroupsViewModel } from "../viewmodels/groups.viewmodel";
+
+const groupsByStatus = (groups: GroupSummaryDto[]) => {
+  return STATUS_ORDER.map((status) => ({
+    status,
+    label: STATUS_LABELS[status],
+    groups: groups.filter((g) => g.status === status),
+  }));
+};
 
 export const GroupsView = () => {
   const { user } = useApp();
@@ -26,153 +34,175 @@ export const GroupsView = () => {
 
   if (vm.isLoadingGroups) {
     return (
-      <div className='flex items-center justify-center h-64'>
-        <Loader2 className='w-8 h-8 animate-spin text-primary' />
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (vm.groupsError) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert variant="soft" color="danger">
         <AlertDescription>{vm.groupsError}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div className='space-y-6'>
-      <section className='space-y-3 rounded-2xl border border-primary/20 bg-linear-to-l from-primary/5 via-background to-success/5 p-4'>
-        <div className='flex items-center justify-between'>
-          <Typography as='h2' size='lg' weight='semibold'>
+    <div className="space-y-6">
+      <section className="space-y-3 rounded-2xl border border-primary/20 bg-linear-to-l from-primary/5 via-background to-success/5 p-4">
+        <div className="flex items-center justify-between">
+          <Typography as="h2" size="lg" weight="semibold">
             ملخص الحلقات
           </Typography>
-          <Typography as='div' size='xs' variant='ghost' color='muted'>
+          <Typography as="div" size="xs" variant="ghost" color="muted">
             إحصائيات مباشرة عن المتعلمين والحلقات
           </Typography>
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatsCountCard
             icon={GraduationCap}
-            data={{ count: vm.learnersCount, title: 'إجمالي المتعلمين' }}
+            data={{ count: vm.learnersCount, title: "إجمالي المتعلمين" }}
             isLoading={vm.isLoadingLearnersCount}
-            variant='soft'
-            color='primary'
+            variant="soft"
+            color="primary"
           />
-          {user.role !== 'TUTOR' ? (
+          {user.role !== "TUTOR" ? (
             <StatsCountCard
               icon={Users}
-              data={{ count: vm.tutorsCount, title: 'إجمالي معلمي القرآن' }}
+              data={{ count: vm.tutorsCount, title: "إجمالي معلمي القرآن" }}
               isLoading={vm.isLoadingTutorsCount}
-              variant='soft'
-              color='success'
+              variant="soft"
+              color="success"
             />
           ) : null}
           <StatsCountCard
             icon={BookOpen}
-            data={{ count: vm.groupsCount, title: 'إجمالي الحلقات' }}
+            data={{ count: vm.groupsCount, title: "إجمالي الحلقات" }}
             isLoading={vm.isLoadingGroupsCount}
-            variant='outline'
-            color='muted'
+            variant="outline"
+            color="muted"
           />
         </div>
       </section>
       <PageHeader
-        title='الحلقات'
-        description='إدارة حلقات تحفيظ القرآن'
+        title="الحلقات"
+        description="إدارة حلقات تحفيظ القرآن"
         actions={
           vm.canManageGroups ? (
             <Button
               onClick={() => setIsCreateModalOpen(true)}
-              className='gap-2'
+              className="gap-2"
             >
-              <Plus className='w-4 h-4' />
+              <Plus className="w-4 h-4" />
               إضافة حلقة
             </Button>
           ) : null
         }
       />
 
-      <div className='h-px bg-border' />
+      <div className="h-px bg-border" />
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        {vm.groups.map((group) => {
-          const scheduleDays = group.scheduleDays
-            .map((scheduleDay) => dayNames[scheduleDay.dayOfWeek])
-            .join(' - ');
+      {groupsByStatus(vm.groups).map(({ status, label, groups }) => (
+        <section key={status} className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Typography as="h2" size="lg" weight="semibold">
+              {label}
+            </Typography>
+            <Typography as="span" size="sm" variant="ghost" color="muted">
+              ({groups.length})
+            </Typography>
+          </div>
 
-          return (
-            <Link
-              key={group.id}
-              to={`/groups/${group.id}`}
-              className='block transition-shadow hover:shadow-md'
-            >
-              <Card>
-                <CardContent className='p-4 space-y-3'>
-                  <div className='flex items-start justify-between'>
-                    <div className='bg-primary/10 p-2 rounded-lg'>
-                      <Users className='w-5 h-5 text-primary' />
-                    </div>
-                    <StatusBadge status={group.status} />
-                  </div>
+          {groups.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {groups.map((group) => {
+                const scheduleDays = group.scheduleDays
+                  .map((scheduleDay) => dayNames[scheduleDay.dayOfWeek])
+                  .join(" - ");
 
-                  <Typography as='h3' size='lg' weight='semibold'>
-                    {group.name}
-                  </Typography>
+                return (
+                  <Link
+                    key={group.id}
+                    to={`/groups/${group.id}`}
+                    className="block transition-shadow hover:shadow-md"
+                  >
+                    <Card>
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="bg-primary/10 p-2 rounded-lg">
+                            <Users className="w-5 h-5 text-primary" />
+                          </div>
+                          <StatusBadge status={group.status} />
+                        </div>
 
-                  <div className='space-y-1.5'>
-                    <div className='flex items-center justify-between'>
-                      <Typography
-                        as='div'
-                        size='xs'
-                        variant='ghost'
-                        color='muted'
-                      >
-                        عدد الطلاب
-                      </Typography>
-                      <Typography as='div' size='xs' weight='medium'>
-                        {group.studentsCount}
-                      </Typography>
-                    </div>
-                    <div className='flex items-center justify-between'>
-                      <Typography
-                        as='div'
-                        size='xs'
-                        variant='ghost'
-                        color='muted'
-                      >
-                        الوقت
-                      </Typography>
-                      <Typography as='div' size='xs' weight='medium'>
-                        {group.scheduleDays[0]
-                          ? startMinutesToTime(
-                              group.scheduleDays[0].startMinutes
-                            )
-                          : 'غير محدد'}
-                      </Typography>
-                    </div>
-                    <div className='pt-1.5 border-t border-border'>
-                      <Typography
-                        as='div'
-                        size='xs'
-                        variant='ghost'
-                        color='muted'
-                      >
-                        {scheduleDays || 'لا توجد أيام محددة'}
-                      </Typography>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                        <Typography as="h3" size="lg" weight="semibold">
+                          {group.name}
+                        </Typography>
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Typography
+                              as="div"
+                              size="xs"
+                              variant="ghost"
+                              color="muted"
+                            >
+                              عدد الطلاب
+                            </Typography>
+                            <Typography as="div" size="xs" weight="medium">
+                              {group.studentsCount}
+                            </Typography>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <Typography
+                              as="div"
+                              size="xs"
+                              variant="ghost"
+                              color="muted"
+                            >
+                              الوقت
+                            </Typography>
+                            <Typography as="div" size="xs" weight="medium">
+                              {group.scheduleDays[0]
+                                ? startMinutesToTime(
+                                    group.scheduleDays[0].startMinutes,
+                                  )
+                                : "غير محدد"}
+                            </Typography>
+                          </div>
+                          <div className="pt-1.5 border-t border-border">
+                            <Typography
+                              as="div"
+                              size="xs"
+                              variant="ghost"
+                              color="muted"
+                            >
+                              {scheduleDays || "لا توجد أيام محددة"}
+                            </Typography>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8 rounded-lg border border-dashed border-border">
+              <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
+              <Typography as="div" size="sm" variant="ghost" color="muted">
+                لا توجد حلقات {label}
+              </Typography>
+            </div>
+          )}
+        </section>
+      ))}
 
       {vm.groups.length === 0 ? (
-        <div className='text-center py-12'>
-          <Users className='w-12 h-12 mx-auto mb-3 opacity-50' />
-          <Typography as='div' size='sm' variant='ghost' color='muted'>
+        <div className="text-center py-12">
+          <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <Typography as="div" size="sm" variant="ghost" color="muted">
             لا توجد حلقات
           </Typography>
         </div>
@@ -181,7 +211,7 @@ export const GroupsView = () => {
       <GroupFormModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        mode='create'
+        mode="create"
         tutors={vm.tutors}
         isLoading={vm.isCreatingGroup || vm.isLoadingTutors}
         onSubmit={vm.createGroup}
