@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaginationQueryType, PaginationResponseMeta } from '@halaqa/shared';
-import { PrismaClient } from 'generated/prisma/client';
+import {
+  DateRangeQueryType,
+  PaginationQueryType,
+  PaginationResponseMeta,
+  getStartAndEndOfDay,
+} from '@halaqa/shared';
+import { Prisma, PrismaClient } from 'generated/prisma/client';
 import { createMariaDbAdapter } from './database.util';
 import { EnvVariables } from 'src/types/declartion-merging';
 
@@ -17,6 +22,29 @@ export class DatabaseService extends PrismaClient {
         DATABASE_PORT: configService.getOrThrow('DATABASE_PORT'),
       }),
     });
+  }
+
+  handleDateRangeFilter(
+    query: DateRangeQueryType,
+    timezone: string,
+  ): Prisma.DateTimeFilter | undefined {
+    if (!query.fromDate && !query.toDate) {
+      return undefined;
+    }
+
+    const dateRangeFilter: Prisma.DateTimeFilter = {};
+
+    if (query.fromDate) {
+      const { startAsJSDate } = getStartAndEndOfDay(timezone, query.fromDate);
+      dateRangeFilter.gte = startAsJSDate;
+    }
+
+    if (query.toDate) {
+      const { endAsJSDate } = getStartAndEndOfDay(timezone, query.toDate);
+      dateRangeFilter.lte = endAsJSDate;
+    }
+
+    return dateRangeFilter;
   }
 
   handleQueryPagination(query: PaginationQueryType) {

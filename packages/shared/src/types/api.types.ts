@@ -61,6 +61,10 @@ export type PaginationQueryType = {
   limit?: number;
 };
 
+export type DateRangeQueryType = {
+  fromDate?: string;
+  toDate?: string;
+};
 export type PaginationResponseMeta = {
   meta: {
     total: number;
@@ -88,7 +92,17 @@ export interface LoadingState {
   error?: string;
 }
 
+// Calendar date in ISO-like format, e.g. "2026-02-15" (YYYY-MM-DD).
+export type ISODateOnlyString = string & { __isoDateOnlyBrand: true };
+
+// 24-hour time string, e.g. "08:30" (HH:mm).
+export type TimeHHMMString = string & { __timeHHMMBrand: true };
+
+// normalize date strings to Date objects in DTOs for better type safety and easier date manipulation in the application. This utility type recursively transforms all ISODateString fields in a given type T into Date objects, while preserving the structure of the original type.
 export type ISODateString = string & { __isoDateBrand: true };
+
+export type DayOfWeek = number; // 0 = Sunday, 6 = Saturday
+export type MinutesFromMidnight = number; // minutes from midnight in group timezone
 
 type ToDate<T> = T extends ISODateString
   ? Date

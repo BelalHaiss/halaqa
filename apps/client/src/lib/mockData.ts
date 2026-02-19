@@ -1,5 +1,4 @@
 import {
-  buildSessionStartedAtUTC,
   DEFAULT_TIMEZONE,
   formatDate,
   getNowAsUTC,
@@ -385,10 +384,9 @@ export const generateSessions = (): Session[] => {
       );
       if (group.schedule.days.includes(dayOfWeek)) {
         const isoDate = formatDate(dayUTC, `ISO_DATE:${group.timezone}`);
-        const startedAt = buildSessionStartedAtUTC(
-          isoDate,
-          group.timezone,
-          group.schedule.startMinutes
+        const startedAt = formatDate(
+          `${isoDate}T${group.schedule.startMinutes / 60}:${group.schedule.startMinutes % 60}:00`,
+          `ISO_UTC:${group.timezone}`
         );
 
         const status: Session['status'] =

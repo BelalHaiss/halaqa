@@ -2,11 +2,13 @@
 // DTOs (Public Types)
 // ============================================================================
 
+import { DayOfWeek, MinutesFromMidnight } from './types/api.types';
+
 export type GroupStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
 
 export interface GroupScheduleDay {
-  dayOfWeek: number; // 0 = Sunday, 6 = Saturday
-  startMinutes: number; // minutes from midnight in group timezone
+  dayOfWeek: DayOfWeek;
+  startMinutes: MinutesFromMidnight;
   durationMinutes: number;
 }
 

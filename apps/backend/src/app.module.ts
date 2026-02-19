@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { RolesGuard } from './modules/auth/roles.guard';
+import { SessionModule } from './modules/session/session.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
     DatabaseModule,
     AuthModule,
     UserModule,
+    SessionModule,
     GroupModule,
     OrchestratorModule,
   ],

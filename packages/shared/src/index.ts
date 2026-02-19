@@ -8,5 +8,6 @@ export * from './attendance.types';
 
 // Export utilities
 export * from './utils/date.util';
+export * from './utils/date.constants';
 export * from './utils/object.util';
 export * from './utils/timezones.util';

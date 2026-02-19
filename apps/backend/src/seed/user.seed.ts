@@ -3,7 +3,10 @@ import { faker } from '@faker-js/faker';
 import argon from 'argon2';
 
 export const seededUserData = async () => {
-  const user: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'timezone'> = {
+  const user: Omit<
+    User,
+    'id' | 'createdAt' | 'updatedAt' | 'timezone' | 'notes'
+  > = {
     name: faker.person.fullName(),
     role: faker.helpers.arrayElement([
       'ADMIN',
@@ -13,18 +16,19 @@ export const seededUserData = async () => {
     ]),
     password: await argon.hash(faker.internet.password()),
     username: faker.internet.username(),
-    notes: null,
   };
   return user;
 };
 
 export const seededAdminData = async () => {
-  const user: Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'timezone'> = {
+  const user: Omit<
+    User,
+    'id' | 'createdAt' | 'updatedAt' | 'timezone' | 'notes'
+  > = {
     name: faker.person.fullName(),
     role: 'ADMIN',
     password: await argon.hash('12345678'),
     username: 'admin',
-    notes: null,
   };
   return user;
 };
