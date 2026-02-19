@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { groups, students, generateSessions, dayNames } from '@/lib/mockData';
+import { formatDate } from '@halaqa/shared';
 import { ArrowRight, Save, CheckCircle2, User as UserIcon } from 'lucide-react';
 import StudentProfile from '@/components/StudentProfile';
 import {
@@ -52,9 +53,10 @@ export default function AttendanceView() {
     );
   }
 
-  const sessionDate = new Date(session.date);
-  const dayName = dayNames[sessionDate.getDay()];
-  const dateStr = sessionDate.toLocaleDateString('ar-SA');
+  const dayName = dayNames[
+    Number(formatDate(session.startedAt, `WEEKDAY_INDEX:${group.timezone}`))
+  ];
+  const dateStr = formatDate(session.startedAt, `ISO_DATE:${group.timezone}`);
 
   const handleStatusChange = (studentId: string, status: string) => {
     setAttendance((prev) => ({
@@ -132,7 +134,7 @@ export default function AttendanceView() {
             <div>
               <span className='text-gray-600 dark:text-gray-400'>الوقت: </span>
               <span className='text-gray-800 dark:text-gray-100'>
-                {session.time}
+                {formatDate(session.startedAt, `TIME_SIMPLE:${group.timezone}`)}
               </span>
             </div>
             <div>

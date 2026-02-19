@@ -64,6 +64,15 @@ export const queryKeys = {
     detail: (id: string) => [...queryKeys.users.details(), id] as const
   },
 
+  // Learners queries
+  learners: {
+    all: ['learners'] as const,
+    lists: () => [...queryKeys.learners.all, 'list'] as const,
+    list: (query?: unknown) => [...queryKeys.learners.lists(), query] as const,
+    details: () => [...queryKeys.learners.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.learners.details(), id] as const
+  },
+
   // Attendance queries
   attendance: {
     all: ['attendance'] as const,
@@ -77,5 +86,18 @@ export const queryKeys = {
     all: ['reports'] as const,
     lists: () => [...queryKeys.reports.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.reports.lists(), query] as const
+  },
+
+  // Dashboard queries
+  dashboard: {
+    all: ['dashboard'] as const,
+    stats: (userId: string, role: string) =>
+      [...queryKeys.dashboard.all, 'stats', userId, role] as const
+  },
+
+  // Profile queries
+  profile: {
+    all: ['profile'] as const,
+    me: () => [...queryKeys.profile.all, 'me'] as const
   }
 } as const;

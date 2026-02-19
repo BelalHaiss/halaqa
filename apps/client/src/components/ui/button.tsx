@@ -3,7 +3,10 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
-import type { InteractiveColor, InteractiveVariant } from '@/components/ui/interactive-variants';
+import type {
+  InteractiveColor,
+  InteractiveVariant
+} from '@/components/ui/interactive-variants';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border border-transparent text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-danger/20 dark:aria-invalid:ring-danger/40 aria-invalid:border-danger',
@@ -30,32 +33,28 @@ const buttonVariants = cva(
         'icon-xs': 'size-6 rounded-md [&_svg:not([class*="size-"])]:size-3',
         'icon-sm': 'size-8',
         'icon-lg': 'size-10'
-      },
+      }
     },
     compoundVariants: [
       {
         variant: 'solid',
         color: 'primary',
-        className:
-          'bg-primary text-primary-foreground hover:bg-primary/90'
+        className: 'bg-primary text-primary-foreground hover:bg-primary/90'
       },
       {
         variant: 'solid',
         color: 'success',
-        className:
-          'bg-success text-success-foreground hover:bg-success/90'
+        className: 'bg-success text-success-foreground hover:bg-success/90'
       },
       {
         variant: 'solid',
         color: 'danger',
-        className:
-          'bg-danger text-danger-foreground hover:bg-danger/90'
+        className: 'bg-danger text-danger-foreground hover:bg-danger/90'
       },
       {
         variant: 'solid',
         color: 'muted',
-        className:
-          'bg-muted text-foreground hover:bg-muted/80'
+        className: 'bg-muted text-foreground hover:bg-muted/80'
       },
 
       {
@@ -86,60 +85,52 @@ const buttonVariants = cva(
       {
         variant: 'ghost',
         color: 'primary',
-        className:
-          'text-primary hover:bg-primary/10'
+        className: 'text-primary hover:bg-primary/10'
       },
       {
         variant: 'ghost',
         color: 'success',
-        className:
-          'text-success hover:bg-success/10'
+        className: 'text-success hover:bg-success/10'
       },
       {
         variant: 'ghost',
         color: 'danger',
-        className:
-          'text-danger hover:bg-danger/10'
+        className: 'text-danger hover:bg-danger/10'
       },
       {
         variant: 'ghost',
         color: 'muted',
-        className:
-          'text-foreground hover:bg-accent'
+        className: 'text-foreground hover:bg-accent'
       },
 
       {
         variant: 'soft',
         color: 'primary',
-        className:
-          'bg-primary/10 text-primary hover:bg-primary/15'
+        className: 'bg-primary/10 text-primary hover:bg-primary/15'
       },
       {
         variant: 'soft',
         color: 'success',
-        className:
-          'bg-success/10 text-success hover:bg-success/15'
+        className: 'bg-success/10 text-success hover:bg-success/15'
       },
       {
         variant: 'soft',
         color: 'danger',
-        className:
-          'bg-danger/10 text-danger hover:bg-danger/15'
+        className: 'bg-danger/10 text-danger hover:bg-danger/15'
       },
       {
         variant: 'soft',
         color: 'muted',
-        className:
-          'bg-muted text-muted-foreground hover:bg-muted/80'
+        className: 'bg-muted text-muted-foreground hover:bg-muted/80'
       }
     ],
     defaultVariants: {
       variant: 'solid',
       color: 'primary',
-      size: 'default',
-    },
+      size: 'default'
+    }
   }
-)
+);
 
 function Button({
   className,
@@ -150,7 +141,7 @@ function Button({
   ...props
 }: React.ComponentProps<'button'> &
   VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
+    asChild?: boolean;
   }) {
   const Comp = asChild ? Slot : 'button';
 
@@ -163,7 +154,13 @@ function Button({
       className={cn(buttonVariants({ variant, color, size, className }))}
       {...props}
     />
-  )
+  );
 }
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };
+
+export type ButtonVariants = VariantProps<typeof buttonVariants>['variant'];
+export type ButtonColors = NonNullable<
+  VariantProps<typeof buttonVariants>['color']
+>;
+export type ButtonSizes = VariantProps<typeof buttonVariants>['size'];

@@ -27,7 +27,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Modules live in `src/modules/*`
 - No cross-module imports
 - Shared UI → `src/components/ui`
-- Types → `@ionsite/shared` or module-local
+- Types → `@halaqa/shared` or module-local
 
 ---
 
@@ -42,9 +42,9 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## 📋 Forms
 
-- react-hook-form for all forms
+- you must use react-hook-form for any forms small or large
 - Use `FormField` for dynamic fields
-- Lives in `src/components/ui/form-field.tsx`
+- Lives in `src/components/forms/form-field.tsx`
 
 ---
 
@@ -107,6 +107,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 - All mutations require `ConfirmDialog` Component
 - No execution without confirmation
+- after mutation fire `toast` with success or error message
 
 ## ⚠️ Forbidden Practices
 
@@ -116,12 +117,15 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## 🔧 Backend
 
-- Nest CLI modules if exist or create with `nest g res modules/[name] --no-spec`
+- always use existing modules if exist or create with Nest CLI `nest g res modules/[name] --no-spec`
 - Shared DTOs only
 - `DatesAsObjects` backend-only
 - Zod schema must satisfy shared DTOs
 - we have 2 global guards applied AuthGuard, RolesGuard but we have decorators for customization them
 - we have zod-validation pipe for any DTO or Query and it should only applied Route parameter not route handler
+- we have user decorator that extract user info from request and attach it to request object use it in your controllers don't add any custom logic
+- must use prisma transactions for multi-step operations or operations that modify multiple tables
+- Use an Orchestrator module for multi-domain workflows, and wrap all related writes in a single Prisma transaction for atomicity
 
 ---
 
@@ -154,3 +158,4 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Schedule Definition → Store session time as startMinutes (minutes from midnight in Group.timezone) and convert to UTC only when creating the actual DateTime
 - User Timezone (Display Layer) → Convert stored UTC DateTime to User.timezone only for UI display.
 - in shared app we have date.util that has luxon helper method for working with date use it or edit it if needed don't add any date package or helper in client or backend app only this date.util should handle all date manipulation and conversion logic in the project.
+- for Timezones we have timezone.util in shared app that has helper everything for working with timezones use it or edit it required

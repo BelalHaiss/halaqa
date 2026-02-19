@@ -8,7 +8,17 @@ import {
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { isDevelopment } from 'src/utils/util';
-import { ApiErrorResponse } from '@halaqa/shared';
+import { getNowAsUTC } from '@halaqa/shared';
+
+// Error response type for exception handling
+type ApiErrorResponse = {
+  success: false;
+  message: string;
+  timestamp: string;
+  statusCode: HttpStatus;
+  path: string;
+  fields?: { field: string; message: string }[];
+};
 import { Prisma } from 'generated/prisma/client';
 
 @Catch(HttpException)
@@ -19,7 +29,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
     const errorResponse: ApiErrorResponse = {
-      timestamp: new Date().toISOString(),
+      timestamp: getNowAsUTC(),
       success: false,
       statusCode: status,
       path: request.url,
@@ -42,7 +52,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
     const req = ctx.getRequest<Request>();
 
     const defaultError: ApiErrorResponse = {
-      timestamp: new Date().toISOString(),
+      timestamp: getNowAsUTC(),
       success: false,
       statusCode: HttpStatus.BAD_REQUEST,
       path: req.url,
@@ -111,7 +121,7 @@ export class ZodExceptionFilter implements ExceptionFilter {
 
     const status = HttpStatus.BAD_REQUEST;
     const errorResponse: ApiErrorResponse = {
-      timestamp: new Date().toISOString(),
+      timestamp: getNowAsUTC(),
       success: false,
       statusCode: status,
       path: req.url,
@@ -139,7 +149,7 @@ export class UncaughtExceptionFilter implements ExceptionFilter {
       exception instanceof Error ? exception.message : 'Internal server error';
 
     const errorResponse: ApiErrorResponse = {
-      timestamp: new Date().toISOString(),
+      timestamp: getNowAsUTC(),
       success: false,
       statusCode: status,
       path: req.url,

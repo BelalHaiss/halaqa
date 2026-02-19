@@ -2,22 +2,55 @@
 // DTOs (Public Types)
 // ============================================================================
 
+import { DayOfWeek, MinutesFromMidnight } from './types/api.types';
+
 export type GroupStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
 
-export interface ScheduleDay {
-  dayOfWeek: number; // 0 = Sunday, 6 = Saturday
-  time: string; // HH:mm format
+export interface GroupScheduleDay {
+  dayOfWeek: DayOfWeek;
+  startMinutes: MinutesFromMidnight;
   durationMinutes: number;
 }
 
-export interface Group {
+export interface CountDto {
+  count: number;
+}
+
+export interface GroupTutorSummaryDto {
+  id: string;
+  name: string;
+}
+
+export interface GroupStudentSummaryDto {
+  id: string;
+  name: string;
+  timezone: string;
+  notes?: string;
+}
+
+export interface GroupSummaryDto {
   id: string;
   name: string;
   description?: string;
   tutorId: string;
+  timezone: string;
   status: GroupStatus;
-  scheduleDays: ScheduleDay[];
-  students: string[]; // user IDs with STUDENT role
+  scheduleDays: GroupScheduleDay[];
+  studentsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupDetailsDto {
+  id: string;
+  name: string;
+  description?: string;
+  tutorId: string;
+  tutor: GroupTutorSummaryDto;
+  timezone: string;
+  status: GroupStatus;
+  scheduleDays: GroupScheduleDay[];
+  students: GroupStudentSummaryDto[];
   createdAt: string;
   updatedAt: string;
 }
@@ -26,31 +59,21 @@ export interface CreateGroupDto {
   name: string;
   description?: string;
   tutorId: string;
+  timezone: string;
   status?: GroupStatus;
-  scheduleDays: ScheduleDay[];
+  scheduleDays: GroupScheduleDay[];
 }
 
 export interface UpdateGroupDto {
-  id: string;
   name?: string;
   description?: string;
   tutorId?: string;
+  timezone?: string;
   status?: GroupStatus;
-  scheduleDays?: ScheduleDay[];
+  scheduleDays?: GroupScheduleDay[];
 }
 
-export interface AddStudentToGroupDto {
-  groupId: string;
-  userId: string;
-}
-
-export interface RemoveStudentFromGroupDto {
-  groupId: string;
-  userId: string;
-}
-
-export interface GroupFilterDto {
+export interface UpdateGroupSettingsDto {
   status?: GroupStatus;
-  tutorId?: string;
-  search?: string;
+  scheduleDays?: GroupScheduleDay[];
 }

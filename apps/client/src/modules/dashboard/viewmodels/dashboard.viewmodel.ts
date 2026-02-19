@@ -1,39 +1,46 @@
-import { useState, useEffect } from 'react';
-import { dashboardService } from '../services/dashboard.service';
-import { DashboardStats, User } from '@halaqa/shared';
+import { User } from '@halaqa/shared';
+import { useApiQuery } from '@/lib/hooks/useApiQuery';
+import { queryClient, queryKeys } from '@/lib/query-client';
+import {
+  dashboardService,
+  DashboardStats
+} from '../services/dashboard.service';
+
+const resolveSuccessData = <T>(
+  response: { success: boolean; data?: T; error?: string; message?: string },
+  fallbackMessage: string
+): T => {
+  if (!response.success || response.data === undefined) {
+    throw new Error(response.error || response.message || fallbackMessage);
+  }
+
+  return response.data;
+};
 
 export const useDashboardViewModel = (user: User) => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const statsQuery = useApiQuery<DashboardStats>({
+    queryKey: queryKeys.dashboard.stats(user.id, user.role),
+    queryFn: async () => {
+      const stats = resolveSuccessData(
+        await dashboardService.getStats(user.id, user.role),
+        'فشل تحميل الإحصائيات'
+      );
 
-  useEffect(() => {
-    loadStats();
-  }, [user.id]);
-
-  const loadStats = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await dashboardService.getStats(user.id, user.role);
-
-      if (response.success && response.data) {
-        setStats(response.data);
-      } else {
-        setError(response.error || 'فشل تحميل الإحصائيات');
-      }
-    } catch (err: any) {
-      setError(err.message || 'حدث خطأ غير متوقع');
-    } finally {
-      setIsLoading(false);
+      return {
+        success: true,
+        data: stats
+      };
     }
-  };
+  });
 
   return {
-    stats,
-    isLoading,
-    error,
-    refreshStats: loadStats
+    stats: statsQuery.data?.data ?? null,
+    isLoading: statsQuery.isPending,
+    isRefreshing: statsQuery.isFetching,
+    error: statsQuery.error?.message ?? null,
+    refreshStats: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.dashboard.stats(user.id, user.role)
+      })
   };
 };

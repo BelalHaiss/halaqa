@@ -2,11 +2,11 @@ import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { User } from "@halaqa/shared";
 import {
-  LayoutDashboard,
   Users,
   Calendar,
   LogOut,
   BookOpen,
+  GraduationCap,
   Menu,
   X,
   Moon,
@@ -49,14 +49,8 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
 
   const navigation = [
     {
-      name: "لوحة التحكم",
-      href: "/",
-      icon: LayoutDashboard,
-      roles: ["ADMIN", "MODERATOR", "TUTOR"],
-    },
-    {
       name: "الحلقات",
-      href: "/groups",
+      href: "/",
       icon: Users,
       roles: ["ADMIN", "MODERATOR", "TUTOR"],
     },
@@ -71,6 +65,12 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       href: "/users",
       icon: UserCog,
       roles: ["ADMIN", "MODERATOR"],
+    },
+    {
+      name: "المتعلمون",
+      href: "/learners",
+      icon: GraduationCap,
+      roles: ["ADMIN", "MODERATOR", "TUTOR"],
     },
   ];
 

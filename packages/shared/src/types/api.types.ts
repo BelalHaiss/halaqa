@@ -55,6 +55,7 @@ export enum HttpStatus {
   INSUFFICIENT_STORAGE = 507,
   LOOP_DETECTED = 508
 }
+
 export type PaginationQueryType = {
   page?: number;
   limit?: number;
@@ -72,6 +73,7 @@ export type PaginationResponseMeta = {
     totalPages: number;
   };
 };
+
 export type PaginatedResult<T> = {
   data: T;
 } & PaginationResponseMeta;
@@ -81,22 +83,14 @@ type ApiSuccessResponse<T> = {
   data: T;
 } & Partial<PaginationResponseMeta>;
 
-export type ApiErrorResponse = {
-  success: false;
-  message: string;
-  timestamp: string;
-  statusCode: HttpStatus;
-  path: string;
-  fields?: { field: string; message: string }[];
-};
-
 export type UnifiedApiResponse<T> = ApiSuccessResponse<T>;
 
-// Response DTO type for type-safe API responses
-export type ResponseDto<T> = UnifiedApiResponse<T>;
+export type ViewMode = 'list' | 'grid' | 'calendar';
 
-// Full ISO timestamp string (UTC), e.g. "2026-02-15T08:30:00.000Z".
-export type ISODateString = string & { __isoDateBrand: true };
+export interface LoadingState {
+  isLoading: boolean;
+  error?: string;
+}
 
 // Calendar date in ISO-like format, e.g. "2026-02-15" (YYYY-MM-DD).
 export type ISODateOnlyString = string & { __isoDateOnlyBrand: true };
@@ -105,6 +99,11 @@ export type ISODateOnlyString = string & { __isoDateOnlyBrand: true };
 export type TimeHHMMString = string & { __timeHHMMBrand: true };
 
 // normalize date strings to Date objects in DTOs for better type safety and easier date manipulation in the application. This utility type recursively transforms all ISODateString fields in a given type T into Date objects, while preserving the structure of the original type.
+export type ISODateString = string & { __isoDateBrand: true };
+
+export type DayOfWeek = number; // 0 = Sunday, 6 = Saturday
+export type MinutesFromMidnight = number; // minutes from midnight in group timezone
+
 type ToDate<T> = T extends ISODateString
   ? Date
   : T extends null

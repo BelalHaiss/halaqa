@@ -1,111 +1,86 @@
-import { useState, useEffect } from 'react';
-import { groupService } from '../services/group.service';
-import { Group, User, GroupStatus, CreateGroupDto } from '@halaqa/shared';
+import {
+  CountDto,
+  CreateGroupDto,
+  GroupDetailsDto,
+  GroupSummaryDto,
+  User,
+} from '@halaqa/shared';
 import { toast } from 'sonner';
+import { useApiMutation } from '@/lib/hooks/useApiMutation';
+import { useApiQuery } from '@/lib/hooks/useApiQuery';
+import { queryClient, queryKeys } from '@/lib/query-client';
+import { groupService } from '../services/group.service';
 
 export const useGroupsViewModel = (currentUser: User) => {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const canManageGroups =
+    currentUser.role === 'ADMIN' || currentUser.role === 'MODERATOR';
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
+  const groupsQuery = useApiQuery<GroupSummaryDto[]>({
+    queryKey: queryKeys.groups.list({
+      userId: currentUser.id,
+      role: currentUser.role,
+    }),
+    queryFn: async () => groupService.getAllGroups(),
+  });
 
-  const loadGroups = async () => {
-    setIsLoading(true);
-    setError(null);
+  const groupsCountQuery = useApiQuery<CountDto>({
+    queryKey: [...queryKeys.groups.all, 'stats', 'groups-count'] as const,
+    queryFn: async () => groupService.getGroupsCount(),
+  });
 
-    try {
-      const response = await groupService.getAllGroups();
+  const learnersCountQuery = useApiQuery<CountDto>({
+    queryKey: [...queryKeys.groups.all, 'stats', 'learners-count'] as const,
+    queryFn: async () => groupService.getLearnersCount(),
+  });
 
-      if (response.success && response.data) {
-        // Filter by user role
-        const filteredGroups =
-          currentUser.role === 'TUTOR'
-            ? response.data.filter((g) => g.tutorId === currentUser.id)
-            : response.data;
+  const tutorsCountQuery = useApiQuery<CountDto>({
+    queryKey: [...queryKeys.groups.all, 'stats', 'tutors-count'] as const,
+    queryFn: async () => groupService.getTutorsCount(),
+    enabled: currentUser.role !== 'TUTOR',
+  });
 
-        setGroups(filteredGroups);
-      } else {
-        setError(response.error || 'فشل تحميل الحلقات');
-      }
-    } catch (err: any) {
-      setError(err.message || 'حدث خطأ غير متوقع');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const tutorsQuery = useApiQuery<{ id: string; name: string }[]>({
+    queryKey: [...queryKeys.groups.all, 'tutors'] as const,
+    queryFn: async () => groupService.getTutors(),
+    enabled: canManageGroups,
+  });
+
+  const createGroupMutation = useApiMutation<CreateGroupDto, GroupDetailsDto>({
+    mutationFn: async (group) => groupService.createGroup(group),
+    onSuccess: async () => {
+      toast.success('تم إضافة الحلقة بنجاح');
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل إضافة الحلقة');
+    },
+  });
 
   const createGroup = async (group: CreateGroupDto) => {
-    try {
-      const response = await groupService.createGroup(group);
-
-      if (response.success && response.data) {
-        setGroups([...groups, response.data]);
-        toast.success('تم إضافة الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل إضافة الحلقة');
-        return { success: false, error: response.error };
-      }
-    } catch (err: any) {
-      toast.error('حدث خطأ غير متوقع');
-      return { success: false, error: err.message };
+    if (!canManageGroups) {
+      throw new Error('غير مصرح لك بتنفيذ العملية');
     }
+
+    await createGroupMutation.mutateAsync(group);
   };
-
-  const deleteGroup = async (id: string) => {
-    try {
-      const response = await groupService.deleteGroup(id);
-
-      if (response.success) {
-        setGroups(groups.filter((g) => g.id !== id));
-        toast.success('تم حذف الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل حذف الحلقة');
-        return { success: false };
-      }
-    } catch (err: any) {
-      toast.error('حدث خطأ غير متوقع');
-      return { success: false };
-    }
-  };
-
-  const updateGroupStatus = async (groupId: string, status: GroupStatus) => {
-    try {
-      const response = await groupService.updateGroupStatus(groupId, status);
-
-      if (response.success && response.data) {
-        // Update the local state
-        setGroups(groups.map((g) => (g.id === groupId ? { ...g, status } : g)));
-        toast.success('تم تحديث حالة الحلقة بنجاح');
-        return { success: true };
-      } else {
-        toast.error(response.error || 'فشل تحديث حالة الحلقة');
-        return { success: false, error: response.error };
-      }
-    } catch (err: any) {
-      toast.error(err.message || 'حدث خطأ غير متوقع');
-      return { success: false, error: err.message };
-    }
-  };
-
-  const filteredGroups = groups.filter((group) =>
-    group.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return {
-    groups: filteredGroups,
-    isLoading,
-    error,
-    searchQuery,
-    setSearchQuery,
+    canManageGroups,
+    groups: groupsQuery.data?.data ?? [],
+    groupsError: groupsQuery.error?.message ?? null,
+    isLoadingGroups: groupsQuery.isPending,
+
+    groupsCount: groupsCountQuery.data?.data?.count ?? 0,
+    learnersCount: learnersCountQuery.data?.data?.count ?? 0,
+    tutorsCount: tutorsCountQuery.data?.data?.count ?? 0,
+    isLoadingGroupsCount: groupsCountQuery.isPending,
+    isLoadingLearnersCount: learnersCountQuery.isPending,
+    isLoadingTutorsCount: tutorsCountQuery.isPending,
+
+    tutors: tutorsQuery.data?.data ?? [],
+    isLoadingTutors: tutorsQuery.isPending,
+
     createGroup,
-    deleteGroup,
-    updateGroupStatus,
-    refreshGroups: loadGroups
+    isCreatingGroup: createGroupMutation.isPending,
   };
 };

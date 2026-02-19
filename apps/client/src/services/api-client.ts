@@ -1,19 +1,19 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { ApiResponse } from "@halaqa/shared";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { UnifiedApiResponse } from '@halaqa/shared';
 
 class ApiClient {
   private client: AxiosInstance;
 
   constructor(
     baseURL: string = import.meta.env.VITE_API_URL ||
-      "http://localhost:5000/api",
+      'http://localhost:5000/api'
   ) {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
       headers: {
-        "Content-Type": "application/json",
-      },
+        'Content-Type': 'application/json'
+      }
     });
 
     this.setupInterceptors();
@@ -23,13 +23,13 @@ class ApiClient {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem("halaqa_token");
+        const token = localStorage.getItem('halaqa_token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
       },
-      (error) => Promise.reject(error),
+      (error) => Promise.reject(error)
     );
 
     // Response interceptor
@@ -37,38 +37,37 @@ class ApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          const isLoginRequest = error.config?.url?.includes("/auth/login");
+          const isLoginRequest = error.config?.url?.includes('/auth/login');
 
           if (!isLoginRequest) {
             // Only redirect to login if it's NOT the login endpoint
-            localStorage.removeItem("halaqa_token");
-            localStorage.removeItem("halaqa_user");
-            window.location.href = "/login";
+            localStorage.removeItem('halaqa_token');
+            localStorage.removeItem('halaqa_user');
+            window.location.href = '/login';
           }
         }
         return Promise.reject(error);
-      },
+      }
     );
   }
 
   async get<T>(
     url: string,
-    config?: AxiosRequestConfig,
-  ): Promise<ApiResponse<T>> {
+    config?: AxiosRequestConfig
+  ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<ApiResponse<T>> = await this.client.get(
-        url,
-        config,
-      );
+      const response: AxiosResponse<UnifiedApiResponse<T>> =
+        await this.client.get(url, config);
       return response.data;
     } catch (error: any) {
-      return {
-        success: false,
-        error:
+      throw {
+        message:
           error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
-          "حدث خطأ غير متوقع",
+          'حدث خطأ غير متوقع',
+        statusCode: error.response?.status,
+        fields: error.response?.data?.fields
       };
     }
   }
@@ -76,23 +75,21 @@ class ApiClient {
   async post<T>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<ApiResponse<T>> {
+    config?: AxiosRequestConfig
+  ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<ApiResponse<T>> = await this.client.post(
-        url,
-        data,
-        config,
-      );
+      const response: AxiosResponse<UnifiedApiResponse<T>> =
+        await this.client.post(url, data, config);
       return response.data;
     } catch (error: any) {
-      return {
-        success: false,
-        error:
+      throw {
+        message:
           error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
-          "حدث خطأ غير متوقع",
+          'حدث خطأ غير متوقع',
+        statusCode: error.response?.status,
+        fields: error.response?.data?.fields
       };
     }
   }
@@ -100,45 +97,64 @@ class ApiClient {
   async put<T>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig,
-  ): Promise<ApiResponse<T>> {
+    config?: AxiosRequestConfig
+  ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<ApiResponse<T>> = await this.client.put(
-        url,
-        data,
-        config,
-      );
+      const response: AxiosResponse<UnifiedApiResponse<T>> =
+        await this.client.put(url, data, config);
       return response.data;
     } catch (error: any) {
-      return {
-        success: false,
-        error:
+      throw {
+        message:
           error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
-          "حدث خطأ غير متوقع",
+          'حدث خطأ غير متوقع',
+        statusCode: error.response?.status,
+        fields: error.response?.data?.fields
+      };
+    }
+  }
+
+  async patch<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<UnifiedApiResponse<T>> {
+    try {
+      const response: AxiosResponse<UnifiedApiResponse<T>> =
+        await this.client.patch(url, data, config);
+      return response.data;
+    } catch (error: any) {
+      throw {
+        message:
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.message ||
+          'حدث خطأ غير متوقع',
+        statusCode: error.response?.status,
+        fields: error.response?.data?.fields
       };
     }
   }
 
   async delete<T>(
     url: string,
-    config?: AxiosRequestConfig,
-  ): Promise<ApiResponse<T>> {
+    config?: AxiosRequestConfig
+  ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<ApiResponse<T>> = await this.client.delete(
-        url,
-        config,
-      );
+      const response: AxiosResponse<UnifiedApiResponse<T>> =
+        await this.client.delete(url, config);
       return response.data;
     } catch (error: any) {
-      return {
-        success: false,
-        error:
+      throw {
+        message:
           error.response?.data?.message ||
           error.response?.data?.error ||
           error.message ||
-          "حدث خطأ غير متوقع",
+          'حدث خطأ غير متوقع',
+        statusCode: error.response?.status,
+        fields: error.response?.data?.fields
       };
     }
   }

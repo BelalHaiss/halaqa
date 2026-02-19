@@ -1,5 +1,9 @@
 import { DateTime } from 'luxon';
-import { ISODateOnlyString, TimeHHMMString } from '../types/api.types';
+import {
+  ISODateOnlyString,
+  MinutesFromMidnight,
+  TimeHHMMString
+} from '../types/api.types';
 
 export type DateInput = string | Date;
 
@@ -75,14 +79,19 @@ export function formatDate(
   }
 }
 
-export function fromUTC(utcDate: string, timezone: string): DateTime {
-  return DateTime.fromISO(utcDate, { zone: 'utc' }).setZone(timezone);
+export function timeToStartMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
 }
 
 export function getTodayDayOfWeek(timezone: string): number {
   // Luxon uses 1-7 (Monday-Sunday), convert to 0-6 (Sunday-Saturday)
   const luxonDay = DateTime.now().setZone(timezone).weekday;
   return luxonDay === 7 ? 0 : luxonDay;
+}
+
+export function fromUTC(utcString: string, timezone: string): DateTime {
+  return DateTime.fromISO(utcString, { zone: 'utc' }).setZone(timezone);
 }
 
 /**
@@ -155,4 +164,15 @@ export function combineDateTime(
   const date = DateTime.fromISO(dateStr, { zone: timezone });
   const [hours, minutes] = timeStr.split(':').map(Number);
   return date.set({ hour: hours, minute: minutes }).toUTC().toISO()!;
+}
+
+export function startMinutesToTime(
+  startMinutes: MinutesFromMidnight
+): TimeHHMMString {
+  const hours = Math.floor(startMinutes / 60);
+  const minutes = startMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+    2,
+    '0'
+  )}` as TimeHHMMString;
 }
