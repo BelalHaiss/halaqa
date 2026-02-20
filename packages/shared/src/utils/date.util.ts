@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import {
   ISODateOnlyString,
+  ISODateString,
   MinutesFromMidnight,
   TimeHHMMString
 } from '../types/api.types';
@@ -98,7 +99,7 @@ export function fromUTC(utcString: string, timezone: string): DateTime {
  * Format UTC Date to user timezone date and time strings
  * @param startedAt - UTC date (string or Date object)
  * @param timezone - IANA timezone
- * @returns Object with date (YYYY-MM-DD) and time (HH:mm)
+ * @returns Object with date (YYYY-MM-DD) and time (hh:mm a) in 12-hour format
  */
 export function formatSessionDateAndTime(
   startedAt: Date | string,
@@ -110,8 +111,21 @@ export function formatSessionDateAndTime(
 
   return {
     date: dateTime.toFormat('yyyy-LL-dd') as ISODateOnlyString,
-    time: dateTime.toFormat('HH:mm') as TimeHHMMString
+    time: dateTime.toFormat('hh:mm a') as TimeHHMMString
   };
+}
+
+/**
+ * Format any ISO date string to date and time based on user timezone (12-hour format)
+ * @param isoDate - ISO date string
+ * @param timezone - IANA timezone
+ * @returns Object with date string and time string in 12-hour format
+ */
+export function formatISODateToUserTimezone(
+  isoDate: ISODateString,
+  timezone: string
+): { date: string; time: string } {
+  return formatSessionDateAndTime(isoDate, timezone);
 }
 
 /**
@@ -171,8 +185,13 @@ export function startMinutesToTime(
 ): TimeHHMMString {
   const hours = Math.floor(startMinutes / 60);
   const minutes = startMinutes % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
+
+  // Convert to 12-hour format
+  const period = hours >= 12 ? 'م' : 'ص';
+  const hours12 = hours % 12 || 12;
+
+  return `${String(hours12).padStart(2, '0')}:${String(minutes).padStart(
     2,
     '0'
-  )}` as TimeHHMMString;
+  )} ${period}` as TimeHHMMString;
 }

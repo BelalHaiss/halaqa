@@ -15,7 +15,6 @@ import type {
   GroupSummaryDto,
   GroupTutorSummaryDto,
   UpdateGroupDto,
-  UpdateGroupSettingsDto,
 } from '@halaqa/shared';
 import { UserRole } from 'generated/prisma/client';
 import type { User as UserEntity } from 'generated/prisma/client';
@@ -26,7 +25,6 @@ import {
   createGroupSchema,
   createLearnerForGroupSchema,
   updateGroupSchema,
-  updateGroupSettingsSchema,
 } from './validation/group.validation';
 import { GroupService } from './group.service';
 import { GroupLearnerOrchestrator } from '../orchestrator/group-learner.orchestrator';
