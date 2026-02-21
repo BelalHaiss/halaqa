@@ -58,9 +58,7 @@ function UsersView() {
     <div>
       <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-2xl text-gray-800 dark:text-gray-100 mb-1'>
-            إدارة المستخدمين
-          </h1>
+          <h1 className='text-2xl text-gray-800 dark:text-gray-100 mb-1'>إدارة المستخدمين</h1>
           <p className='text-sm text-gray-600 dark:text-gray-400'>
             إدارة المشرفين والمعلمين والصلاحيات
           </p>
@@ -79,13 +77,9 @@ function UsersView() {
           </DialogTrigger>
           <DialogContent className='sm:max-w-md' dir='rtl'>
             <DialogHeader>
-              <DialogTitle>
-                {vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
-              </DialogTitle>
+              <DialogTitle>{vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}</DialogTitle>
               <DialogDescription>
-                {vm.editingUser
-                  ? 'قم بتعديل بيانات المستخدم'
-                  : 'أدخل بيانات المستخدم الجديد'}
+                {vm.editingUser ? 'قم بتعديل بيانات المستخدم' : 'أدخل بيانات المستخدم الجديد'}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={vm.onSubmit}>
@@ -128,7 +122,10 @@ function UsersView() {
                   name='role'
                   label='الدور'
                   type='select'
-                  disabled={vm.isSubmitting || Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')}
+                  disabled={
+                    vm.isSubmitting ||
+                    Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')
+                  }
                   options={vm.availableRoles.map((role) => ({
                     value: role,
                     label: roleLabels[role],
@@ -207,9 +204,7 @@ function UsersView() {
               return (
                 <TableRow key={userItem.id}>
                   <TableCell className='px-4 py-3'>
-                    <div className='text-sm text-gray-900 dark:text-gray-100'>
-                      {userItem.name}
-                    </div>
+                    <div className='text-sm text-gray-900 dark:text-gray-100'>{userItem.name}</div>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
                     <div className='text-sm text-gray-900 dark:text-gray-100'>
@@ -223,7 +218,12 @@ function UsersView() {
                     </Badge>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
-                    <TimezoneDisplay timezone={userTimezone} variant='soft' color='muted' size='sm' />
+                    <TimezoneDisplay
+                      timezone={userTimezone}
+                      variant='soft'
+                      color='muted'
+                      size='sm'
+                    />
                   </TableCell>
                   <TableCell className='px-4 py-3'>
                     <div className='flex items-center justify-end gap-2'>
