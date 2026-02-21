@@ -80,6 +80,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Always use reusable components or shadcn
 - Single source of truth
 - No inline styles
+- make sure code is not too long and make it simple and readable and follow react best practices and patterns
 
 ---
 

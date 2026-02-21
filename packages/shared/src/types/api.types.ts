@@ -62,8 +62,8 @@ export type PaginationQueryType = {
 };
 
 export type DateRangeQueryType = {
-  fromDate?: string;
-  toDate?: string;
+  fromDate?: ISODateOnlyString;
+  toDate?: ISODateOnlyString;
 };
 export type PaginationResponseMeta = {
   meta: {
