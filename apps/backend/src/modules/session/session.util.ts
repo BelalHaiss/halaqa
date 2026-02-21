@@ -119,17 +119,27 @@ export function buildVirtualSessionId(
  * - The returned `startedAt` is a Date object created from the UTC ISO string
  */
 export function parseVirtualSessionId(id: string) {
+  console.log('Parsing virtual session ID:', id);
   if (!id.startsWith(`${VIRTUAL_SESSION_PREFIX}:`)) {
     return null;
   }
 
-  const parts = id.split(':');
-  if (parts.length !== 3) {
+  // Remove the prefix (e.g., "virtual:")
+  const withoutPrefix = id.slice(`${VIRTUAL_SESSION_PREFIX}:`.length);
+
+  // Find the next colon which separates groupId from datetime
+  const colonIndex = withoutPrefix.indexOf(':');
+
+  if (colonIndex === -1) {
     return null;
   }
 
-  const groupId = parts[1];
-  const startedAt = new Date(parts[2]);
+  const groupId = withoutPrefix.slice(0, colonIndex);
+  const dateTimeStr = withoutPrefix.slice(colonIndex + 1);
+
+  console.log('Extracted groupId:', groupId);
+  console.log('Extracted datetime:', dateTimeStr);
+  const startedAt = new Date(dateTimeStr);
 
   if (!groupId || Number.isNaN(startedAt.getTime())) {
     return null;
@@ -159,7 +169,7 @@ export function resolveSessionStatus(args: {
   return nowUtc.toMillis() >= missedAfter.toMillis() ? 'MISSED' : 'SCHEDULED';
 }
 
-/** Check if missed session can still be rescheduled (within 12hr window) */
+/** Check if session can be rescheduled (true for RESCHEDULED or MISSED within time window) */
 export function canSessionBeRescheduled(args: {
   sessionRecord?: SessionRecordLike | null;
   nowUtcIso?: string;
@@ -168,21 +178,25 @@ export function canSessionBeRescheduled(args: {
     return true;
   }
 
-  if (args.sessionRecord.status !== SessionStatus.MISSED) {
-    return false;
+  if (args.sessionRecord.status === SessionStatus.RESCHEDULED) {
+    return true;
   }
 
-  const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
-  const startedAtUtc = fromUTC(
-    args.sessionRecord.startedAt.toISOString(),
-    'UTC',
-  );
-  const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
+  if (args.sessionRecord.status === SessionStatus.MISSED) {
+    const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
+    const startedAtUtc = fromUTC(
+      args.sessionRecord.startedAt.toISOString(),
+      'UTC',
+    );
+    const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
 
-  return (
-    diffMillis >= 0 &&
-    diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000
-  );
+    return (
+      diffMillis >= 0 &&
+      diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000
+    );
+  }
+
+  return false;
 }
 
 // ============================================================================

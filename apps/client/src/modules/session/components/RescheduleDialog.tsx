@@ -1,7 +1,8 @@
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import type { TimeMinutes, ISODateOnlyString } from '@halaqa/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,11 +12,12 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { FormField } from '@/components/forms/form-field';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { Typography } from '@/components/ui/typography';
 
 const rescheduleSchema = z.object({
   date: z.string().min(1, 'التاريخ مطلوب'),
-  time: z.string().min(1, 'الوقت مطلوب')
+  time: z.number().int().min(0).max(1439, 'الوقت مطلوب')
 });
 
 type RescheduleFormData = z.infer<typeof rescheduleSchema>;
@@ -23,7 +25,7 @@ type RescheduleFormData = z.infer<typeof rescheduleSchema>;
 interface RescheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onReschedule: (date: string, time: string) => Promise<void>;
+  onReschedule: (date: string, time: TimeMinutes) => Promise<void>;
   isLoading?: boolean;
   timezone: string;
 }
@@ -44,12 +46,12 @@ export const RescheduleDialog = ({
     resolver: zodResolver(rescheduleSchema),
     defaultValues: {
       date: '',
-      time: ''
+      time: 0 as TimeMinutes
     }
   });
 
   const onSubmit = async (data: RescheduleFormData) => {
-    await onReschedule(data.date, data.time);
+    await onReschedule(data.date, data.time as TimeMinutes);
     reset();
   };
 
@@ -64,23 +66,35 @@ export const RescheduleDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
-          <FormField
-            control={control}
-            name='date'
-            label='التاريخ'
-            type='text'
-            placeholder='YYYY-MM-DD'
-            showError={!!errors.date}
-          />
-
-          <FormField
-            control={control}
-            name='time'
-            label='الوقت'
-            type='text'
-            placeholder='HH:mm'
-            showError={!!errors.time}
-          />
+          <div className='space-y-2'>
+            <Typography as='label' size='sm' weight='medium'>
+              التاريخ والوقت
+            </Typography>
+            <Controller
+              control={control}
+              name='date'
+              render={({ field: dateField }) => (
+                <Controller
+                  control={control}
+                  name='time'
+                  render={({ field: timeField }) => (
+                    <DateTimePicker
+                      date={dateField.value}
+                      time={timeField.value}
+                      onDateChange={dateField.onChange}
+                      onTimeChange={timeField.onChange}
+                      disabled={isLoading}
+                    />
+                  )}
+                />
+              )}
+            />
+            {(errors.date || errors.time) && (
+              <Typography as='p' size='sm' color='danger'>
+                {errors.date?.message || errors.time?.message}
+              </Typography>
+            )}
+          </div>
 
           <DialogFooter>
             <Button

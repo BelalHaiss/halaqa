@@ -4,7 +4,7 @@ import {
   ISODateOnlyString,
   PaginationQueryType,
   DateRangeQueryType,
-  TimeHHMMString,
+  TimeMinutes
 } from './types/api.types';
 
 // ============================================================================
@@ -78,6 +78,6 @@ export interface SessionAttendanceUpdateDTO {
 export interface UpdateSessionActionDTO {
   action: UpdateSessionActionType;
   date?: ISODateOnlyString;
-  time?: TimeHHMMString;
+  time?: TimeMinutes;
   attendance?: SessionAttendanceUpdateDTO[];
 }

@@ -1,14 +1,10 @@
-import { Link } from 'react-router-dom';
-import { Calendar, Clock, Loader2 } from 'lucide-react';
-import { formatISODateToUserTimezone } from '@halaqa/shared';
+import { Calendar, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
-import { getSessionStatusConfig } from '../utils/session.util';
 import { useTodaySessionsViewModel } from '../viewmodels/today-sessions.viewmodel';
+import { SessionCard } from '../components/SessionCard';
 
 export const TodaySessionsView = () => {
   const { user } = useApp();
@@ -51,93 +47,18 @@ export const TodaySessionsView = () => {
         </div>
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {vm.sessions.map((session) => {
-            const { time } = formatISODateToUserTimezone(
-              session.startedAt,
-              user.timezone
-            );
-            const statusConfig = getSessionStatusConfig(session.sessionStatus);
-
-            return (
-              <Link
-                key={session.id}
-                to={`/sessions/${session.id}`}
-                className='block transition-shadow hover:shadow-md'
-              >
-                <Card>
-                  <CardContent className='p-4 space-y-3'>
-                    <div className='flex items-start justify-between'>
-                      <div className='bg-primary/10 p-2 rounded-lg'>
-                        <Calendar className='w-5 h-5 text-primary' />
-                      </div>
-                      <Badge
-                        variant={statusConfig.variant}
-                        color={statusConfig.color}
-                      >
-                        {statusConfig.label}
-                      </Badge>
-                    </div>
-
-                    <Typography as='h3' size='lg' weight='semibold'>
-                      {session.groupName}
-                    </Typography>
-
-                    <div className='space-y-1.5'>
-                      <div className='flex items-center justify-between'>
-                        <Typography
-                          as='div'
-                          size='xs'
-                          variant='ghost'
-                          color='muted'
-                        >
-                          المعلم
-                        </Typography>
-                        <Typography as='div' size='xs' weight='medium'>
-                          {session.tutorName}
-                        </Typography>
-                      </div>
-
-                      <div className='flex items-center justify-between'>
-                        <Typography
-                          as='div'
-                          size='xs'
-                          variant='ghost'
-                          color='muted'
-                        >
-                          الوقت
-                        </Typography>
-                        <div className='flex items-center gap-1'>
-                          <Clock className='w-3 h-3 text-muted-foreground' />
-                          <Typography as='div' size='xs' weight='medium'>
-                            {time}
-                          </Typography>
-                        </div>
-                      </div>
-
-                      {session.originalStartedAt && (
-                        <div className='pt-1.5 border-t border-border'>
-                          <Typography
-                            as='div'
-                            size='xs'
-                            variant='ghost'
-                            color='muted'
-                          >
-                            معاد جدولتها من{' '}
-                            {
-                              formatISODateToUserTimezone(
-                                session.originalStartedAt,
-                                user.timezone
-                              ).time
-                            }
-                          </Typography>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+          {vm.sessions.map((session) => (
+            <SessionCard
+              key={session.id}
+              id={session.id}
+              groupName={session.groupName}
+              tutorName={session.tutorName}
+              startedAt={session.startedAt}
+              originalStartedAt={session.originalStartedAt ?? undefined}
+              sessionStatus={session.sessionStatus}
+              timezone={user.timezone}
+            />
+          ))}
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
-import { DATE_ONLY_FORMAT_REGEX, TIME_HHMM_FORMAT_REGEX } from '@halaqa/shared';
+import { DATE_ONLY_FORMAT_REGEX } from '@halaqa/shared';
 import type {
   ISODateOnlyString,
-  TimeHHMMString,
+  TimeMinutes,
   UpdateSessionActionDTO,
   SessionQueryDTO,
 } from '@halaqa/shared';
@@ -18,10 +18,12 @@ const isoDateOnlySchema = z
   .regex(DATE_ONLY_FORMAT_REGEX)
   .transform((value) => value as ISODateOnlyString);
 
-const timeHHMMSchema = z
-  .string()
-  .regex(TIME_HHMM_FORMAT_REGEX)
-  .transform((value) => value as TimeHHMMString);
+const timeMinutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(1439)
+  .transform((value) => value as TimeMinutes);
 
 export const updateSessionActionSchema = z.discriminatedUnion('action', [
   z.object({
@@ -30,7 +32,7 @@ export const updateSessionActionSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('RESCHEDULE'),
     date: isoDateOnlySchema,
-    time: timeHHMMSchema,
+    time: timeMinutesSchema,
   }),
   z.object({
     action: z.literal('ATTENDANCE'),

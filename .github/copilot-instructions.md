@@ -171,3 +171,5 @@ Use only shared date.util (Luxon-based) for all date logic.
 Use only shared timezone.util for timezone operations.
 
 Do not add any date/time libraries in client or backend apps.
+
+we working with date we use this format "YYYY-MM-DD" (ISO date-only string) and time as a number (minutes from midnight), both interpreted in Group.timezone.
