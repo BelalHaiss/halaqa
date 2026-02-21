@@ -2,23 +2,24 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type PaginationControlsProps = {
-  page: number;
+  value: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
+  onValueChange: (page: number) => void;
   disabled?: boolean;
   className?: string;
 };
 
 export function PaginationControls({
-  page,
+  value,
   totalPages,
-  onPageChange,
+  onValueChange,
   disabled = false,
   className,
 }: PaginationControlsProps) {
   const safeTotalPages = Math.max(totalPages, 1);
-  const canGoNext = page < safeTotalPages && !disabled;
-  const canGoPrevious = page > 1 && !disabled;
+  const safeCurrentPage = Math.min(Math.max(value, 1), safeTotalPages);
+  const canGoNext = safeCurrentPage < safeTotalPages && !disabled;
+  const canGoPrevious = safeCurrentPage > 1 && !disabled;
 
   return (
     <div className={cn('flex items-center justify-between gap-3', className)}>
@@ -27,13 +28,13 @@ export function PaginationControls({
         color='muted'
         size='sm'
         disabled={!canGoPrevious}
-        onClick={() => onPageChange(page - 1)}
+        onClick={() => onValueChange(safeCurrentPage - 1)}
       >
         السابق
       </Button>
 
       <span className='text-sm text-muted-foreground'>
-        صفحة {Math.min(page, safeTotalPages)} من {safeTotalPages}
+        صفحة {safeCurrentPage} من {safeTotalPages}
       </span>
 
       <Button
@@ -41,7 +42,7 @@ export function PaginationControls({
         color='muted'
         size='sm'
         disabled={!canGoNext}
-        onClick={() => onPageChange(page + 1)}
+        onClick={() => onValueChange(safeCurrentPage + 1)}
       >
         التالي
       </Button>

@@ -7,6 +7,7 @@ import {
   CountDto,
   CreateGroupDto,
   GroupDetailsDto,
+  GroupSelectOptionDto,
   GroupSummaryDto,
   GroupTutorSummaryDto,
   ISODateString,
@@ -154,6 +155,24 @@ export class GroupService {
     return tutors.map((tutor) => ({
       id: tutor.id,
       name: tutor.name,
+    }));
+  }
+
+  async getGroupOptions(user: User): Promise<GroupSelectOptionDto[]> {
+    const groups = await this.prismaService.group.findMany({
+      where: this.getScopedGroupWhere(user),
+      orderBy: {
+        name: 'asc',
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return groups.map((group) => ({
+      name: group.name,
+      value: group.id,
     }));
   }
 

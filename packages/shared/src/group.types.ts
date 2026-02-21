@@ -21,6 +21,11 @@ export interface GroupTutorSummaryDto {
   name: string;
 }
 
+export interface GroupSelectOptionDto {
+  name: string;
+  value: string;
+}
+
 export interface GroupStudentSummaryDto {
   id: string;
   name: string;

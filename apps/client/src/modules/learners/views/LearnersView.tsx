@@ -106,9 +106,9 @@ export default function LearnersView() {
       </Table>
 
       <PaginationControls
-        page={vm.page}
+        value={vm.page}
         totalPages={vm.totalPages}
-        onPageChange={vm.setPage}
+        onValueChange={vm.setPage}
         disabled={vm.isLoading || vm.isRefreshing}
       />
 
