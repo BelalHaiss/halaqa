@@ -95,7 +95,10 @@ export interface LoadingState {
 // Calendar date in ISO-like format, e.g. "2026-02-15" (YYYY-MM-DD).
 export type ISODateOnlyString = string & { __isoDateOnlyBrand: true };
 
-// 24-hour time string, e.g. "08:30" (HH:mm).
+// Time as minutes from midnight (0-1439), interpreted in group/user timezone - used for data/DTOs
+export type TimeMinutes = number & { __timeMinutesBrand: true };
+
+// 12-hour time string for UI display, e.g. "02:30 م" - used for rendering only
 export type TimeHHMMString = string & { __timeHHMMBrand: true };
 
 // normalize date strings to Date objects in DTOs for better type safety and easier date manipulation in the application. This utility type recursively transforms all ISODateString fields in a given type T into Date objects, while preserving the structure of the original type.

@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { LoginView } from '@/modules/auth';
 import { GroupsView, GroupDetailsView } from '@/modules/groups';
-import { AttendanceView } from '@/modules/attendance';
+import { TodaySessionsView, SessionDetailsView } from '@/modules/session';
 import { UsersView } from '@/modules/users';
 import { LearnersView } from '@/modules/learners';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
@@ -29,10 +29,13 @@ export const router = createBrowserRouter([
         path: 'groups/:id',
         element: <GroupDetailsView />
       },
-
       {
-        path: 'attendance/:sessionId',
-        element: <AttendanceView />
+        path: 'sessions',
+        element: <TodaySessionsView />
+      },
+      {
+        path: 'sessions/:id',
+        element: <SessionDetailsView />
       },
       {
         path: 'users',
@@ -43,7 +46,7 @@ export const router = createBrowserRouter([
         element: <LearnersView />
       },
       {
-        path: 'profile', // ← Add profile route
+        path: 'profile',
         element: <ProfileView />
       },
       {

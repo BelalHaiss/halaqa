@@ -1,10 +1,10 @@
 import { AttendanceStatus } from './attendance.types';
 import {
-  ISODateOnlyString,
   ISODateString,
-  TimeHHMMString,
+  ISODateOnlyString,
   PaginationQueryType,
-  DateRangeQueryType
+  DateRangeQueryType,
+  TimeMinutes
 } from './types/api.types';
 
 // ============================================================================
@@ -30,8 +30,8 @@ export interface SessionSummaryDTO {
   id: string;
   groupName: string;
   tutorName: string;
-  date: ISODateOnlyString;
-  time: TimeHHMMString;
+  startedAt: ISODateString;
+  originalStartedAt: ISODateString | null;
   sessionStatus: SessionComputedStatus;
 }
 
@@ -42,8 +42,7 @@ export interface SessionDetailsDTO {
   tutorInfo: { id: string; name: string };
   status: SessionComputedStatus;
   canBeRescheduled: boolean;
-  date: ISODateOnlyString;
-  time: TimeHHMMString;
+  startedAt: ISODateString;
   originalStartedAt: ISODateString | null;
   students: { id: string; name: string }[];
   attendance: {
@@ -79,6 +78,6 @@ export interface SessionAttendanceUpdateDTO {
 export interface UpdateSessionActionDTO {
   action: UpdateSessionActionType;
   date?: ISODateOnlyString;
-  time?: TimeHHMMString;
+  time?: TimeMinutes;
   attendance?: SessionAttendanceUpdateDTO[];
 }

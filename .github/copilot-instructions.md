@@ -152,10 +152,24 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## important - for handling Date
 
-- Store all event timestamps in DB as UTC (DATETIME, not TIMESTAMP).
-- Every Group must have an IANA timezone (e.g. Africa/Cairo) — schedules are based on it.
-- For queries like “today / dayOfWeek / schedule” use Group.timezone.
-- Schedule Definition → Store session time as startMinutes (minutes from midnight in Group.timezone) and convert to UTC only when creating the actual DateTime
-- User Timezone (Display Layer) → Convert stored UTC DateTime to User.timezone only for UI display.
-- in shared app we have date.util that has luxon helper method for working with date use it or edit it if needed don't add any date package or helper in client or backend app only this date.util should handle all date manipulation and conversion logic in the project.
-- for Timezones we have timezone.util in shared app that has helper everything for working with timezones use it or edit it required
+Store all event timestamps in DB as UTC (DATETIME).
+
+Every Group must have an IANA timezone (e.g., Africa/Cairo) — schedules depend on it.
+
+Store schedule time as startMinutes (from midnight in Group.timezone); convert to UTC only when creating the actual DateTime.
+
+Use Group.timezone for schedule/day-of-week logic.
+
+Convert stored UTC → User.timezone only for UI display.
+
+Always query date ranges based on User.timezone.
+
+Return date values in responses exactly as stored in DB (UTC).
+
+Use only shared date.util (Luxon-based) for all date logic.
+
+Use only shared timezone.util for timezone operations.
+
+Do not add any date/time libraries in client or backend apps.
+
+we working with date we use this format "YYYY-MM-DD" (ISO date-only string) and time as a number (minutes from midnight), both interpreted in Group.timezone.

@@ -4,15 +4,16 @@ import { History, Loader2, Plus, Users } from 'lucide-react';
 import { startMinutesToTime } from '@halaqa/shared';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { PageHeader } from '@/components/ui/page-header';
-import { StatusBadge } from '@/components/ui/status-badge';
 import { StudentMainInfoModal } from '@/components/ui/student-main-info-modal';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Typography } from '@/components/ui/typography';
 import { dayNames } from '../constants';
+import { getGroupStatusConfig } from '../utils/group.util';
 import { GroupFormModal } from '../components/GroupFormModal';
 import { StudentSummaryCard } from '../components/StudentSummaryCard';
 import { useGroupDetailsViewModel } from '../viewmodels/group-details.viewmodel';
@@ -71,7 +72,12 @@ export const GroupDetailsView = () => {
         <CardHeader>
           <div className='flex items-center justify-between'>
             <CardTitle size='lg'>معلومات الحلقة</CardTitle>
-            <StatusBadge status={vm.group.status} />
+            <Badge
+              variant={getGroupStatusConfig(vm.group.status).variant}
+              color={getGroupStatusConfig(vm.group.status).color}
+            >
+              {getGroupStatusConfig(vm.group.status).label}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className='space-y-3'>

@@ -31,9 +31,3 @@ export interface BulkAttendanceDto {
   sessionId: string;
   records: CreateAttendanceRecordDto[];
 }
-
-export interface AttendanceFilterDto {
-  sessionId?: string;
-  userId?: string;
-  status?: AttendanceStatus;
-}

@@ -10,7 +10,6 @@ import {
   fromUTC,
   getNowAsUTC,
   getStartAndEndOfDay,
-  getTodayDayOfWeek,
 } from '@halaqa/shared';
 import type {
   SessionDetailsDTO,
@@ -28,7 +27,7 @@ import {
 import { DatabaseService } from '../database/database.service';
 import {
   buildGroupScopeWhere,
-  buildPlannedStartedAtForDay,
+  buildWeekdayCandidatesForUtcRange,
   collectOccurrenceKeys,
   filterMissingOccurrences,
   findInvalidAttendanceStudentId,
@@ -127,15 +126,30 @@ export class SessionService {
 
   /** Get all sessions scheduled for today in user's timezone */
   async getTodaySessions(user: User): Promise<SessionSummaryDTO[]> {
-    const todayDayOfWeek = getTodayDayOfWeek(user.timezone);
     const {
       startAsDatetime: dayStart,
+      endAsDatetime: dayEnd,
       startAsJSDate: dayStartDate,
       endAsJSDate: dayEndDate,
     } = getStartAndEndOfDay(user.timezone);
+    const dayStartUtcIso = dayStart.toUTC().toISO()!;
+    const dayEndUtcIso = dayEnd.toUTC().toISO()!;
+    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(
+      dayStartUtcIso,
+      dayEndUtcIso,
+    );
 
     const groups = await this.prismaService.group.findMany({
-      where: buildGroupScopeWhere(user, todayDayOfWeek),
+      where: {
+        ...buildGroupScopeWhere(user),
+        scheduleDays: {
+          some: {
+            dayOfWeek: {
+              in: weekdayCandidates,
+            },
+          },
+        },
+      },
       include: {
         tutor: {
           select: {
@@ -145,7 +159,9 @@ export class SessionService {
         },
         scheduleDays: {
           where: {
-            dayOfWeek: todayDayOfWeek,
+            dayOfWeek: {
+              in: weekdayCandidates,
+            },
           },
           select: {
             dayOfWeek: true,
@@ -159,10 +175,27 @@ export class SessionService {
       return [];
     }
 
+    const plannedOccurrences = groups.flatMap((group) =>
+      generatePlannedOccurrencesForRange(
+        group,
+        dayStartUtcIso,
+        dayEndUtcIso,
+      ).map((startedAt) => ({
+        groupId: group.id,
+        startedAt,
+      })),
+    );
+
+    if (plannedOccurrences.length === 0) {
+      return [];
+    }
+
     const sessionRecords = await this.prismaService.session.findMany({
       where: {
         groupId: {
-          in: groups.map((group) => group.id),
+          in: Array.from(
+            new Set(plannedOccurrences.map((occurrence) => occurrence.groupId)),
+          ),
         },
         OR: [
           {
@@ -189,35 +222,40 @@ export class SessionService {
     });
 
     const sessionRecordsByGroup = groupSessionRecordsByGroup(sessionRecords);
-    const dayStartUtcIso = dayStart.toUTC().toISO()!;
+    const groupsById = new Map(groups.map((group) => [group.id, group]));
 
-    const sessions = groups.map((group) => {
-      const todaySchedule = group.scheduleDays[0];
+    const sessions = plannedOccurrences
+      .map((occurrence) => {
+        const group = groupsById.get(occurrence.groupId);
+        if (!group) {
+          return null;
+        }
 
-      const calculatedStartedAt = buildPlannedStartedAtForDay(
-        dayStartUtcIso,
-        group.timezone,
-        todaySchedule.startMinutes,
+        // Match both planned and rescheduled records for the occurrence.
+        const sessionRecord =
+          sessionRecordsByGroup.get(occurrence.groupId)?.find((record) => {
+            const occurrenceIso = occurrence.startedAt.toISOString();
+            return (
+              record.startedAt.toISOString() === occurrenceIso ||
+              record.originalStartedAt?.toISOString() === occurrenceIso
+            );
+          }) ?? null;
+        const startedAt = sessionRecord?.startedAt ?? occurrence.startedAt;
+
+        return {
+          startedAt,
+          summary: mapSessionSummary({
+            groupId: group.id,
+            groupName: group.name,
+            tutorName: group.tutor.name,
+            startedAt,
+            sessionRecord,
+          }),
+        };
+      })
+      .filter((session): session is NonNullable<typeof session> =>
+        Boolean(session),
       );
-
-      // Get session record for this group (if exists)
-      const sessionRecord = sessionRecordsByGroup.get(group.id)?.[0] ?? null;
-
-      // Use actual session startedAt if record exists, otherwise use calculated
-      const plannedStartedAt = sessionRecord?.startedAt ?? calculatedStartedAt;
-
-      return {
-        startedAt: plannedStartedAt,
-        summary: mapSessionSummary({
-          groupId: group.id,
-          groupName: group.name,
-          tutorName: group.tutor.name,
-          startedAt: plannedStartedAt,
-          userTimezone: user.timezone,
-          sessionRecord,
-        }),
-      };
-    });
 
     sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
 
@@ -294,7 +332,6 @@ export class SessionService {
         groupName: sessionRecord.group.name,
         tutorName: sessionRecord.group.tutor.name,
         startedAt: sessionRecord.startedAt,
-        userTimezone: user.timezone,
         sessionRecord,
       }),
     );
@@ -322,7 +359,6 @@ export class SessionService {
     if (target.sessionRecord) {
       return mapSessionDetails({
         sessionRecord: target.sessionRecord,
-        userTimezone: user.timezone,
       });
     }
 
@@ -330,7 +366,6 @@ export class SessionService {
       sessionId,
       group: target.group,
       startedAt: target.startedAt,
-      userTimezone: user.timezone,
     });
   }
 
@@ -344,11 +379,11 @@ export class SessionService {
 
     switch (payload.action) {
       case 'CANCEL':
-        return this.cancelSession(target, user.timezone);
+        return this.cancelSession(target);
       case 'RESCHEDULE':
         return this.rescheduleSession(target, payload, user.timezone);
       case 'ATTENDANCE':
-        return this.recordAttendance(target, payload, user.timezone);
+        return this.recordAttendance(target, payload);
       default:
         throw new BadRequestException('Invalid action');
     }
@@ -360,21 +395,17 @@ export class SessionService {
     const nowUtc = fromUTC(getNowAsUTC(), 'UTC');
     const cutoffUtc = nowUtc.minus({ hours: 12 }); // Sessions older than 12h
     const lookbackUtc = nowUtc.minus({ hours: 36 }); // Fixed lookback window
-
-    // Get unique days of week in the time window
-    const daysInWindow = new Set<number>();
-    let current = lookbackUtc;
-    while (current <= cutoffUtc) {
-      daysInWindow.add(current.weekday % 7); // Convert to 0-6 (Sunday-Saturday)
-      current = current.plus({ days: 1 });
-    }
+    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(
+      lookbackUtc.toISO()!,
+      cutoffUtc.toISO()!,
+    );
 
     const groups = await this.prismaService.group.findMany({
       where: {
         scheduleDays: {
           some: {
             dayOfWeek: {
-              in: Array.from(daysInWindow),
+              in: weekdayCandidates,
             },
           },
         },
@@ -383,7 +414,7 @@ export class SessionService {
         scheduleDays: {
           where: {
             dayOfWeek: {
-              in: Array.from(daysInWindow),
+              in: weekdayCandidates,
             },
           },
           select: {
@@ -478,7 +509,6 @@ export class SessionService {
 
   private async cancelSession(
     target: ResolvedSessionTarget,
-    userTimezone: string,
   ): Promise<SessionDetailsDTO> {
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
@@ -501,7 +531,6 @@ export class SessionService {
 
     return mapSessionDetails({
       sessionRecord: updatedSession,
-      userTimezone,
     });
   }
 
@@ -546,14 +575,12 @@ export class SessionService {
 
     return mapSessionDetails({
       sessionRecord: updatedSession,
-      userTimezone,
     });
   }
 
   private async recordAttendance(
     target: ResolvedSessionTarget,
     payload: UpdateSessionActionDTO,
-    userTimezone: string,
   ): Promise<SessionDetailsDTO> {
     const attendance = payload.attendance;
     if (!attendance || attendance.length === 0) {
@@ -625,7 +652,6 @@ export class SessionService {
 
     return mapSessionDetails({
       sessionRecord: updatedSession,
-      userTimezone,
     });
   }
 

@@ -1,4 +1,4 @@
-import { getNowAsUTC, fromUTC, formatSessionDateAndTime } from '@halaqa/shared';
+import { getNowAsUTC, fromUTC } from '@halaqa/shared';
 import type {
   SessionComputedStatus,
   SessionDetailsDTO,
@@ -37,6 +37,7 @@ type ScheduleDayLike = {
 type SessionRecordLike = {
   id: string;
   startedAt: Date;
+  originalStartedAt?: Date | null;
   status: SessionStatus;
 };
 
@@ -118,17 +119,27 @@ export function buildVirtualSessionId(
  * - The returned `startedAt` is a Date object created from the UTC ISO string
  */
 export function parseVirtualSessionId(id: string) {
+  console.log('Parsing virtual session ID:', id);
   if (!id.startsWith(`${VIRTUAL_SESSION_PREFIX}:`)) {
     return null;
   }
 
-  const parts = id.split(':');
-  if (parts.length !== 3) {
+  // Remove the prefix (e.g., "virtual:")
+  const withoutPrefix = id.slice(`${VIRTUAL_SESSION_PREFIX}:`.length);
+
+  // Find the next colon which separates groupId from datetime
+  const colonIndex = withoutPrefix.indexOf(':');
+
+  if (colonIndex === -1) {
     return null;
   }
 
-  const groupId = parts[1];
-  const startedAt = new Date(parts[2]);
+  const groupId = withoutPrefix.slice(0, colonIndex);
+  const dateTimeStr = withoutPrefix.slice(colonIndex + 1);
+
+  console.log('Extracted groupId:', groupId);
+  console.log('Extracted datetime:', dateTimeStr);
+  const startedAt = new Date(dateTimeStr);
 
   if (!groupId || Number.isNaN(startedAt.getTime())) {
     return null;
@@ -158,7 +169,7 @@ export function resolveSessionStatus(args: {
   return nowUtc.toMillis() >= missedAfter.toMillis() ? 'MISSED' : 'SCHEDULED';
 }
 
-/** Check if missed session can still be rescheduled (within 12hr window) */
+/** Check if session can be rescheduled (true for RESCHEDULED or MISSED within time window) */
 export function canSessionBeRescheduled(args: {
   sessionRecord?: SessionRecordLike | null;
   nowUtcIso?: string;
@@ -167,21 +178,25 @@ export function canSessionBeRescheduled(args: {
     return true;
   }
 
-  if (args.sessionRecord.status !== SessionStatus.MISSED) {
-    return false;
+  if (args.sessionRecord.status === SessionStatus.RESCHEDULED) {
+    return true;
   }
 
-  const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
-  const startedAtUtc = fromUTC(
-    args.sessionRecord.startedAt.toISOString(),
-    'UTC',
-  );
-  const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
+  if (args.sessionRecord.status === SessionStatus.MISSED) {
+    const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
+    const startedAtUtc = fromUTC(
+      args.sessionRecord.startedAt.toISOString(),
+      'UTC',
+    );
+    const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
 
-  return (
-    diffMillis >= 0 &&
-    diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000
-  );
+    return (
+      diffMillis >= 0 &&
+      diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000
+    );
+  }
+
+  return false;
 }
 
 // ============================================================================
@@ -195,23 +210,19 @@ export function mapSessionSummary(args: {
   groupName: string;
   tutorName: string;
   startedAt: Date;
-  userTimezone: string;
   sessionRecord?: SessionRecordLike | null;
   nowUtcIso?: string;
 }): SessionSummaryDTO {
-  const { date, time } = formatSessionDateAndTime(
-    args.startedAt,
-    args.userTimezone,
-  );
-
   return {
     id:
       args.sessionRecord?.id ??
       buildVirtualSessionId(args.groupId, args.startedAt),
     groupName: args.groupName,
     tutorName: args.tutorName,
-    date: date,
-    time: time,
+    startedAt: args.startedAt.toISOString() as SessionSummaryDTO['startedAt'],
+    originalStartedAt: args.sessionRecord?.originalStartedAt
+      ? (args.sessionRecord.originalStartedAt.toISOString() as SessionSummaryDTO['originalStartedAt'])
+      : null,
     sessionStatus: resolveSessionStatus({
       startedAt: args.startedAt,
       sessionRecord: args.sessionRecord,
@@ -223,14 +234,8 @@ export function mapSessionSummary(args: {
 /** Map session record to detailed DTO */
 export function mapSessionDetails(args: {
   sessionRecord: SessionDetailsRecordLike;
-  userTimezone: string;
   nowUtcIso?: string;
 }): SessionDetailsDTO {
-  const { date, time } = formatSessionDateAndTime(
-    args.sessionRecord.startedAt,
-    args.userTimezone,
-  );
-
   return {
     id: args.sessionRecord.id,
     groupInfo: {
@@ -250,8 +255,8 @@ export function mapSessionDetails(args: {
       sessionRecord: args.sessionRecord,
       nowUtcIso: args.nowUtcIso,
     }),
-    date: date,
-    time: time,
+    startedAt:
+      args.sessionRecord.startedAt.toISOString() as SessionDetailsDTO['startedAt'],
     originalStartedAt: args.sessionRecord.originalStartedAt
       ? (args.sessionRecord.originalStartedAt.toISOString() as SessionDetailsDTO['originalStartedAt'])
       : null,
@@ -273,14 +278,8 @@ export function mapVirtualSessionDetails(args: {
   sessionId: string;
   group: VirtualSessionGroupLike;
   startedAt: Date;
-  userTimezone: string;
   nowUtcIso?: string;
 }): SessionDetailsDTO {
-  const { date, time } = formatSessionDateAndTime(
-    args.startedAt,
-    args.userTimezone,
-  );
-
   return {
     id: args.sessionId,
     groupInfo: {
@@ -296,8 +295,7 @@ export function mapVirtualSessionDetails(args: {
       nowUtcIso: args.nowUtcIso,
     }),
     canBeRescheduled: true,
-    date: date,
-    time: time,
+    startedAt: args.startedAt.toISOString() as SessionDetailsDTO['startedAt'],
     originalStartedAt: null,
     students: args.group.students.map((item) => ({
       id: item.user.id,
@@ -386,17 +384,9 @@ export function filterMissingOccurrences<
 /** Build Prisma where clause for group scope based on user role and day */
 export function buildGroupScopeWhere(
   user: Pick<User, 'id' | 'role'>,
-  dayOfWeek: number,
 ): Prisma.GroupWhereInput {
   const where: Prisma.GroupWhereInput = {
     status: 'ACTIVE',
-    scheduleDays: {
-      some: {
-        dayOfWeek: {
-          equals: dayOfWeek,
-        },
-      },
-    },
   };
 
   if (user.role === UserRole.TUTOR) {
@@ -404,6 +394,33 @@ export function buildGroupScopeWhere(
   }
 
   return where;
+}
+
+/**
+ * Build weekday candidates for a UTC range.
+ * For each UTC day in range, include previous/current/next weekday to cover
+ * all group timezone offsets when pre-filtering schedule days.
+ */
+export function buildWeekdayCandidatesForUtcRange(
+  rangeStartUtcIso: string,
+  rangeEndUtcIso: string,
+): number[] {
+  const rangeStart = fromUTC(rangeStartUtcIso, 'UTC').startOf('day');
+  const rangeEnd = fromUTC(rangeEndUtcIso, 'UTC').endOf('day');
+  const days = new Set<number>();
+
+  for (
+    let cursor = rangeStart;
+    cursor.toMillis() <= rangeEnd.toMillis();
+    cursor = cursor.plus({ days: 1 })
+  ) {
+    const weekday = cursor.weekday % 7;
+    days.add((weekday + 6) % 7);
+    days.add(weekday);
+    days.add((weekday + 1) % 7);
+  }
+
+  return Array.from(days);
 }
 
 // ============================================================================
