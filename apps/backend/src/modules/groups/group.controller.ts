@@ -12,6 +12,7 @@ import type {
   CreateLearnerDto,
   CreateGroupDto,
   GroupDetailsDto,
+  GroupSelectOptionDto,
   GroupSummaryDto,
   GroupTutorSummaryDto,
   UpdateGroupDto,
@@ -44,6 +45,11 @@ export class GroupController {
   @Get('tutors')
   getTutors(): Promise<GroupTutorSummaryDto[]> {
     return this.groupService.getTutors();
+  }
+
+  @Get('options')
+  getGroupOptions(@User() user: UserEntity): Promise<GroupSelectOptionDto[]> {
+    return this.groupService.getGroupOptions(user);
   }
 
   @Get(':id')

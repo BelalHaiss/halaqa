@@ -4,6 +4,7 @@ import { User } from "@halaqa/shared";
 import {
   Users,
   Calendar,
+  History,
   LogOut,
   BookOpen,
   GraduationCap,
@@ -55,9 +56,15 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       roles: ["ADMIN", "MODERATOR", "TUTOR"],
     },
     {
-      name: "السجل",
+      name: "جلسات اليوم",
       href: "/sessions",
       icon: Calendar,
+      roles: ["ADMIN", "MODERATOR", "TUTOR"],
+    },
+    {
+      name: "السجل",
+      href: "/history",
+      icon: History,
       roles: ["ADMIN", "MODERATOR", "TUTOR"],
     },
     {

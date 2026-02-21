@@ -4,6 +4,7 @@ import {
   CreateLearnerDto,
   CreateGroupDto,
   GroupDetailsDto,
+  GroupSelectOptionDto,
   GroupSummaryDto,
   GroupTutorSummaryDto,
   LearnerDto,
@@ -20,6 +21,10 @@ export class GroupService {
 
   async getTutors(): Promise<UnifiedApiResponse<GroupTutorSummaryDto[]>> {
     return apiClient.get<GroupTutorSummaryDto[]>('/groups/tutors');
+  }
+
+  async getGroupOptions(): Promise<UnifiedApiResponse<GroupSelectOptionDto[]>> {
+    return apiClient.get<GroupSelectOptionDto[]>('/groups/options');
   }
 
   async getGroupById(id: string): Promise<UnifiedApiResponse<GroupDetailsDto>> {
