@@ -3,7 +3,7 @@ import {
   QueryLearnersDto,
   UpdateLearnerDto,
 } from '@halaqa/shared';
-import { paginationSchema } from 'src/utils/api.util';
+import { paginationSchema } from 'src/utils/api.util.validation';
 import {
   optionalTimezoneFieldSchema,
   timezoneFieldSchema,

@@ -1,10 +1,9 @@
-import { DATE_ONLY_FORMAT_REGEX } from '@halaqa/shared';
-import type {
-  ISODateOnlyString,
-  TimeMinutes,
-  UpdateSessionActionDTO,
-  SessionQueryDTO,
-} from '@halaqa/shared';
+import type { UpdateSessionActionDTO, SessionQueryDTO } from '@halaqa/shared';
+import {
+  isoDateOnlySchema,
+  optionalIsoDateOnlySchema,
+  timeMinutesSchema,
+} from 'src/utils/api.util.validation';
 import z, { ZodType } from 'zod';
 
 const attendanceItemSchema = z.object({
@@ -12,18 +11,6 @@ const attendanceItemSchema = z.object({
   status: z.enum(['ATTENDED', 'MISSED', 'EXCUSED']),
   notes: z.string().trim().max(1000).optional(),
 });
-
-const isoDateOnlySchema = z
-  .string()
-  .regex(DATE_ONLY_FORMAT_REGEX)
-  .transform((value) => value as ISODateOnlyString);
-
-const timeMinutesSchema = z
-  .number()
-  .int()
-  .min(0)
-  .max(1439)
-  .transform((value) => value as TimeMinutes);
 
 export const updateSessionActionSchema = z.discriminatedUnion('action', [
   z.object({
@@ -43,8 +30,8 @@ export const updateSessionActionSchema = z.discriminatedUnion('action', [
 export const sessionQuerySchema = z.object({
   page: z.coerce.number().positive().optional(),
   limit: z.coerce.number().positive().max(100).optional(),
-  fromDate: z.string().regex(DATE_ONLY_FORMAT_REGEX).optional(),
-  toDate: z.string().regex(DATE_ONLY_FORMAT_REGEX).optional(),
+  fromDate: optionalIsoDateOnlySchema.optional(),
+  toDate: optionalIsoDateOnlySchema.optional(),
   status: z.enum(['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED']).optional(),
   groupId: z.string().optional(),
 }) satisfies ZodType<SessionQueryDTO>;
