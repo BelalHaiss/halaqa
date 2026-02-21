@@ -5,20 +5,23 @@ import { z, ZodType } from 'zod';
 const userBaseSchema = z.object({
   name: z
     .string()
-    .min(3, 'الاسم يجب أن يكون 3 أحرف على الأقل')
-    .max(50, 'الاسم طويل جدًا'),
+    .trim()
+    .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
+    .max(100, 'الاسم طويل جدًا'),
 
   username: z
     .string()
+    .trim()
     .min(3, 'اسم الحساب قصير جدًا')
+    .max(50, 'اسم الحساب طويل جدًا')
     .regex(/^[a-zA-Z0-9_]+$/, 'يسمح فقط بالحروف والأرقام و _'),
 
-  role: z.enum(['ADMIN', 'MODERATOR', 'TUTOR', 'STUDENT']),
+  role: z.enum(['ADMIN', 'MODERATOR', 'TUTOR']),
   password: z
     .string()
     .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
     .optional()
-    .or(z.literal('')), // allow empty on edit
+    .or(z.literal('')),
 });
 
 export const userSchema = z.intersection(

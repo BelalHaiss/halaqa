@@ -1,183 +1,58 @@
-import {
-  DEFAULT_TIMEZONE,
-  getNowAsUTC,
-  TIMEZONES,
-  User,
-  UserFormDto,
-  UserRole,
-} from '@halaqa/shared';
-import { users as mockUsers } from '@/lib/mockData';
-import { useState } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { DEFAULT_TIMEZONE, TIMEZONES } from '@halaqa/shared';
+import { withRole } from '@/hoc/withRole';
 import { roleColorMap } from '@/lib/utils';
-import {
-  UserPlus,
-  Edit2,
-  Trash2,
-  Shield,
-  UserCog,
-  GraduationCap
-} from 'lucide-react';
-import { SearchInput } from '@/components/ui/search-input';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+import { FormField } from '@/components/forms/form-field';
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { userSchema } from '../schema/user.schema';
-import { withRole } from '@/hoc/withRole';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Edit2, GraduationCap, Loader2, Shield, Trash2, UserCog, UserPlus } from 'lucide-react';
+import { useUsersViewModel } from '../viewmodels/users.viewmodel';
+
+const roleLabels: Record<string, string> = {
+  ADMIN: 'مدير',
+  MODERATOR: 'مشرف',
+  TUTOR: 'معلم',
+};
+
+const roleIcons: Record<string, typeof Shield> = {
+  ADMIN: Shield,
+  MODERATOR: UserCog,
+  TUTOR: GraduationCap,
+};
 
 function UsersView() {
-  const { user } = useApp();
-  const [users, setUsers] = useState(mockUsers);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [editingUser, setEditingUser] = useState<(typeof mockUsers)[0] | null>(
-    null
-  );
-  const [formData, setFormData] = useState<UserFormDto>({
-    name: '',
-    username: '',
-    role: 'TUTOR',
-    password: '',
-    timezone: DEFAULT_TIMEZONE
-  });
-  const [pendingFormData, setPendingFormData] = useState<UserFormDto | null>(null);
-  const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
-  const [pendingDeleteUser, setPendingDeleteUser] = useState<User | null>(null);
+  const vm = useUsersViewModel();
 
-  if (!user) return null;
+  if (!vm.user) {
+    return null;
+  }
 
-  const roleLabels: Record<string, string> = {
-    ADMIN: 'مدير',
-    MODERATOR: 'مشرف',
-    TUTOR: 'معلم',
-    STUDENT: 'طالب'
-  };
-
-  const roleIcons: Record<string, typeof Shield> = {
-    ADMIN: Shield,
-    MODERATOR: UserCog,
-    TUTOR: GraduationCap,
-    STUDENT: GraduationCap
-  };
-
-  const handleOpenDialog = (userToEdit?: User) => {
-    if (userToEdit) {
-      setEditingUser(userToEdit);
-      setFormData({
-        name: userToEdit.name,
-        username: userToEdit.username || '',
-        role: userToEdit.role,
-        password: '',
-        timezone: userToEdit.timezone || DEFAULT_TIMEZONE
-      });
-    } else {
-      setEditingUser(null);
-      setFormData({
-        name: '',
-        username: '',
-        role: 'TUTOR',
-        password: '',
-        timezone: DEFAULT_TIMEZONE
-      });
-    }
-    setIsDialogOpen(true);
-    setErrors({});
-    setPendingFormData(null);
-    setConfirmSaveOpen(false);
-  };
-
-  const saveUser = (data: UserFormDto) => {
-    if (editingUser) {
-      const now = getNowAsUTC();
-      setUsers(
-        users.map((u) =>
-          u.id === editingUser.id
-            ? {
-                ...u,
-                name: data.name,
-                username: data.username,
-                role: data.role,
-                timezone: data.timezone,
-                updatedAt: now
-              }
-            : u
-        )
-      );
-    } else {
-      const now = getNowAsUTC();
-      const newUser: User = {
-        id: `u${users.length + 1}`,
-        name: data.name,
-        username: data.username,
-        role: data.role,
-        timezone: data.timezone,
-        createdAt: now,
-        updatedAt: now
-      };
-
-      setUsers([...users, newUser]);
-    }
-
-    setIsDialogOpen(false);
-    setConfirmSaveOpen(false);
-    setPendingFormData(null);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const result = userSchema.safeParse(formData);
-
-    if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
-      setErrors(
-        Object.fromEntries(
-          Object.entries(fieldErrors).map(([k, v]) => [k, v?.[0]])
-        )
-      );
-      return;
-    }
-
-    setErrors({});
-    setPendingFormData(result.data);
-    setConfirmSaveOpen(true);
-  };
-
-  const handleDelete = (userToDelete: User) => {
-    setPendingDeleteUser(userToDelete);
-  };
-
-  const filteredUsers = users.filter((userItem) =>
-    userItem.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  if (vm.queryError) {
+    return (
+      <Alert variant='soft' color='danger'>
+        <AlertDescription>{vm.queryError}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div>
@@ -187,14 +62,14 @@ function UsersView() {
             إدارة المستخدمين
           </h1>
           <p className='text-sm text-gray-600 dark:text-gray-400'>
-            إضافة وتعديل المستخدمين والصلاحيات
+            إدارة المشرفين والمعلمين والصلاحيات
           </p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={vm.isDialogOpen} onOpenChange={vm.setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button
-              onClick={() => handleOpenDialog()}
+              onClick={vm.openCreateDialog}
               className='gap-2 bg-emerald-600 hover:bg-emerald-700 text-white'
               size='sm'
             >
@@ -205,144 +80,86 @@ function UsersView() {
           <DialogContent className='sm:max-w-md' dir='rtl'>
             <DialogHeader>
               <DialogTitle>
-                {editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
+                {vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
               </DialogTitle>
               <DialogDescription>
-                {editingUser
+                {vm.editingUser
                   ? 'قم بتعديل بيانات المستخدم'
                   : 'أدخل بيانات المستخدم الجديد'}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={vm.onSubmit}>
               <div className='space-y-4 py-4'>
-                {/* Name Field */}
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>الاسم</Label>
-                  <Input
-                    id='name'
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className='text-right'
-                  />
-                  {errors.name && (
-                    <p className='text-red-500 text-xs'>{errors.name}</p>
-                  )}
-                </div>
+                <FormField
+                  control={vm.form.control}
+                  name='name'
+                  label='الاسم'
+                  type='text'
+                  placeholder='أدخل الاسم'
+                  disabled={vm.isSubmitting}
+                  inputClassName='text-right'
+                />
 
-                {/* Username Field */}
-                <div className='space-y-2'>
-                  <Label htmlFor='username'>اسم الحساب</Label>
-                  <Input
-                    id='username'
-                    value={formData.username}
-                    onChange={(e) =>
-                      setFormData({ ...formData, username: e.target.value })
-                    }
-                    className='text-right'
-                  />
-                  {errors.username && (
-                    <p className='text-red-500 text-xs'>{errors.username}</p>
-                  )}
-                </div>
+                <FormField
+                  control={vm.form.control}
+                  name='username'
+                  label='اسم الحساب'
+                  type='text'
+                  placeholder='username'
+                  disabled={vm.isSubmitting}
+                  inputClassName='text-left'
+                />
 
-                {/* Password Field */}
-                {user.role === 'ADMIN' && (
-                  <div className='space-y-2'>
-                    <Label htmlFor='password'>
-                      كلمة المرور{' '}
-                      {editingUser && '(اتركها فارغة للإبقاء على القديمة)'}
-                    </Label>
-                    <Input
-                      id='password'
-                      type='password'
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                      placeholder={editingUser ? '••••••••' : ''}
-                    />
-                    {errors.password && (
-                      <p className='text-red-500 text-xs'>{errors.password}</p>
-                    )}
-                  </div>
-                )}
+                <FormField
+                  control={vm.form.control}
+                  name='password'
+                  label={
+                    vm.editingUser
+                      ? 'كلمة المرور (اتركها فارغة للإبقاء على الحالية)'
+                      : 'كلمة المرور'
+                  }
+                  type='password'
+                  placeholder='••••••••'
+                  disabled={vm.isSubmitting}
+                />
 
-                {/* Role Field */}
-                <div className='space-y-2'>
-                  <Label htmlFor='role'>الدور</Label>
-                  <Select
-                    value={formData.role}
-                    onValueChange={(value: UserRole) =>
-                      setFormData({ ...formData, role: value })
-                    }
-                  >
-                    <SelectTrigger id='role'>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='ADMIN'>مدير</SelectItem>
-                      <SelectItem value='MODERATOR'>مشرف</SelectItem>
-                      <SelectItem value='TUTOR'>معلم</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.role && (
-                    <p className='text-red-500 text-xs'>{errors.role}</p>
-                  )}
-                </div>
+                <FormField
+                  control={vm.form.control}
+                  name='role'
+                  label='الدور'
+                  type='select'
+                  disabled={vm.isSubmitting || Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')}
+                  options={vm.availableRoles.map((role) => ({
+                    value: role,
+                    label: roleLabels[role],
+                  }))}
+                />
 
-                {/* Timezone Field */}
-                <div className='space-y-2'>
-                  <Label htmlFor='timezone' className='flex items-center gap-2'>
-                    المنطقة الزمنية
-                  </Label>
-                  <Select
-                    value={formData.timezone}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, timezone: value })
-                    }
-                  >
-                    <SelectTrigger id='timezone'>
-                      <SelectValue placeholder='اختر المنطقة الزمنية' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map((tz) => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          <div className='flex items-center justify-between w-full'>
-                            <span>{tz.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.timezone && (
-                    <p className='text-red-500 text-xs'>{errors.timezone}</p>
-                  )}
-                </div>
+                <FormField
+                  control={vm.form.control}
+                  name='timezone'
+                  label='المنطقة الزمنية'
+                  type='select'
+                  disabled={vm.isSubmitting}
+                  options={TIMEZONES.map((tz) => ({
+                    value: tz.value,
+                    label: tz.label,
+                  }))}
+                />
               </div>
 
               <DialogFooter>
                 <Button
                   type='submit'
                   className='bg-emerald-600 hover:bg-emerald-700'
+                  disabled={vm.isSubmitting}
                 >
-                  {editingUser ? 'حفظ التعديلات' : 'إضافة'}
+                  {vm.editingUser ? 'حفظ التعديلات' : 'إضافة'}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Search */}
-      <div className='mb-4'>
-        <SearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder='البحث في المستخدمين...'
-          className='max-w-md'
-        />
       </div>
 
       <Table className='bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700'>
@@ -366,120 +183,111 @@ function UsersView() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredUsers.map((userItem) => {
-            const RoleIcon = roleIcons[userItem.role];
-            const userTimezone = userItem.timezone || DEFAULT_TIMEZONE;
+          {vm.isLoading ? (
+            <TableRow>
+              <TableCell colSpan={5}>
+                <div className='flex items-center justify-center py-8 gap-2 text-muted-foreground'>
+                  <Loader2 className='w-4 h-4 animate-spin' />
+                  جاري التحميل...
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : vm.users.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={5} className='text-center py-10 text-gray-500 dark:text-gray-400'>
+                لا يوجد مستخدمون
+              </TableCell>
+            </TableRow>
+          ) : (
+            vm.users.map((userItem) => {
+              const RoleIcon = roleIcons[userItem.role];
+              const userTimezone = userItem.timezone || DEFAULT_TIMEZONE;
+              const canManage = vm.canManageUser(userItem);
 
-            return (
-              <TableRow key={userItem.id}>
-                <TableCell className='px-4 py-3'>
-                  <div className='text-sm text-gray-900 dark:text-gray-100'>
-                    {userItem.name}
-                  </div>
-                </TableCell>
-                <TableCell className='px-4 py-3'>
-                  <div className='flex flex-col text-xs text-gray-600 dark:text-gray-400'>
-                    <span className='text-sm text-gray-900 dark:text-gray-100'>
-                      {userItem.username}{' '}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className='px-4 py-3'>
-                  <Badge variant='soft' color={roleColorMap[userItem.role]}>
-                    <RoleIcon className='w-3 h-3' />
-                    {roleLabels[userItem.role]}
-                  </Badge>
-                </TableCell>
-                <TableCell className='px-4 py-3'>
-                  <TimezoneDisplay
-                    timezone={userTimezone}
-                    variant='soft'
-                    color='muted'
-                    size='sm'
-                  />
-                </TableCell>
-                <TableCell className='px-4 py-3'>
-                  <div className='flex items-center justify-end gap-2'>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      onClick={() => handleOpenDialog(userItem)}
-                      className='h-8 w-8 p-0'
-                    >
-                      <Edit2 className='w-4 h-4' />
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      onClick={() => handleDelete(userItem)}
-                      disabled={
-                        userItem.id === user.id || userItem.role === 'ADMIN'
-                      }
-                      className='h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20'
-                    >
-                      <Trash2 className='w-4 h-4' />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+              return (
+                <TableRow key={userItem.id}>
+                  <TableCell className='px-4 py-3'>
+                    <div className='text-sm text-gray-900 dark:text-gray-100'>
+                      {userItem.name}
+                    </div>
+                  </TableCell>
+                  <TableCell className='px-4 py-3'>
+                    <div className='text-sm text-gray-900 dark:text-gray-100'>
+                      {userItem.username}
+                    </div>
+                  </TableCell>
+                  <TableCell className='px-4 py-3'>
+                    <Badge variant='soft' color={roleColorMap[userItem.role]}>
+                      <RoleIcon className='w-3 h-3' />
+                      {roleLabels[userItem.role]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className='px-4 py-3'>
+                    <TimezoneDisplay timezone={userTimezone} variant='soft' color='muted' size='sm' />
+                  </TableCell>
+                  <TableCell className='px-4 py-3'>
+                    <div className='flex items-center justify-end gap-2'>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={() => vm.openEditDialog(userItem)}
+                        disabled={!canManage}
+                        className='h-8 w-8 p-0'
+                      >
+                        <Edit2 className='w-4 h-4' />
+                      </Button>
+                      <Button
+                        variant='ghost'
+                        size='sm'
+                        onClick={() => vm.setPendingDeleteUser(userItem)}
+                        disabled={!canManage}
+                        className='h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20'
+                      >
+                        <Trash2 className='w-4 h-4' />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
 
-      {filteredUsers.length === 0 && (
-        <div className='text-center py-12 text-gray-500 dark:text-gray-400'>
-          {searchQuery ? 'لا توجد نتائج للبحث' : 'لا يوجد مستخدمون'}
-        </div>
-      )}
-
       <ConfirmDialog
-        open={confirmSaveOpen}
-        onOpenChange={setConfirmSaveOpen}
-        title={editingUser ? 'تأكيد حفظ التعديلات' : 'تأكيد إضافة المستخدم'}
+        open={vm.confirmSaveOpen}
+        onOpenChange={vm.setConfirmSaveOpen}
+        title={vm.editingUser ? 'تأكيد حفظ التعديلات' : 'تأكيد إضافة المستخدم'}
         description={
-          editingUser
+          vm.editingUser
             ? 'هل تريد حفظ التعديلات على بيانات المستخدم؟'
             : 'هل تريد إضافة المستخدم الجديد؟'
         }
-        confirmText={editingUser ? 'حفظ' : 'إضافة'}
+        confirmText={vm.editingUser ? 'حفظ' : 'إضافة'}
         cancelText='إلغاء'
         variant='solid'
         color='primary'
-        onConfirm={() => {
-          if (!pendingFormData) {
-            return;
-          }
-
-          saveUser(pendingFormData);
-        }}
+        onConfirm={vm.confirmSave}
       />
 
       <ConfirmDialog
-        open={Boolean(pendingDeleteUser)}
+        open={Boolean(vm.pendingDeleteUser)}
         onOpenChange={(open) => {
           if (!open) {
-            setPendingDeleteUser(null);
+            vm.setPendingDeleteUser(null);
           }
         }}
         title='تأكيد حذف المستخدم'
         description={
-          pendingDeleteUser
-            ? `هل أنت متأكد من حذف "${pendingDeleteUser.name}"؟`
+          vm.pendingDeleteUser
+            ? `هل أنت متأكد من حذف "${vm.pendingDeleteUser.name}"؟`
             : 'هل أنت متأكد من حذف هذا المستخدم؟'
         }
         confirmText='حذف'
         cancelText='إلغاء'
         variant='solid'
         color='danger'
-        onConfirm={() => {
-          if (!pendingDeleteUser) {
-            return;
-          }
-
-          setUsers(users.filter((item) => item.id !== pendingDeleteUser.id));
-          setPendingDeleteUser(null);
-        }}
+        onConfirm={vm.confirmDelete}
       />
     </div>
   );

@@ -71,19 +71,54 @@ export interface UpdateUserDto {
   password?: string;
 }
 
-export interface UpdateProfileDto {
+export interface StaffUserDto {
+  id: string;
+  username: string;
+  name: string;
+  role: UserAuthRole;
+  timezone: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateStaffUserDto {
+  username: string;
+  name: string;
+  role: UserAuthRole;
+  password: string;
+  timezone: string;
+}
+
+export interface UpdateStaffUserDto {
+  username?: string;
+  name?: string;
+  role?: UserAuthRole;
+  password?: string;
+  timezone?: string;
+}
+
+export type StaffUsersResponseDto = StaffUserDto[];
+
+export interface UpdateOwnProfileDto {
+  name: string;
   username: string;
   timezone: string;
 }
 
-export interface ChangePasswordDto {
+export interface ChangeOwnPasswordDto {
   currentPassword: string;
   newPassword: string;
   confirmPassword?: string;
 }
 
+export type UpdateProfileDto = UpdateOwnProfileDto;
+export type ChangePasswordDto = ChangeOwnPasswordDto;
+
 export type UserFormDto = Omit<
-  Pick<CreateUserDto, 'name' | 'username' | 'role' | 'password' | 'timezone'>,
+  Pick<
+    CreateStaffUserDto,
+    'name' | 'username' | 'role' | 'password' | 'timezone'
+  >,
   'password'
 > & {
   password?: string;

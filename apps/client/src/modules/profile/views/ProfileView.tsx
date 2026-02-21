@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -29,10 +28,10 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import {
-  ChangePasswordDto,
+  ChangeOwnPasswordDto,
   getTimezoneLabel,
   TIMEZONES,
-  UpdateProfileDto,
+  UpdateOwnProfileDto,
   UserAuthType
 } from '@halaqa/shared';
 import {
@@ -65,6 +64,7 @@ export function ProfileView() {
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      name: user?.name || '',
       username: user?.username || '',
       timezone: user?.timezone || 'Africa/Cairo'
     }
@@ -80,13 +80,13 @@ export function ProfileView() {
     }
   });
 
-  const updateProfileMutation = useApiMutation<UpdateProfileDto, UserAuthType>({
+  const updateProfileMutation = useApiMutation<UpdateOwnProfileDto, UserAuthType>({
     mutationFn: async (data) => {
       if (!user) {
         throw new Error('المستخدم غير متوفر');
       }
 
-      return profileService.updateProfile(user.id, data);
+      return profileService.updateProfile(data);
     },
     onSuccess: (response) => {
       if (!user || !response.data) {
@@ -95,6 +95,7 @@ export function ProfileView() {
 
       setUser({
         ...user,
+        name: response.data.name,
         username: response.data.username || '',
         timezone: response.data.timezone
       });
@@ -107,13 +108,13 @@ export function ProfileView() {
     }
   });
 
-  const changePasswordMutation = useApiMutation<ChangePasswordDto, void>({
+  const changePasswordMutation = useApiMutation<ChangeOwnPasswordDto, void>({
     mutationFn: async (data) => {
       if (!user) {
         throw new Error('المستخدم غير متوفر');
       }
 
-      return profileService.changePassword(user.id, data);
+      return profileService.changePassword(data);
     },
     onSuccess: () => {
       toast.success('تم تغيير كلمة المرور بنجاح');
@@ -200,7 +201,7 @@ export function ProfileView() {
             <CardHeader>
               <CardTitle>معلومات الحساب</CardTitle>
               <CardDescription>
-                قم بتحديث اسم المستخدم والمنطقة الزمنية الخاصة بك
+                قم بتحديث بيانات الحساب الخاصة بك
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -208,19 +209,14 @@ export function ProfileView() {
                 onSubmit={profileForm.handleSubmit(handleProfileUpdate)}
                 className='space-y-4'
               >
-                {/* Name (Read-only) */}
-                <div className='space-y-2'>
-                  <Label htmlFor='name'>الاسم</Label>
-                  <Input
-                    id='name'
-                    value={user.name}
-                    disabled
-                    className='bg-gray-50 dark:bg-gray-900'
-                  />
-                  <p className='text-xs text-gray-500 dark:text-gray-400'>
-                    لا يمكن تغيير الاسم. اتصل بالمسؤول لتغييره.
-                  </p>
-                </div>
+                <FormField
+                  control={profileForm.control}
+                  name='name'
+                  label='الاسم'
+                  type='text'
+                  placeholder='الاسم'
+                  disabled={updateProfileMutation.isPending}
+                />
 
                 {/* Username */}
                 <FormField
@@ -263,20 +259,6 @@ export function ProfileView() {
                       {profileForm.formState.errors.timezone.message}
                     </p>
                   )}
-                </div>
-
-                {/* Role (Read-only) */}
-                <div className='space-y-2'>
-                  <Label htmlFor='role'>الدور</Label>
-                  <Input
-                    id='role'
-                    value={roleLabels[user.role]}
-                    disabled
-                    className='bg-gray-50 dark:bg-gray-900'
-                  />
-                  <p className='text-xs text-gray-500 dark:text-gray-400'>
-                    لا يمكن تغيير الدور. اتصل بالمسؤول لتغييره.
-                  </p>
                 </div>
 
                 <Button
@@ -394,7 +376,8 @@ export function ProfileView() {
 
           await changePasswordMutation.mutateAsync({
             currentPassword: pendingPasswordData.currentPassword,
-            newPassword: pendingPasswordData.newPassword
+            newPassword: pendingPasswordData.newPassword,
+            confirmPassword: pendingPasswordData.confirmPassword
           });
         }}
         variant='solid'
