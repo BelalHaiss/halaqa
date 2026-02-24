@@ -13,6 +13,11 @@ import { EnvVariables } from 'src/types/declartion-merging';
 @Injectable()
 export class DatabaseService extends PrismaClient {
   constructor(configService: ConfigService<EnvVariables>) {
+    console.log('Initializing DatabaseService with config:', {
+      host: configService.get('DATABASE_HOST'),
+      nodeEnv: configService.get('NODE_ENV'),
+      DATABASE_NAME: configService.get('DATABASE_NAME'),
+    });
     super({
       adapter: createMariaDbAdapter({
         DATABASE_HOST: configService.getOrThrow('DATABASE_HOST'),

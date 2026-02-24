@@ -1,15 +1,23 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { fromUTC, getNowAsUTC, getStartAndEndOfDay } from '@halaqa/shared';
-import { seededScheduleDayFromUtc } from 'src/seed/session.seed';
 import { DatabaseModule } from 'src/modules/database/database.module';
 import { DatabaseService } from 'src/modules/database/database.service';
 import { SessionModule } from '../session.module';
 import { SessionService } from '../session.service';
 import {
-  buildSessionTestUsername,
   cleanupSessionTestData,
+  createSessionTestGroupWithScheduleFromUtc,
+  createSessionTestTutor,
 } from './helpers/session-test-db';
+
+function toScheduleDayOfWeek(weekday: number): number {
+  return weekday === 7 ? 0 : weekday;
+}
+
+function buildRunId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 describe('SessionService (integration)', () => {
   jest.setTimeout(30_000);
@@ -21,7 +29,11 @@ describe('SessionService (integration)', () => {
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+        }),
+
         DatabaseModule,
         SessionModule,
       ],
@@ -36,104 +48,88 @@ describe('SessionService (integration)', () => {
   });
 
   afterAll(async () => {
-    await cleanupSessionTestData(prisma);
-    await moduleRef.close();
+    try {
+      await cleanupSessionTestData(prisma);
+      await prisma.$disconnect();
+    } finally {
+      if (moduleRef) {
+        await moduleRef.close();
+      }
+    }
   });
 
-  it('getTodaySessions returns canonical startedAt/originalStartedAt without date/time', async () => {
-    const runId = Date.now().toString();
-    const tutor = await prisma.user.create({
-      data: {
-        username: buildSessionTestUsername('tutor', runId),
-        name: 'Session Tutor',
-        role: 'TUTOR',
-        timezone: 'UTC',
-      },
+  it('finds group scheduled in group timezone even when tutor current weekday is different', async () => {
+    const runId = buildRunId();
+    const tutorTimezone = 'Pacific/Kiritimati';
+    const groupTimezone = 'Pacific/Honolulu';
+    const tutor = await createSessionTestTutor({
+      prisma,
+      runId,
+      name: 'Timezone Tutor',
+      timezone: tutorTimezone,
     });
 
-    const userTimezone = 'UTC';
-    const { startAsDatetime, endAsDatetime } =
-      getStartAndEndOfDay(userTimezone);
-    const plannedUtc = startAsDatetime.plus({ hours: 10 });
-    const rescheduledUtc = plannedUtc.plus({ hours: 1 });
-    const outOfWindowUtc = endAsDatetime.plus({ hours: 2 });
+    const { startAsDatetime } = getStartAndEndOfDay(tutorTimezone);
+    const plannedUtcIso = startAsDatetime.plus({ hours: 8 }).toUTC().toISO();
+    if (!plannedUtcIso) {
+      throw new Error('Failed to build plannedUtcIso for timezone test.');
+    }
 
-    const inWindowGroup = await prisma.group.create({
-      data: {
-        name: `Session Group In ${runId}`,
-        tutorId: tutor.id,
-        timezone: 'Pacific/Kiritimati',
-        status: 'ACTIVE',
-        scheduleDays: {
-          create: seededScheduleDayFromUtc({
-            utcIso: plannedUtc.toUTC().toISO()!,
-            timezone: 'Pacific/Kiritimati',
-          }),
-        },
-      },
-    });
+    const tutorDayOfWeek = toScheduleDayOfWeek(
+      fromUTC(plannedUtcIso, tutorTimezone).weekday,
+    );
+    const groupDayOfWeek = toScheduleDayOfWeek(
+      fromUTC(plannedUtcIso, groupTimezone).weekday,
+    );
+    expect(tutorDayOfWeek).not.toBe(groupDayOfWeek);
 
-    await prisma.group.create({
-      data: {
-        name: `Session Group Out ${runId}`,
-        tutorId: tutor.id,
-        timezone: 'Pacific/Kiritimati',
-        status: 'ACTIVE',
-        scheduleDays: {
-          create: seededScheduleDayFromUtc({
-            utcIso: outOfWindowUtc.toUTC().toISO()!,
-            timezone: 'Pacific/Kiritimati',
-          }),
-        },
-      },
-    });
-
-    await prisma.session.create({
-      data: {
-        groupId: inWindowGroup.id,
-        startedAt: rescheduledUtc.toJSDate(),
-        originalStartedAt: plannedUtc.toJSDate(),
-        status: 'RESCHEDULED',
-      },
+    const group = await createSessionTestGroupWithScheduleFromUtc({
+      prisma,
+      runId,
+      tutorId: tutor.id,
+      timezone: groupTimezone,
+      scheduledUtcIso: plannedUtcIso,
     });
 
     const sessions = await sessionService.getTodaySessions(tutor);
 
     expect(sessions).toHaveLength(1);
-    expect(sessions[0].startedAt).toBe(rescheduledUtc.toUTC().toISO()!);
-    expect(sessions[0].originalStartedAt).toBe(plannedUtc.toUTC().toISO()!);
-    expect(sessions[0]).not.toHaveProperty('date');
-    expect(sessions[0]).not.toHaveProperty('time');
+    expect(sessions[0].groupName).toBe(group.name);
+    expect(sessions[0].startedAt).toBe(plannedUtcIso);
   });
 
-  it('markMissedSessions creates missing sessions and stays idempotent', async () => {
-    const runId = Date.now().toString();
-    const tutor = await prisma.user.create({
-      data: {
-        username: buildSessionTestUsername('tutor-missed', runId),
-        name: 'Missed Tutor',
-        role: 'TUTOR',
-        timezone: 'UTC',
-      },
+  it('markMissedSessions creates one MISSED record for an overdue planned session', async () => {
+    const runId = buildRunId();
+    const tutor = await createSessionTestTutor({
+      prisma,
+      runId,
+      name: 'Missed Tutor',
+      timezone: 'UTC',
     });
 
-    const targetUtc = fromUTC(getNowAsUTC(), 'UTC')
+    const scheduledUtc = fromUTC(getNowAsUTC(), 'UTC')
       .minus({ hours: 13 })
       .startOf('hour');
-    const groupTimezone = 'UTC';
+    const scheduledUtcIso = scheduledUtc.toISO();
+    if (!scheduledUtcIso) {
+      throw new Error(
+        'Failed to build scheduledUtcIso for missed session test.',
+      );
+    }
 
-    const group = await prisma.group.create({
+    const group = await createSessionTestGroupWithScheduleFromUtc({
+      prisma,
+      runId,
+      tutorId: tutor.id,
+      timezone: 'UTC',
+      scheduledUtcIso,
+    });
+    await prisma.group.update({
+      where: {
+        id: group.id,
+      },
       data: {
-        name: `Missed Group ${runId}`,
-        tutorId: tutor.id,
-        timezone: groupTimezone,
-        status: 'ACTIVE',
-        scheduleDays: {
-          create: seededScheduleDayFromUtc({
-            utcIso: targetUtc.toISO()!,
-            timezone: groupTimezone,
-          }),
-        },
+        createdAt: scheduledUtc.minus({ hours: 24 }).toJSDate(),
       },
     });
 
@@ -151,8 +147,6 @@ describe('SessionService (integration)', () => {
 
     expect(missedSessions).toHaveLength(1);
     expect(missedSessions[0].status).toBe('MISSED');
-    expect(missedSessions[0].startedAt.toISOString()).toBe(
-      targetUtc.toUTC().toISO()!,
-    );
+    expect(missedSessions[0].startedAt.toISOString()).toBe(scheduledUtcIso);
   });
 });

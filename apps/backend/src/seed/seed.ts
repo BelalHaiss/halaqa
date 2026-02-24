@@ -3,7 +3,13 @@ import { seededAdminData, seededUserData } from './user.seed';
 import { createMariaDbAdapter } from 'src/modules/database/database.util';
 import { faker } from '@faker-js/faker';
 import { seededGroupData } from './group.seed';
-
+console.log(
+  process.env.DATABASE_NAME,
+  process.env.DATABASE_HOST,
+  process.env.DATABASE_USER,
+  process.env.DATABASE_PASSWORD,
+  process.env.DATABASE_PORT,
+);
 const prisma = new PrismaClient({
   adapter: createMariaDbAdapter({
     DATABASE_HOST: process.env.DATABASE_HOST,
