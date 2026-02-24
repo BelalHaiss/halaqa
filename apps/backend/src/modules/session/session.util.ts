@@ -119,7 +119,6 @@ export function buildVirtualSessionId(
  * - The returned `startedAt` is a Date object created from the UTC ISO string
  */
 export function parseVirtualSessionId(id: string) {
-  console.log('Parsing virtual session ID:', id);
   if (!id.startsWith(`${VIRTUAL_SESSION_PREFIX}:`)) {
     return null;
   }
@@ -136,9 +135,6 @@ export function parseVirtualSessionId(id: string) {
 
   const groupId = withoutPrefix.slice(0, colonIndex);
   const dateTimeStr = withoutPrefix.slice(colonIndex + 1);
-
-  console.log('Extracted groupId:', groupId);
-  console.log('Extracted datetime:', dateTimeStr);
   const startedAt = new Date(dateTimeStr);
 
   if (!groupId || Number.isNaN(startedAt.getTime())) {

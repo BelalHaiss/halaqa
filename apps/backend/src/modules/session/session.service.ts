@@ -19,6 +19,7 @@ import type {
 } from '@halaqa/shared';
 import {
   AttendanceStatus,
+  GroupStatus,
   Prisma,
   SessionStatus,
   User,
@@ -402,6 +403,10 @@ export class SessionService {
 
     const groups = await this.prismaService.group.findMany({
       where: {
+        status: GroupStatus.ACTIVE,
+        createdAt: {
+          lte: cutoffUtc.toJSDate(),
+        },
         scheduleDays: {
           some: {
             dayOfWeek: {
@@ -430,16 +435,27 @@ export class SessionService {
     // Step 1: Generate all expected sessions based on each group's schedule
     // For each group, generate all session times in the time window (36h-12h ago)
     // flatMap is used because each group produces multiple sessions, and we want one flat array
-    const plannedOccurrences = groups.flatMap((group) =>
-      generatePlannedOccurrencesForRange(
+    const cutoffUtcIso = cutoffUtc.toISO()!;
+    const lookbackUtcMillis = lookbackUtc.toMillis();
+    const cutoffUtcMillis = cutoffUtc.toMillis();
+    const plannedOccurrences = groups.flatMap((group) => {
+      const groupRangeStartUtc = new Date(
+        Math.max(lookbackUtcMillis, group.createdAt.getTime()),
+      );
+
+      if (groupRangeStartUtc.getTime() > cutoffUtcMillis) {
+        return [];
+      }
+
+      return generatePlannedOccurrencesForRange(
         group,
-        lookbackUtc.toISO()!,
-        cutoffUtc.toISO()!,
+        groupRangeStartUtc.toISOString(),
+        cutoffUtcIso,
       ).map((startedAt) => ({
         groupId: group.id,
         startedAt,
-      })),
-    );
+      }));
+    });
 
     if (plannedOccurrences.length === 0) return;
 

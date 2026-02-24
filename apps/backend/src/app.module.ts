@@ -15,6 +15,7 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
     ScheduleModule.forRoot(),
     DatabaseModule,
