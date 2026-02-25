@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
+  AddLearnersToGroupDto,
   CreateLearnerDto,
   GroupDetailsDto,
   GroupStudentSummaryDto,
+  GroupTutorSummaryDto,
   LearnerDto,
   UpdateGroupDto,
   UpdateGroupSettingsDto,
@@ -13,18 +15,27 @@ import { toast } from 'sonner';
 import {
   StudentMainInfoMode,
   StudentMainInfoSubmitArgs
-} from '@/components/ui/student-main-info-modal';
+} from '@/modules/learners/components/student-main-info-modal';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryClient, queryKeys } from '@/lib/query-client';
-import { learnerService } from '@/modules/learners/services/learner.service';
+import { learnerService } from '@/modules/learners';
 import { groupService } from '../services/group.service';
 
-export const useGroupDetailsViewModel = (groupId: string, user: User) => {
+type UseGroupDetailsViewModelOptions = {
+  shouldLoadTutors: boolean;
+};
+
+export const useGroupDetailsViewModel = (
+  groupId: string,
+  user: User,
+  options: UseGroupDetailsViewModelOptions
+) => {
   const canManageGroup = user.role === 'ADMIN' || user.role === 'MODERATOR';
   const canEditLearner =
     user.role === 'ADMIN' || user.role === 'MODERATOR' || user.role === 'TUTOR';
   const [isLearnerModalOpen, setIsLearnerModalOpen] = useState(false);
+  const [isAddLearnersModalOpen, setIsAddLearnersModalOpen] = useState(false);
   const [learnerModalMode, setLearnerModalMode] =
     useState<StudentMainInfoMode>('view');
   const [selectedLearner, setSelectedLearner] =
@@ -34,6 +45,22 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
     queryKey: queryKeys.groups.detail(groupId),
     enabled: Boolean(groupId),
     queryFn: async () => groupService.getGroupById(groupId)
+  });
+
+  const tutorsQuery = useApiQuery<GroupTutorSummaryDto[]>({
+    queryKey: queryKeys.groups.tutors(),
+    queryFn: async () => groupService.getTutors(),
+    enabled: canManageGroup && options.shouldLoadTutors
+  });
+
+  const learnersQuery = useApiQuery<LearnerDto[]>({
+    queryKey: queryKeys.learners.list({
+      scope: 'group-details-attach',
+      groupId,
+      limit: 100
+    }),
+    queryFn: async () => groupService.queryLearners({ page: 1, limit: 100 }),
+    enabled: canManageGroup && isAddLearnersModalOpen
   });
 
   const updateGroupMutation = useApiMutation<
@@ -63,11 +90,33 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.groups.detail(groupId)
         }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.groups.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all })
       ]);
     },
     onError: (error) => {
       toast.error(error.message || 'فشل إضافة المتعلم');
+    }
+  });
+
+  const addExistingLearnersMutation = useApiMutation<
+    AddLearnersToGroupDto,
+    GroupDetailsDto
+  >({
+    mutationFn: async (payload) =>
+      groupService.addExistingLearnersToGroup(groupId, payload),
+    onSuccess: async () => {
+      toast.success('تمت إضافة المتعلمين للحلقة بنجاح');
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groups.detail(groupId)
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all })
+      ]);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'فشل إضافة المتعلمين');
     }
   });
 
@@ -121,14 +170,12 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
     await removeStudentMutation.mutateAsync({ userId });
   };
 
-  const openCreateLearnerModal = () => {
+  const openAddLearnersModal = () => {
     if (!canManageGroup) {
       return;
     }
 
-    setSelectedLearner(null);
-    setLearnerModalMode('create');
-    setIsLearnerModalOpen(true);
+    setIsAddLearnersModalOpen(true);
   };
 
   const openLearnerEditModal = (student: GroupStudentSummaryDto) => {
@@ -148,33 +195,48 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
   };
 
   const submitLearnerMainInfo = async (args: StudentMainInfoSubmitArgs) => {
-    if (args.mode === 'create') {
-      if (!canManageGroup) {
-        throw new Error('غير مصرح لك بتنفيذ العملية');
-      }
-
-      if (args.addToGroupId && args.addToGroupId !== groupId) {
-        throw new Error('معرف الحلقة غير متطابق');
-      }
-
-      await createLearnerAndAttachMutation.mutateAsync(args.data);
-    } else if (args.mode === 'edit') {
-      if (!canEditLearner) {
-        throw new Error('غير مصرح لك بتنفيذ العملية');
-      }
-
-      if (!args.learnerId) {
-        throw new Error('معرف المتعلم مفقود');
-      }
-
-      await updateLearnerMutation.mutateAsync({
-        id: args.learnerId,
-        data: args.data as UpdateLearnerDto
-      });
-    } else {
+    if (args.mode !== 'edit') {
       throw new Error('الوضع غير مدعوم في هذه الصفحة');
     }
+
+    if (!canEditLearner) {
+      throw new Error('غير مصرح لك بتنفيذ العملية');
+    }
+
+    if (!args.learnerId) {
+      throw new Error('معرف المتعلم مفقود');
+    }
+
+    await updateLearnerMutation.mutateAsync({
+      id: args.learnerId,
+      data: args.data as UpdateLearnerDto
+    });
   };
+
+  const addExistingLearnersToGroup = async (dto: AddLearnersToGroupDto) => {
+    if (!canManageGroup) {
+      throw new Error('غير مصرح لك بتنفيذ العملية');
+    }
+
+    await addExistingLearnersMutation.mutateAsync(dto);
+  };
+
+  const createLearnerAndAttachToGroup = async (dto: CreateLearnerDto) => {
+    if (!canManageGroup) {
+      throw new Error('غير مصرح لك بتنفيذ العملية');
+    }
+
+    await createLearnerAndAttachMutation.mutateAsync(dto);
+  };
+
+  const availableLearners = useMemo(() => {
+    const allLearners = learnersQuery.data?.data ?? [];
+    const currentGroupLearnerIds = new Set(
+      (groupQuery.data?.data?.students ?? []).map((student) => student.id)
+    );
+
+    return allLearners.filter((learner) => !currentGroupLearnerIds.has(learner.id));
+  }, [groupQuery.data?.data?.students, learnersQuery.data?.data]);
 
   return {
     canManageGroup,
@@ -182,13 +244,21 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
     group: groupQuery.data?.data ?? null,
     isLoading: groupQuery.isPending,
     error: groupQuery.error?.message ?? null,
+    tutors: tutorsQuery.data?.data ?? [],
+    isLoadingTutors: tutorsQuery.isPending,
 
     updateGroupSettings,
     removeStudentFromGroup,
-    openCreateLearnerModal,
+    openAddLearnersModal,
     openLearnerEditModal,
     openLearnerInfoModal,
     submitLearnerMainInfo,
+    addExistingLearnersToGroup,
+    createLearnerAndAttachToGroup,
+    availableLearners,
+    isLoadingAvailableLearners: learnersQuery.isPending,
+    isAddLearnersModalOpen,
+    setIsAddLearnersModalOpen,
     isLearnerModalOpen,
     setIsLearnerModalOpen,
     learnerModalMode,
@@ -196,6 +266,7 @@ export const useGroupDetailsViewModel = (groupId: string, user: User) => {
 
     isUpdatingGroup: updateGroupMutation.isPending,
     isAddingStudent: createLearnerAndAttachMutation.isPending,
+    isAddingExistingStudents: addExistingLearnersMutation.isPending,
     isRemovingStudent: removeStudentMutation.isPending,
     isUpdatingLearner: updateLearnerMutation.isPending
   };

@@ -34,6 +34,10 @@ export const queryKeys = {
     all: ['groups'] as const,
     lists: () => [...queryKeys.groups.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.groups.lists(), query] as const,
+    options: () => [...queryKeys.groups.all, 'options'] as const,
+    stats: (metric: 'groups-count' | 'learners-count' | 'tutors-count') =>
+      [...queryKeys.groups.all, 'stats', metric] as const,
+    tutors: () => [...queryKeys.groups.all, 'tutors'] as const,
     details: () => [...queryKeys.groups.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.groups.details(), id] as const
   },
@@ -43,6 +47,8 @@ export const queryKeys = {
     all: ['sessions'] as const,
     lists: () => [...queryKeys.sessions.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.sessions.lists(), query] as const,
+    today: (userId: string) =>
+      [...queryKeys.sessions.lists(), 'today', userId] as const,
     details: () => [...queryKeys.sessions.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.sessions.details(), id] as const
   },

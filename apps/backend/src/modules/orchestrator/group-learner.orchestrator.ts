@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateLearnerDto, DEFAULT_TIMEZONE } from '@halaqa/shared';
+import {
+  AddLearnersToGroupDto,
+  CreateLearnerDto,
+  DEFAULT_TIMEZONE,
+} from '@halaqa/shared';
 import { UserRole } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
 
@@ -23,7 +27,6 @@ export class GroupLearnerOrchestrator {
         },
         select: {
           id: true,
-          role: true,
         },
       });
 
@@ -33,6 +36,21 @@ export class GroupLearnerOrchestrator {
           userId: createdLearner.id,
         },
       });
+    });
+  }
+
+  async addExistingLearnersToGroup(
+    groupId: string,
+    dto: AddLearnersToGroupDto,
+  ): Promise<void> {
+    const learnerIds = [...new Set(dto.learnerIds)];
+
+    await this.prismaService.groupStudent.createMany({
+      data: learnerIds.map((userId) => ({
+        groupId,
+        userId,
+      })),
+      skipDuplicates: true,
     });
   }
 }

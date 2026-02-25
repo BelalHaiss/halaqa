@@ -1,23 +1,20 @@
 import { z, ZodType } from 'zod';
 import { CreateLearnerDto } from '@halaqa/shared';
 import { timezoneFieldSchema } from '@/lib/validation/timezone.schema';
+import { nameSchema, notesSchema } from '@/lib/validation/fields.schema';
 
 /**
  * Base schema for learner contact information
  */
 const learnerContactSchema = z.object({
-  notes: z.string().trim().max(2000, 'الملاحظات طويلة جدًا').optional()
+  notes: notesSchema.optional()
 });
 
 /**
  * Base schema for creating a learner (without timezone)
  */
 const createLearnerBaseSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
-    .max(100, 'الاسم طويل جدًا'),
+  name: nameSchema,
   contact: learnerContactSchema.optional()
 });
 

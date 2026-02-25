@@ -1,8 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
-import type { TimeMinutes, ISODateOnlyString } from '@halaqa/shared';
+import type { TimeMinutes } from '@halaqa/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,13 +13,11 @@ import {
 } from '@/components/ui/dialog';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Typography } from '@/components/ui/typography';
-
-const rescheduleSchema = z.object({
-  date: z.string().min(1, 'التاريخ مطلوب'),
-  time: z.number().int().min(0).max(1439, 'الوقت مطلوب')
-});
-
-type RescheduleFormData = z.infer<typeof rescheduleSchema>;
+import { Field, FieldError } from '@/components/ui/field';
+import {
+  rescheduleSchema,
+  type RescheduleFormData
+} from '../schema/reschedule.schema';
 
 interface RescheduleDialogProps {
   open: boolean;
@@ -41,23 +38,24 @@ export const RescheduleDialog = ({
     control,
     handleSubmit,
     reset,
-    formState: { errors }
+    formState: { errors, isDirty, isValid }
   } = useForm<RescheduleFormData>({
     resolver: zodResolver(rescheduleSchema),
     defaultValues: {
       date: '',
       time: 0 as TimeMinutes
-    }
+    },
+    mode: 'onTouched'
   });
 
   const onSubmit = async (data: RescheduleFormData) => {
-    await onReschedule(data.date, data.time as TimeMinutes);
+    await onReschedule(data.date, data.time);
     reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className='w-full sm:max-w-lg'>
         <DialogHeader>
           <DialogTitle>إعادة جدولة الجلسة</DialogTitle>
           <DialogDescription>
@@ -73,27 +71,37 @@ export const RescheduleDialog = ({
             <Controller
               control={control}
               name='date'
-              render={({ field: dateField }) => (
+              render={({ field: dateField, fieldState: dateFieldState }) => (
                 <Controller
                   control={control}
                   name='time'
-                  render={({ field: timeField }) => (
-                    <DateTimePicker
-                      date={dateField.value}
-                      time={timeField.value}
-                      onDateChange={dateField.onChange}
-                      onTimeChange={timeField.onChange}
-                      disabled={isLoading}
-                    />
+                  render={({
+                    field: timeField,
+                    fieldState: timeFieldState
+                  }) => (
+                    <Field
+                      data-invalid={
+                        dateFieldState.invalid || timeFieldState.invalid
+                      }
+                    >
+                      <DateTimePicker
+                        date={dateField.value}
+                        time={timeField.value}
+                        onDateChange={dateField.onChange}
+                        onDateBlur={dateField.onBlur}
+                        onTimeChange={timeField.onChange}
+                        onTimeBlur={timeField.onBlur}
+                        invalid={
+                          dateFieldState.invalid || timeFieldState.invalid
+                        }
+                        disabled={isLoading}
+                      />
+                    </Field>
                   )}
                 />
               )}
             />
-            {(errors.date || errors.time) && (
-              <Typography as='p' size='sm' color='danger'>
-                {errors.date?.message || errors.time?.message}
-              </Typography>
-            )}
+            <FieldError errors={[errors.date, errors.time]} />
           </div>
 
           <DialogFooter>
@@ -109,7 +117,7 @@ export const RescheduleDialog = ({
             >
               إلغاء
             </Button>
-            <Button type='submit' disabled={isLoading}>
+            <Button type='submit' disabled={isLoading || !isDirty || !isValid}>
               {isLoading ? (
                 <Loader2 className='w-4 h-4 animate-spin' />
               ) : (

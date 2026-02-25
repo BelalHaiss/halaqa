@@ -5,7 +5,7 @@ import { sessionService } from '../services/session.service';
 
 export const useTodaySessionsViewModel = (currentUser: User) => {
   const todaySessionsQuery = useApiQuery<SessionSummaryDTO[]>({
-    queryKey: [...queryKeys.sessions.lists(), 'today', currentUser.id] as const,
+    queryKey: queryKeys.sessions.today(currentUser.id),
     queryFn: async () => sessionService.getTodaySessions()
   });
 

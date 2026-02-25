@@ -82,3 +82,7 @@ export interface UpdateGroupSettingsDto {
   status?: GroupStatus;
   scheduleDays?: GroupScheduleDay[];
 }
+
+export interface AddLearnersToGroupDto {
+  learnerIds: string[];
+}

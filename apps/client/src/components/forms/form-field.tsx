@@ -72,7 +72,11 @@ function FormFieldComponent<T extends FieldValues>({
         <Checkbox
           id={fieldId}
           checked={value}
-          onCheckedChange={onChange}
+          onCheckedChange={(checked) => {
+            onChange(checked);
+            onBlur();
+          }}
+          onBlur={onBlur}
           disabled={disabled}
           aria-invalid={invalid}
           className={inputClassName}
@@ -82,10 +86,23 @@ function FormFieldComponent<T extends FieldValues>({
 
     if (type === 'select') {
       return (
-        <Select value={value} onValueChange={onChange} disabled={disabled}>
+        <Select
+          value={value}
+          onValueChange={(nextValue) => {
+            onChange(nextValue);
+            onBlur();
+          }}
+          onOpenChange={(open) => {
+            if (!open) {
+              onBlur();
+            }
+          }}
+          disabled={disabled}
+        >
           <SelectTrigger
             id={fieldId}
             aria-invalid={invalid}
+            onBlur={onBlur}
             className={inputClassName}
           >
             <SelectValue placeholder={placeholder} />
@@ -142,28 +159,30 @@ function FormFieldComponent<T extends FieldValues>({
       render={({
         field: { value, onChange, onBlur },
         fieldState: { error, invalid }
-      }) => (
-        <Field
-          data-invalid={invalid}
-          className='text-sm'
-          data-disabled={disabled}
-        >
-          {type === 'checkbox' ? (
-            <div className='flex items-center gap-3'>
-              {renderInput(value, onChange, onBlur, invalid)}
-              {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
-            </div>
-          ) : (
-            <>
-              {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
-              {renderInput(value || '', onChange, onBlur, invalid)}
-            </>
-          )}
-          {showError && error && (
-            <FieldErrorComponent errors={[error as FieldError]} />
-          )}
-        </Field>
-      )}
+      }) => {
+        return (
+          <Field
+            data-invalid={invalid}
+            className='text-sm'
+            data-disabled={disabled}
+          >
+            {type === 'checkbox' ? (
+              <div className='flex items-center gap-3'>
+                {renderInput(value, onChange, onBlur, invalid)}
+                {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
+              </div>
+            ) : (
+              <>
+                {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
+                {renderInput(value || '', onChange, onBlur, invalid)}
+              </>
+            )}
+            {showError && error && (
+              <FieldErrorComponent errors={[error as FieldError]} />
+            )}
+          </Field>
+        );
+      }}
     />
   );
 }

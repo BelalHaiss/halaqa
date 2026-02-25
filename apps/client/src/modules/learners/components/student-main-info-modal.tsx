@@ -23,13 +23,14 @@ import { Typography } from '@/components/ui/typography';
 import {
   studentMainInfoFormSchema,
   type StudentMainInfoFormValues
-} from '@/components/ui/student-main-info.schema';
+} from './student-main-info.schema';
+import { LearnerGroupsReadonlyPanel } from './LearnerGroupsReadonlyPanel';
 
 export type StudentMainInfoMode = 'view' | 'edit' | 'create';
 
 export type StudentMainInfoLearner = Pick<
   LearnerDto,
-  'id' | 'name' | 'timezone' | 'contact'
+  'id' | 'name' | 'timezone' | 'contact' | 'groupCount' | 'groups'
 >;
 
 export type StudentMainInfoSubmitArgs =
@@ -86,7 +87,7 @@ export function StudentMainInfoModal({
   const form = useForm<StudentMainInfoFormValues>({
     resolver: zodResolver(studentMainInfoFormSchema),
     values: defaultValues,
-    mode: 'onBlur'
+    mode: 'onTouched'
   });
 
   const handleFormSubmit = (values: StudentMainInfoFormValues) => {
@@ -164,7 +165,7 @@ export function StudentMainInfoModal({
           onOpenChange(nextOpen);
         }}
       >
-        <DialogContent dir='rtl' className='sm:max-w-lg'>
+        <DialogContent dir='rtl' className='w-full sm:max-w-lg'>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription>{description}</DialogDescription>
@@ -209,8 +210,15 @@ export function StudentMainInfoModal({
               rows={4}
             />
 
+            {isViewMode ? (
+              <LearnerGroupsReadonlyPanel
+                groups={learner?.groups}
+                groupCount={learner?.groupCount}
+              />
+            ) : null}
+
             {errorMessage ? (
-              <Typography as='div' size='sm' color='danger' role='alert'>
+              <Typography as='div' size='sm' className='text-danger' role='alert'>
                 {errorMessage}
               </Typography>
             ) : null}
@@ -227,7 +235,14 @@ export function StudentMainInfoModal({
               </Button>
 
               {!isViewMode ? (
-                <Button type='submit' disabled={isLoading}>
+                <Button
+                  type='submit'
+                  disabled={
+                    isLoading ||
+                    !form.formState.isDirty ||
+                    !form.formState.isValid
+                  }
+                >
                   {isLoading ? 'جاري الحفظ...' : 'حفظ'}
                 </Button>
               ) : null}
@@ -248,8 +263,6 @@ export function StudentMainInfoModal({
         confirmText={isCreateMode ? 'إضافة' : 'حفظ'}
         cancelText='إلغاء'
         onConfirm={confirmSubmit}
-        variant='solid'
-        color='primary'
       />
     </>
   );

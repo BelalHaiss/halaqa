@@ -56,7 +56,7 @@ export function HistoryFilterContainer({
       <CardContent className='space-y-3'>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3'>
           <div className='space-y-1'>
-            <Typography as='label' size='xs' variant='ghost' color='muted'>
+            <Typography as='label' size='xs' className='text-muted-foreground'>
               من تاريخ
             </Typography>
             <HistoryDateInput
@@ -68,7 +68,7 @@ export function HistoryFilterContainer({
           </div>
 
           <div className='space-y-1'>
-            <Typography as='label' size='xs' variant='ghost' color='muted'>
+            <Typography as='label' size='xs' className='text-muted-foreground'>
               إلى تاريخ
             </Typography>
             <HistoryDateInput
@@ -80,7 +80,7 @@ export function HistoryFilterContainer({
           </div>
 
           <div className='space-y-1'>
-            <Typography as='label' size='xs' variant='ghost' color='muted'>
+            <Typography as='label' size='xs' className='text-muted-foreground'>
               الحلقة
             </Typography>
             <Select
@@ -103,7 +103,7 @@ export function HistoryFilterContainer({
           </div>
 
           <div className='space-y-1'>
-            <Typography as='label' size='xs' variant='ghost' color='muted'>
+            <Typography as='label' size='xs' className='text-muted-foreground'>
               حالة الجلسة
             </Typography>
             <Select

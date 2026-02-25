@@ -7,6 +7,12 @@ import {
   UpdateGroupSettingsDto
 } from '@halaqa/shared';
 import { timezoneFieldSchema } from '@/lib/validation/timezone.schema';
+import {
+  dayOfWeekSchema,
+  descriptionSchema,
+  nameSchema,
+  tutorIdSchema
+} from '@/lib/validation/fields.schema';
 
 const groupStatusSchema = z.enum([
   'ACTIVE',
@@ -15,7 +21,7 @@ const groupStatusSchema = z.enum([
 ]) satisfies ZodType<GroupStatus>;
 
 const groupScheduleDaySchema = z.object({
-  dayOfWeek: z.number().int().min(0).max(6),
+  dayOfWeek: dayOfWeekSchema,
   startMinutes: z.number().int().min(0).max(1439),
   durationMinutes: z.number().int().min(15).max(720)
 }) satisfies ZodType<GroupScheduleDay>;
@@ -26,9 +32,9 @@ const uniqueScheduleDays = (value: GroupScheduleDay[]) => {
 };
 
 const createGroupBaseSchema = z.object({
-  name: z.string().trim().min(2, 'الاسم يجب أن يكون حرفين على الأقل').max(100),
-  description: z.string().trim().max(500).optional(),
-  tutorId: z.string().trim().min(1, 'اختر المعلم'),
+  name: nameSchema,
+  description: descriptionSchema.optional(),
+  tutorId: tutorIdSchema,
   status: groupStatusSchema.optional(),
   scheduleDays: z
     .array(groupScheduleDaySchema)
@@ -43,14 +49,9 @@ export const createGroupSchema = z.intersection(
 
 const updateGroupBaseSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
-      .max(100)
-      .optional(),
-    description: z.string().trim().max(500).optional(),
-    tutorId: z.string().trim().min(1, 'اختر المعلم').optional(),
+    name: nameSchema.optional(),
+    description: descriptionSchema.optional(),
+    tutorId: tutorIdSchema.optional(),
     status: groupStatusSchema.optional(),
     scheduleDays: z
       .array(groupScheduleDaySchema)
@@ -85,9 +86,3 @@ export const updateGroupSettingsSchema = z
   .refine((value) => Object.keys(value).length > 0, {
     message: 'قم بتعديل حقل واحد على الأقل'
   }) satisfies ZodType<UpdateGroupSettingsDto>;
-
-export type CreateGroupFormValues = z.infer<typeof createGroupSchema>;
-export type UpdateGroupFormValues = z.infer<typeof updateGroupSchema>;
-export type UpdateGroupSettingsFormValues = z.infer<
-  typeof updateGroupSettingsSchema
->;

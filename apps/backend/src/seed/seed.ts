@@ -1,8 +1,19 @@
+import { faker, fakerAR } from '@faker-js/faker';
 import { PrismaClient } from 'generated/prisma/client';
-import { seededAdminData, seededUserData } from './user.seed';
 import { createMariaDbAdapter } from 'src/modules/database/database.util';
-import { faker } from '@faker-js/faker';
-import { seededGroupData } from './group.seed';
+import { cleanUpDatabase } from './cleanup.seed';
+import { seedGroups } from './group.seed';
+import {
+  ATTENDANCE_STATUS_WEIGHTS,
+  MAX_SESSION_DAYS_LOOKBACK,
+  SEED_NUMBER,
+  SESSION_STATUS_WEIGHTS,
+  TOTAL_GROUPS,
+  TOTAL_LEARNERS,
+  TOTAL_TUTORS,
+} from './seed.constants';
+import { seedSessionsAndAttendance } from './session.seed';
+import { seedUsers } from './user.seed';
 
 const prisma = new PrismaClient({
   adapter: createMariaDbAdapter({
@@ -16,67 +27,31 @@ const prisma = new PrismaClient({
 
 export const seedData = async () => {
   try {
-    const adminData = await seededAdminData();
-    await prisma.user.upsert({
-      where: { username: adminData.username! },
-      update: {},
-      create: adminData,
+    faker.seed(SEED_NUMBER);
+    fakerAR.seed(SEED_NUMBER);
+
+    await cleanUpDatabase(prisma);
+
+    const { tutors, students } = await seedUsers({
+      prisma,
+      totalTutors: TOTAL_TUTORS,
+      totalLearners: TOTAL_LEARNERS,
     });
-    const usersSeed = faker.helpers.multiple(seededUserData, { count: 50 });
 
-    await prisma.user.createMany({
-      data: await Promise.all(usersSeed),
+    const groups = await seedGroups({
+      prisma,
+      tutors,
+      students,
+      totalGroups: TOTAL_GROUPS,
     });
 
-    const [tutors, students] = await prisma.$transaction([
-      prisma.user.findMany({
-        where: {
-          role: 'TUTOR',
-        },
-        select: { id: true },
-      }),
-      prisma.user.findMany({
-        where: {
-          role: 'STUDENT',
-        },
-        select: { id: true },
-      }),
-    ]);
-
-    if (tutors.length > 0 && students.length > 0) {
-      const groupsSeed = faker.helpers.multiple(seededGroupData, { count: 12 });
-
-      for (const groupData of groupsSeed) {
-        const group = await prisma.group.create({
-          data: {
-            name: groupData.name,
-            description: groupData.description,
-            tutorId: faker.helpers.arrayElement(tutors).id,
-            timezone: groupData.timezone,
-            status: groupData.status,
-            scheduleDays: {
-              createMany: {
-                data: groupData.scheduleDays,
-              },
-            },
-          },
-        });
-
-        const totalStudentsForGroup = faker.number.int({ min: 4, max: 14 });
-        const selectedStudents = faker.helpers.arrayElements(
-          students,
-          Math.min(totalStudentsForGroup, students.length),
-        );
-
-        await prisma.groupStudent.createMany({
-          data: selectedStudents.map((student) => ({
-            groupId: group.id,
-            userId: student.id,
-          })),
-          skipDuplicates: true,
-        });
-      }
-    }
+    await seedSessionsAndAttendance({
+      prisma,
+      groups,
+      lookbackDays: MAX_SESSION_DAYS_LOOKBACK,
+      sessionStatusWeights: SESSION_STATUS_WEIGHTS,
+      attendanceStatusWeights: ATTENDANCE_STATUS_WEIGHTS,
+    });
 
     console.log('Data seeded successfully');
   } catch (error) {

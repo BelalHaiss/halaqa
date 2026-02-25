@@ -3,10 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { roleColorMap } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -14,130 +11,61 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Lock, Clock, AlertCircle, Shield } from 'lucide-react';
-import { toast } from 'sonner';
+import { User, Lock, AlertCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import {
   ChangeOwnPasswordDto,
-  getTimezoneLabel,
   TIMEZONES,
-  UpdateOwnProfileDto,
-  UserAuthType
+  UpdateOwnProfileDto
 } from '@halaqa/shared';
 import {
   changePasswordSchema,
-  profileSchema,
-  type ChangePasswordFormData,
-  type ProfileFormData
-} from '../schema/profile.schema';
+  profileSchema
+} from '../schema/user-profile.schema';
 import { FormField } from '@/components/forms/form-field';
-import { profileService } from '../services/profile.service';
+import { TimezoneDisplay } from '@/components/ui/timezone-display';
+import { UserBadge } from '../components/UserBadge';
+import { useUserProfileViewModel } from '../viewmodels/user-profile.viewmodel';
 
-const roleLabels: Record<string, string> = {
-  ADMIN: 'مدير',
-  MODERATOR: 'مشرف',
-  TUTOR: 'معلم',
-  STUDENT: 'طالب'
+type ChangePasswordFormValues = ChangeOwnPasswordDto & {
+  confirmPassword: string;
 };
 
-export function ProfileView() {
+export function UserProfileView() {
   const { user, setUser } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
-  const [pendingProfileData, setPendingProfileData] =
-    useState<ProfileFormData | null>(null);
-  const [pendingPasswordData, setPendingPasswordData] =
-    useState<ChangePasswordFormData | null>(null);
-  const [confirmProfileOpen, setConfirmProfileOpen] = useState(false);
-  const [confirmPasswordOpen, setConfirmPasswordOpen] = useState(false);
 
   // Profile form
-  const profileForm = useForm<ProfileFormData>({
+  const profileForm = useForm<UpdateOwnProfileDto>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || '',
       username: user?.username || '',
       timezone: user?.timezone || 'Africa/Cairo'
-    }
+    },
+    mode: 'onTouched'
   });
 
   // Password form
-  const passwordForm = useForm<ChangePasswordFormData>({
+  const passwordForm = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: {
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
-    }
+    },
+    mode: 'onTouched'
   });
 
-  const updateProfileMutation = useApiMutation<UpdateOwnProfileDto, UserAuthType>({
-    mutationFn: async (data) => {
-      if (!user) {
-        throw new Error('المستخدم غير متوفر');
-      }
-
-      return profileService.updateProfile(data);
-    },
-    onSuccess: (response) => {
-      if (!user || !response.data) {
-        return;
-      }
-
-      setUser({
-        ...user,
-        name: response.data.name,
-        username: response.data.username || '',
-        timezone: response.data.timezone
-      });
-      toast.success('تم تحديث الملف الشخصي بنجاح');
-      setConfirmProfileOpen(false);
-      setPendingProfileData(null);
-    },
-    onError: (error) => {
-      toast.error(error.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
-    }
-  });
-
-  const changePasswordMutation = useApiMutation<ChangeOwnPasswordDto, void>({
-    mutationFn: async (data) => {
-      if (!user) {
-        throw new Error('المستخدم غير متوفر');
-      }
-
-      return profileService.changePassword(data);
-    },
-    onSuccess: () => {
-      toast.success('تم تغيير كلمة المرور بنجاح');
-      passwordForm.reset();
-      setConfirmPasswordOpen(false);
-      setPendingPasswordData(null);
-    },
-    onError: (error) => {
-      toast.error(error.message || 'حدث خطأ أثناء تغيير كلمة المرور');
-    }
+  const vm = useUserProfileViewModel({
+    user,
+    setUser,
+    resetPasswordForm: () => passwordForm.reset()
   });
 
   if (!user) return null;
-
-  const handleProfileUpdate = (data: ProfileFormData) => {
-    setPendingProfileData(data);
-    setConfirmProfileOpen(true);
-  };
-
-  const handlePasswordChange = (data: ChangePasswordFormData) => {
-    setPendingPasswordData(data);
-    setConfirmPasswordOpen(true);
-  };
 
   return (
     <div className='max-w-4xl mx-auto'>
@@ -165,17 +93,11 @@ export function ProfileView() {
                 {user.name}
               </h2>
               <div className='flex items-center gap-2 mt-1'>
-                <Badge variant='soft' color={roleColorMap[user.role]}>
-                  <Shield className='w-3 h-3' />
-                  {roleLabels[user.role]}
-                </Badge>
+                <UserBadge role={user.role} />
                 <span className='text-sm text-gray-600 dark:text-gray-400'>
                   •
                 </span>
-                <span className='text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1'>
-                  <Clock className='w-3 h-3' />
-                  {getTimezoneLabel(user.timezone || 'Africa/Cairo')}
-                </span>
+                <TimezoneDisplay timezone={user.timezone} />
               </div>
             </div>
           </div>
@@ -206,7 +128,7 @@ export function ProfileView() {
             </CardHeader>
             <CardContent>
               <form
-                onSubmit={profileForm.handleSubmit(handleProfileUpdate)}
+                onSubmit={profileForm.handleSubmit(vm.requestProfileUpdate)}
                 className='space-y-4'
               >
                 <FormField
@@ -215,7 +137,7 @@ export function ProfileView() {
                   label='الاسم'
                   type='text'
                   placeholder='الاسم'
-                  disabled={updateProfileMutation.isPending}
+                  disabled={vm.isUpdatingProfile}
                 />
 
                 {/* Username */}
@@ -225,50 +147,29 @@ export function ProfileView() {
                   label='اسم المستخدم'
                   type='text'
                   placeholder='username'
-                  disabled={updateProfileMutation.isPending}
+                  disabled={vm.isUpdatingProfile}
                   inputClassName='text-left'
                 />
 
-                {/* Timezone */}
-                <div className='space-y-2'>
-                  <Label htmlFor='timezone' className='flex items-center'>
-                    المنطقة الزمنية
-                  </Label>
-                  <Select
-                    value={profileForm.watch('timezone')}
-                    onValueChange={(value) =>
-                      profileForm.setValue('timezone', value)
-                    }
-                    disabled={updateProfileMutation.isPending}
-                  >
-                    <SelectTrigger id='timezone'>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TIMEZONES.map((tz) => (
-                        <SelectItem key={tz.value} value={tz.value}>
-                          <div className='flex items-center justify-between w-full'>
-                            <span>{tz.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {profileForm.formState.errors.timezone && (
-                    <p className='text-xs text-red-500'>
-                      {profileForm.formState.errors.timezone.message}
-                    </p>
-                  )}
-                </div>
+                <FormField
+                  control={profileForm.control}
+                  name='timezone'
+                  label='المنطقة الزمنية'
+                  type='select'
+                  disabled={vm.isUpdatingProfile}
+                  options={TIMEZONES}
+                />
 
                 <Button
                   type='submit'
                   className='w-full bg-emerald-600 hover:bg-emerald-700'
-                  disabled={updateProfileMutation.isPending}
+                  disabled={
+                    vm.isUpdatingProfile ||
+                    !profileForm.formState.isDirty ||
+                    !profileForm.formState.isValid
+                  }
                 >
-                  {updateProfileMutation.isPending
-                    ? 'جاري الحفظ...'
-                    : 'حفظ التغييرات'}
+                  {vm.isUpdatingProfile ? 'جاري الحفظ...' : 'حفظ التغييرات'}
                 </Button>
               </form>
             </CardContent>
@@ -294,7 +195,7 @@ export function ProfileView() {
               </Alert>
 
               <form
-                onSubmit={passwordForm.handleSubmit(handlePasswordChange)}
+                onSubmit={passwordForm.handleSubmit(vm.requestPasswordChange)}
                 className='space-y-4'
               >
                 {/* Current Password */}
@@ -304,7 +205,7 @@ export function ProfileView() {
                   label='كلمة المرور الحالية'
                   type='password'
                   placeholder='••••••••'
-                  disabled={changePasswordMutation.isPending}
+                  disabled={vm.isChangingPassword}
                 />
 
                 {/* New Password */}
@@ -314,7 +215,7 @@ export function ProfileView() {
                   label='كلمة المرور الجديدة'
                   type='password'
                   placeholder='••••••••'
-                  disabled={changePasswordMutation.isPending}
+                  disabled={vm.isChangingPassword}
                 />
 
                 {/* Confirm Password */}
@@ -324,16 +225,20 @@ export function ProfileView() {
                   label='تأكيد كلمة المرور الجديدة'
                   type='password'
                   placeholder='••••••••'
-                  disabled={changePasswordMutation.isPending}
+                  disabled={vm.isChangingPassword}
                 />
 
                 <div className='pt-2'>
                   <Button
                     type='submit'
                     className='w-full bg-emerald-600 hover:bg-emerald-700'
-                    disabled={changePasswordMutation.isPending}
+                    disabled={
+                      vm.isChangingPassword ||
+                      !passwordForm.formState.isDirty ||
+                      !passwordForm.formState.isValid
+                    }
                   >
-                    {changePasswordMutation.isPending
+                    {vm.isChangingPassword
                       ? 'جاري التحديث...'
                       : 'تحديث كلمة المرور'}
                   </Button>
@@ -345,43 +250,24 @@ export function ProfileView() {
       </Tabs>
 
       <ConfirmDialog
-        open={confirmProfileOpen}
-        onOpenChange={setConfirmProfileOpen}
+        open={vm.confirmProfileOpen}
+        onOpenChange={vm.setConfirmProfileOpen}
         title='تأكيد تحديث الملف الشخصي'
         description='هل تريد حفظ التغييرات على ملفك الشخصي؟'
         confirmText='حفظ'
         cancelText='إلغاء'
-        onConfirm={async () => {
-          if (!pendingProfileData) {
-            return;
-          }
-
-          await updateProfileMutation.mutateAsync(pendingProfileData);
-        }}
-        variant='solid'
-        color='primary'
+        onConfirm={vm.confirmProfileUpdate}
       />
 
       <ConfirmDialog
-        open={confirmPasswordOpen}
-        onOpenChange={setConfirmPasswordOpen}
+        open={vm.confirmPasswordOpen}
+        onOpenChange={vm.setConfirmPasswordOpen}
         title='تأكيد تغيير كلمة المرور'
         description='هل تريد تحديث كلمة المرور الآن؟'
         confirmText='تحديث'
         cancelText='إلغاء'
-        onConfirm={async () => {
-          if (!pendingPasswordData) {
-            return;
-          }
-
-          await changePasswordMutation.mutateAsync({
-            currentPassword: pendingPasswordData.currentPassword,
-            newPassword: pendingPasswordData.newPassword,
-            confirmPassword: pendingPasswordData.confirmPassword
-          });
-        }}
-        variant='solid'
-        color='danger'
+        intent='destructive'
+        onConfirm={vm.confirmPasswordChange}
       />
     </div>
   );

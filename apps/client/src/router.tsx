@@ -1,12 +1,14 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { LoginView } from '@/modules/auth';
 import { GroupsView, GroupDetailsView } from '@/modules/groups';
-import { TodaySessionsView, SessionDetailsView } from '@/modules/session';
-import { UsersView } from '@/modules/users';
+import {
+  TodaySessionsView,
+  SessionDetailsView,
+  SessionHistoryView
+} from '@/modules/session';
+import { UsersView, UserProfileView } from '@/modules/users';
 import { LearnersView } from '@/modules/learners';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
-import { ProfileView } from './modules/profile/views/ProfileView';
-import { HistoryView } from './modules/history/views/HistoryView';
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +36,10 @@ export const router = createBrowserRouter([
         element: <TodaySessionsView />
       },
       {
+        path: 'sessions/history',
+        element: <SessionHistoryView />
+      },
+      {
         path: 'sessions/:id',
         element: <SessionDetailsView />
       },
@@ -47,11 +53,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'profile',
-        element: <ProfileView />
-      },
-      {
-        path: 'history',
-        element: <HistoryView />
+        element: <UserProfileView />
       }
     ]
   },

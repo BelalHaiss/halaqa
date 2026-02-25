@@ -1,7 +1,7 @@
 import { faker, fakerAR } from '@faker-js/faker';
-import { GroupStatus } from 'generated/prisma/client';
+import { GroupStatus, PrismaClient } from 'generated/prisma/client';
 
-type SeededGroupScheduleDay = {
+export type SeededGroupScheduleDay = {
   dayOfWeek: number;
   startMinutes: number;
   durationMinutes: number;
@@ -44,3 +44,64 @@ export const seededGroupData = (): SeededGroupData => {
     scheduleDays: seededGroupScheduleDays(),
   };
 };
+
+export type SeededGroupWithStudents = {
+  id: string;
+  timezone: string;
+  scheduleDays: SeededGroupScheduleDay[];
+  studentIds: string[];
+};
+
+export async function seedGroups(args: {
+  prisma: PrismaClient;
+  tutors: { id: string }[];
+  students: { id: string }[];
+  totalGroups: number;
+}): Promise<SeededGroupWithStudents[]> {
+  const groupsSeed = faker.helpers.multiple(seededGroupData, {
+    count: args.totalGroups,
+  });
+  const createdGroups: SeededGroupWithStudents[] = [];
+
+  for (const groupData of groupsSeed) {
+    const group = await args.prisma.group.create({
+      data: {
+        name: groupData.name,
+        description: groupData.description,
+        tutorId: faker.helpers.arrayElement(args.tutors).id,
+        timezone: groupData.timezone,
+        status: groupData.status,
+        scheduleDays: {
+          createMany: {
+            data: groupData.scheduleDays,
+          },
+        },
+      },
+    });
+
+    const selectedStudents = faker.helpers.arrayElements(
+      args.students,
+      faker.number.int({
+        min: 6,
+        max: Math.min(14, args.students.length),
+      }),
+    );
+
+    await args.prisma.groupStudent.createMany({
+      data: selectedStudents.map((student) => ({
+        groupId: group.id,
+        userId: student.id,
+      })),
+      skipDuplicates: true,
+    });
+
+    createdGroups.push({
+      id: group.id,
+      timezone: group.timezone,
+      scheduleDays: groupData.scheduleDays,
+      studentIds: selectedStudents.map((student) => student.id),
+    });
+  }
+
+  return createdGroups;
+}

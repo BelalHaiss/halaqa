@@ -43,8 +43,9 @@ export const SessionDetailsView = () => {
     if (!vm.session) {
       return { attendance: [] };
     }
+    const session = vm.session;
 
-    const existingAttendanceByStudentId = vm.session.attendance.reduce(
+    const existingAttendanceByStudentId = session.attendance.reduce(
       (acc, item) => {
         acc[item.studentId] = item;
         return acc;
@@ -61,15 +62,15 @@ export const SessionDetailsView = () => {
     );
 
     return {
-      attendance: vm.session.students.map((student) => ({
+      attendance: session.students.map((student) => ({
         studentId: student.id,
         studentName: student.name,
         status:
-          vm.session.status === 'COMPLETED'
+          session.status === 'COMPLETED'
             ? (existingAttendanceByStudentId[student.id]?.status ?? null)
             : null,
         notes:
-          vm.session.status === 'COMPLETED'
+          session.status === 'COMPLETED'
             ? (existingAttendanceByStudentId[student.id]?.notes ?? '')
             : ''
       }))
@@ -78,7 +79,7 @@ export const SessionDetailsView = () => {
 
   const attendanceForm = useForm<AttendanceEditFormData>({
     resolver: zodResolver(attendanceEditSchema),
-    mode: 'onChange',
+    mode: 'onTouched',
     defaultValues: { attendance: [] },
     values: attendanceFormValues
   });
@@ -95,10 +96,9 @@ export const SessionDetailsView = () => {
   );
 
   const shouldShowAttendanceCard = true;
-
   const canStoreAttendance =
-    vm.session?.status === 'SCHEDULED' ||
-    vm.session?.status === 'RESCHEDULED';
+    vm.session?.status === 'SCHEDULED' || vm.session?.status === 'RESCHEDULED';
+
   const handleSaveAttendance = attendanceForm.handleSubmit(async (values) => {
     await vm.saveAttendance(
       values.attendance.map((item) => ({
@@ -111,15 +111,15 @@ export const SessionDetailsView = () => {
 
   if (vm.isLoading) {
     return (
-      <div className='flex items-center justify-center h-64'>
-        <Loader2 className='w-8 h-8 animate-spin text-primary' />
+      <div className='flex h-64 items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     );
   }
 
   if (vm.error || !vm.session) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert className='border-danger/30 bg-danger/10 text-danger'>
         <AlertDescription>{vm.error || 'الجلسة غير موجودة'}</AlertDescription>
       </Alert>
     );
@@ -140,7 +140,7 @@ export const SessionDetailsView = () => {
         actions={
           <Button asChild variant='outline' color='muted' className='gap-2'>
             <Link to='/sessions'>
-              <ArrowLeft className='w-4 h-4' />
+              <ArrowLeft className='h-4 w-4' />
               العودة
             </Link>
           </Button>
@@ -149,7 +149,7 @@ export const SessionDetailsView = () => {
 
       <Card>
         <CardHeader>
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
             <CardTitle size='lg'>معلومات الجلسة</CardTitle>
             <Badge variant={statusConfig.variant} color={statusConfig.color}>
               {statusConfig.label}
@@ -157,8 +157,8 @@ export const SessionDetailsView = () => {
           </div>
         </CardHeader>
         <CardContent className='space-y-3'>
-          <div className='flex items-center justify-between'>
-            <Typography as='div' size='sm' variant='ghost' color='muted'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <Typography as='div' size='sm' className='text-muted-foreground'>
               الحلقة
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
@@ -171,8 +171,8 @@ export const SessionDetailsView = () => {
             </Typography>
           </div>
 
-          <div className='flex items-center justify-between'>
-            <Typography as='div' size='sm' variant='ghost' color='muted'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <Typography as='div' size='sm' className='text-muted-foreground'>
               المعلم
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
@@ -180,33 +180,33 @@ export const SessionDetailsView = () => {
             </Typography>
           </div>
 
-          <div className='flex items-center justify-between'>
-            <Typography as='div' size='sm' variant='ghost' color='muted'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <Typography as='div' size='sm' className='text-muted-foreground'>
               التاريخ
             </Typography>
             <div className='flex items-center gap-1'>
-              <Calendar className='w-4 h-4 text-muted-foreground' />
+              <Calendar className='h-4 w-4 text-muted-foreground' />
               <Typography as='div' size='sm' weight='medium'>
                 {date}
               </Typography>
             </div>
           </div>
 
-          <div className='flex items-center justify-between'>
-            <Typography as='div' size='sm' variant='ghost' color='muted'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <Typography as='div' size='sm' className='text-muted-foreground'>
               الوقت
             </Typography>
             <div className='flex items-center gap-1'>
-              <Clock className='w-4 h-4 text-muted-foreground' />
+              <Clock className='h-4 w-4 text-muted-foreground' />
               <Typography as='div' size='sm' weight='medium'>
                 {formattedTime}
               </Typography>
             </div>
           </div>
 
-          {vm.session.originalStartedAt && (
-            <div className='pt-2 border-t border-border'>
-              <Alert variant='soft' color='muted'>
+          {vm.session.originalStartedAt ? (
+            <div className='border-t border-border pt-2'>
+              <Alert className='border-border bg-muted/30'>
                 <AlertDescription>
                   <RescheduledNotice
                     originalStartedAt={vm.session.originalStartedAt}
@@ -216,11 +216,11 @@ export const SessionDetailsView = () => {
                 </AlertDescription>
               </Alert>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 
-      {vm.session.canBeRescheduled && (
+      {vm.session.canBeRescheduled ? (
         <Card>
           <CardHeader>
             <CardTitle size='lg'>إجراءات الجلسة</CardTitle>
@@ -244,51 +244,55 @@ export const SessionDetailsView = () => {
             </Button>
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
-      {shouldShowAttendanceCard && (
+      {shouldShowAttendanceCard ? (
         <Card>
           <CardHeader>
             <div className='flex flex-wrap items-center justify-between gap-2'>
               <CardTitle size='lg' className='flex items-center gap-2'>
-                <Users className='w-5 h-5' />
+                <Users className='h-5 w-5' />
                 الحضور والغياب ({vm.session.students.length})
               </CardTitle>
-              {canStoreAttendance && (
+              {canStoreAttendance ? (
                 <Button
                   onClick={() => setIsAttendanceConfirmDialogOpen(true)}
-                  disabled={vm.isUpdating || !attendanceForm.formState.isValid}
+                  disabled={
+                    vm.isUpdating ||
+                    !attendanceForm.formState.isDirty ||
+                    !attendanceForm.formState.isValid
+                  }
                   className='gap-2'
                 >
                   {vm.isUpdating ? (
-                    <Loader2 className='w-4 h-4 animate-spin' />
+                    <Loader2 className='h-4 w-4 animate-spin' />
                   ) : (
-                    <Save className='w-4 h-4' />
+                    <Save className='h-4 w-4' />
                   )}
                   حفظ الحضور
                 </Button>
-              )}
+              ) : null}
             </div>
           </CardHeader>
 
           <CardContent>
             {vm.session.students.length === 0 ? (
-              <div className='text-center py-8'>
-                <Users className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
-                <Typography as='div' size='sm' variant='ghost' color='muted'>
+              <div className='py-8 text-center'>
+                <Users className='mx-auto mb-3 h-12 w-12 text-muted-foreground opacity-50' />
+                <Typography as='div' size='sm' className='text-muted-foreground'>
                   لا يوجد طلاب في هذه الجلسة
                 </Typography>
               </div>
             ) : (
               <>
-                {canStoreAttendance && vm.session.status !== 'COMPLETED' && (
-                  <Alert variant='soft' color='muted' className='mb-3'>
+                {canStoreAttendance && vm.session.status !== 'COMPLETED' ? (
+                  <Alert className='border-border bg-muted/30'>
                     <AlertDescription>
                       لا توجد قيم افتراضية للحضور. يجب تحديد حالة كل طالب قبل
                       حفظ الحضور.
                     </AlertDescription>
                   </Alert>
-                )}
+                ) : null}
                 <div className='space-y-2'>
                   {vm.session.students.map((student, index) =>
                     canStoreAttendance ? (
@@ -298,7 +302,6 @@ export const SessionDetailsView = () => {
                         student={student}
                         index={index}
                         control={attendanceForm.control}
-                        errors={attendanceForm.formState.errors}
                         disabled={vm.isUpdating}
                       />
                     ) : (
@@ -315,7 +318,7 @@ export const SessionDetailsView = () => {
             )}
           </CardContent>
         </Card>
-      )}
+      ) : null}
 
       <ConfirmDialog
         open={isCancelDialogOpen}
@@ -324,13 +327,13 @@ export const SessionDetailsView = () => {
         description='هل أنت متأكد من إلغاء هذه الجلسة؟ لن يمكن التراجع عن هذا الإجراء.'
         confirmText='إلغاء الجلسة'
         cancelText='رجوع'
-        variant='solid'
-        color='danger'
+        intent='destructive'
         onConfirm={async () => {
           await vm.cancelSession();
           setIsCancelDialogOpen(false);
         }}
       />
+
       <ConfirmDialog
         open={isAttendanceConfirmDialogOpen}
         onOpenChange={setIsAttendanceConfirmDialogOpen}
@@ -338,8 +341,6 @@ export const SessionDetailsView = () => {
         description='هل تريد حفظ بيانات الحضور والغياب لهذه الجلسة؟'
         confirmText='حفظ الحضور'
         cancelText='رجوع'
-        variant='solid'
-        color='primary'
         onConfirm={async () => {
           await handleSaveAttendance();
           setIsAttendanceConfirmDialogOpen(false);

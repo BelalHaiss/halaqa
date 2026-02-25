@@ -9,8 +9,8 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryKeys } from '@/lib/query-client';
-import { groupService } from '@/modules/groups/services/group.service';
-import { sessionService } from '@/modules/session/services/session.service';
+import { groupService } from '@/modules/groups';
+import { sessionService } from '../services/session.service';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
@@ -50,7 +50,7 @@ const normalizeStatus = (value: string | null): SessionRecordStatus | '' => {
     : '';
 };
 
-export const useHistoryViewModel = () => {
+export const useSessionHistoryViewModel = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const fromDate = normalizeISODate(searchParams.get('fromDate'));
@@ -73,7 +73,7 @@ export const useHistoryViewModel = () => {
   };
 
   const groupsQuery = useApiQuery<GroupSelectOptionDto[]>({
-    queryKey: [...queryKeys.groups.all, 'options'] as const,
+    queryKey: queryKeys.groups.options(),
     queryFn: async () => groupService.getGroupOptions(),
   });
 

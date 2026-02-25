@@ -1,20 +1,17 @@
-import {
-  DEFAULT_TIMEZONE,
-  isSupportedTimezone,
-} from '@halaqa/shared';
+import { isSupportedTimezone } from '@halaqa/shared';
 import { z } from 'zod';
 
 export const timezoneMessage = 'يرجى اختيار منطقة زمنية صحيحة';
 
 const baseTimezoneSchema = z.string().trim().refine(isSupportedTimezone, {
-  message: timezoneMessage,
+  message: timezoneMessage
 });
 
-export const timezoneSchema = baseTimezoneSchema.default(DEFAULT_TIMEZONE);
+export const timezoneSchema = baseTimezoneSchema;
 export const optionalTimezoneSchema = baseTimezoneSchema.optional();
 export const timezoneFieldSchema = z.object({
-  timezone: timezoneSchema,
+  timezone: timezoneSchema
 });
 export const optionalTimezoneFieldSchema = z.object({
-  timezone: optionalTimezoneSchema,
+  timezone: optionalTimezoneSchema
 });

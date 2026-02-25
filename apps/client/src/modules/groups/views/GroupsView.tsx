@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap, Loader2, Plus, Users } from 'lucide-react';
-import { startMinutesToTime, GroupSummaryDto } from '@halaqa/shared';
+import { GroupSummaryDto } from '@halaqa/shared';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ import { dayNames, STATUS_LABELS, STATUS_ORDER } from '../constants';
 import { getGroupStatusConfig } from '../utils/group.util';
 import { StatsCountCard } from '../components/StatsCountCard';
 import { GroupFormModal } from '../components/GroupFormModal';
+import { GroupScheduleTimeText } from '../components/GroupScheduleTimeText';
 import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
 
 const groupsByStatus = (groups: GroupSummaryDto[]) => {
@@ -32,19 +33,21 @@ export const GroupsView = () => {
     return null;
   }
 
-  const vm = useGroupsViewModel(user);
+  const vm = useGroupsViewModel(user, {
+    shouldLoadTutors: isCreateModalOpen
+  });
 
   if (vm.isLoadingGroups) {
     return (
-      <div className='flex items-center justify-center h-64'>
-        <Loader2 className='w-8 h-8 animate-spin text-primary' />
+      <div className='flex h-64 items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     );
   }
 
   if (vm.groupsError) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert className='border-danger/30 bg-danger/10 text-danger'>
         <AlertDescription>{vm.groupsError}</AlertDescription>
       </Alert>
     );
@@ -53,50 +56,48 @@ export const GroupsView = () => {
   return (
     <div className='space-y-6'>
       <section className='space-y-3 rounded-2xl border border-primary/20 bg-linear-to-l from-primary/5 via-background to-success/5 p-4'>
-        <div className='flex items-center justify-between'>
+        <div className='flex flex-wrap items-center justify-between gap-2'>
           <Typography as='h2' size='lg' weight='semibold'>
             ملخص الحلقات
           </Typography>
-          <Typography as='div' size='xs' variant='ghost' color='muted'>
+          <Typography as='div' size='xs' className='text-muted-foreground'>
             إحصائيات مباشرة عن المتعلمين والحلقات
           </Typography>
         </div>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
           <StatsCountCard
             icon={GraduationCap}
             data={{ count: vm.learnersCount, title: 'إجمالي المتعلمين' }}
             isLoading={vm.isLoadingLearnersCount}
-            variant='soft'
-            color='primary'
+            className='bg-linear-to-br from-primary/15 via-primary/5 to-background border-primary/30 ring-primary/20'
+            iconClassName='bg-primary/15 text-primary'
           />
           {user.role !== 'TUTOR' ? (
             <StatsCountCard
               icon={Users}
               data={{ count: vm.tutorsCount, title: 'إجمالي معلمي القرآن' }}
               isLoading={vm.isLoadingTutorsCount}
-              variant='soft'
-              color='success'
+              className='bg-linear-to-br from-success/15 via-success/5 to-background border-success/30 ring-success/20'
+              iconClassName='bg-success/15 text-success'
             />
           ) : null}
           <StatsCountCard
             icon={BookOpen}
             data={{ count: vm.groupsCount, title: 'إجمالي الحلقات' }}
             isLoading={vm.isLoadingGroupsCount}
-            variant='outline'
-            color='muted'
+            className='bg-card border-border ring-border'
+            iconClassName='bg-muted/70 text-muted-foreground'
           />
         </div>
       </section>
+
       <PageHeader
         title='الحلقات'
         description='إدارة حلقات تحفيظ القرآن'
         actions={
           vm.canManageGroups ? (
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              className='gap-2'
-            >
-              <Plus className='w-4 h-4' />
+            <Button onClick={() => setIsCreateModalOpen(true)} className='gap-2'>
+              <Plus className='h-4 w-4' />
               إضافة حلقة
             </Button>
           ) : null
@@ -111,17 +112,19 @@ export const GroupsView = () => {
             <Typography as='h2' size='lg' weight='semibold'>
               {label}
             </Typography>
-            <Typography as='span' size='sm' variant='ghost' color='muted'>
+            <Typography as='span' size='sm' className='text-muted-foreground'>
               ({groups.length})
             </Typography>
           </div>
 
           {groups.length > 0 ? (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {groups.map((group) => {
                 const scheduleDays = group.scheduleDays
                   .map((scheduleDay) => dayNames[scheduleDay.dayOfWeek])
                   .join(' - ');
+
+                const statusConfig = getGroupStatusConfig(group.status);
 
                 return (
                   <Link
@@ -130,16 +133,13 @@ export const GroupsView = () => {
                     className='block transition-shadow hover:shadow-md'
                   >
                     <Card>
-                      <CardContent className='p-4 space-y-3'>
+                      <CardContent className='space-y-3 p-4'>
                         <div className='flex items-start justify-between'>
-                          <div className='bg-primary/10 p-2 rounded-lg'>
-                            <Users className='w-5 h-5 text-primary' />
+                          <div className='rounded-lg bg-primary/10 p-2'>
+                            <Users className='h-5 w-5 text-primary' />
                           </div>
-                          <Badge
-                            variant={getGroupStatusConfig(group.status).variant}
-                            color={getGroupStatusConfig(group.status).color}
-                          >
-                            {getGroupStatusConfig(group.status).label}
+                          <Badge variant={statusConfig.variant} color={statusConfig.color}>
+                            {statusConfig.label}
                           </Badge>
                         </div>
 
@@ -149,12 +149,7 @@ export const GroupsView = () => {
 
                         <div className='space-y-1.5'>
                           <div className='flex items-center justify-between'>
-                            <Typography
-                              as='div'
-                              size='xs'
-                              variant='ghost'
-                              color='muted'
-                            >
+                            <Typography as='div' size='xs' className='text-muted-foreground'>
                               عدد الطلاب
                             </Typography>
                             <Typography as='div' size='xs' weight='medium'>
@@ -162,45 +157,24 @@ export const GroupsView = () => {
                             </Typography>
                           </div>
                           <div className='flex items-center justify-between'>
-                            <Typography
-                              as='div'
-                              size='xs'
-                              variant='ghost'
-                              color='muted'
-                            >
+                            <Typography as='div' size='xs' className='text-muted-foreground'>
                               المنطقة الزمنية
                             </Typography>
-                            <TimezoneDisplay
-                              timezone={group.timezone}
-                              variant='soft'
-                              color='muted'
-                              size='sm'
-                            />
+                            <TimezoneDisplay timezone={group.timezone} />
                           </div>
                           <div className='flex items-center justify-between'>
-                            <Typography
-                              as='div'
-                              size='xs'
-                              variant='ghost'
-                              color='muted'
-                            >
+                            <Typography as='div' size='xs' className='text-muted-foreground'>
                               الوقت
                             </Typography>
                             <Typography as='div' size='xs' weight='medium'>
-                              {group.scheduleDays[0]
-                                ? startMinutesToTime(
-                                    group.scheduleDays[0].startMinutes
-                                  )
-                                : 'غير محدد'}
+                              <GroupScheduleTimeText
+                                scheduleDays={group.scheduleDays}
+                                emptyLabel='غير محدد'
+                              />
                             </Typography>
                           </div>
-                          <div className='pt-1.5 border-t border-border'>
-                            <Typography
-                              as='div'
-                              size='xs'
-                              variant='ghost'
-                              color='muted'
-                            >
+                          <div className='border-t border-border pt-1.5'>
+                            <Typography as='div' size='xs' className='text-muted-foreground'>
                               {scheduleDays || 'لا توجد أيام محددة'}
                             </Typography>
                           </div>
@@ -212,9 +186,9 @@ export const GroupsView = () => {
               })}
             </div>
           ) : (
-            <div className='text-center py-8 rounded-lg border border-dashed border-border'>
-              <Users className='w-8 h-8 mx-auto mb-2 opacity-30' />
-              <Typography as='div' size='sm' variant='ghost' color='muted'>
+            <div className='rounded-lg border border-dashed border-border py-8 text-center'>
+              <Users className='mx-auto mb-2 h-8 w-8 opacity-30' />
+              <Typography as='div' size='sm' className='text-muted-foreground'>
                 لا توجد حلقات {label}
               </Typography>
             </div>
@@ -223,9 +197,9 @@ export const GroupsView = () => {
       ))}
 
       {vm.groups.length === 0 ? (
-        <div className='text-center py-12'>
-          <Users className='w-12 h-12 mx-auto mb-3 opacity-50' />
-          <Typography as='div' size='sm' variant='ghost' color='muted'>
+        <div className='py-12 text-center'>
+          <Users className='mx-auto mb-3 h-12 w-12 opacity-50' />
+          <Typography as='div' size='sm' className='text-muted-foreground'>
             لا توجد حلقات
           </Typography>
         </div>

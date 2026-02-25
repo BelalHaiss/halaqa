@@ -66,24 +66,16 @@ export function StudentSummaryCard({
             <div className='flex flex-row items-center gap-3 shrink-0'>
               <TimezoneDisplay
                 timezone={student.timezone}
-                variant='soft'
-                color='muted'
-                size='sm'
               />
             </div>
 
             <div className='flex flex-col min-w-0 flex-1'>
               {student.notes ? (
-                <Typography
-                  as='div'
-                  size='xs'
-                  color='muted'
-                  className='truncate'
-                >
+                <Typography as='div' size='xs' className='truncate text-muted-foreground'>
                   {student.notes}
                 </Typography>
               ) : (
-                <Typography as='div' size='xs' color='muted'>
+                <Typography as='div' size='xs' className='text-muted-foreground'>
                   لا توجد ملاحظات
                 </Typography>
               )}

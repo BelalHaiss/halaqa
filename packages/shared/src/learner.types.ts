@@ -8,12 +8,19 @@ export interface LearnerContactDto {
   notes?: string;
 }
 
+export interface LearnerGroupSummaryDto {
+  id: string;
+  name: string;
+}
+
 export interface LearnerDto {
   id: string;
   name: string;
   role: 'STUDENT';
   timezone: string;
   contact: LearnerContactDto;
+  groupCount?: number;
+  groups?: LearnerGroupSummaryDto[];
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }

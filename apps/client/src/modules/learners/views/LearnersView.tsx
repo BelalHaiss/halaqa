@@ -12,10 +12,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { PaginationControls } from '@/components/ui/pagination-controls';
-import { StudentTableItem } from '@/components/ui/student-table-item';
+import { StudentTableItem } from '@/modules/learners/components/student-table-item';
 import {
   StudentMainInfoModal,
-} from '@/components/ui/student-main-info-modal';
+} from '@/modules/learners/components/student-main-info-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useLearnersViewModel } from '../viewmodels/learners.viewmodel';
 
@@ -24,7 +24,7 @@ export default function LearnersView() {
 
   if (vm.queryError) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert className='border-danger/30 bg-danger/10 text-danger'>
         <AlertDescription>{vm.queryError}</AlertDescription>
       </Alert>
     );
@@ -49,22 +49,25 @@ export default function LearnersView() {
         value={vm.searchQuery}
         onChange={vm.onSearchQueryChange}
         placeholder='بحث بالاسم فقط'
-        className='max-w-md'
+        className='w-full sm:max-w-md'
       />
 
-      <Table className='bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700'>
-        <TableHeader className='bg-gray-50 dark:bg-gray-900/50'>
+      <Table className='rounded-lg border bg-card shadow-sm'>
+        <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               الاسم
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               المنطقة الزمنية
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               ملاحظات
             </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
+              عدد الحلقات
+            </TableHead>
+            <TableHead className='px-4 py-3 text-left text-xs'>
               الإجراءات
             </TableHead>
           </TableRow>
@@ -72,7 +75,7 @@ export default function LearnersView() {
         <TableBody>
           {vm.isLoading ? (
             <TableRow>
-              <TableCell colSpan={4}>
+              <TableCell colSpan={5}>
                 <div className='flex items-center justify-center py-8 gap-2 text-muted-foreground'>
                   <Loader2 className='w-4 h-4 animate-spin' />
                   جاري التحميل...
@@ -81,7 +84,7 @@ export default function LearnersView() {
             </TableRow>
           ) : vm.learners.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4}>
+              <TableCell colSpan={5}>
                 <div className='flex flex-col items-center justify-center py-10 text-muted-foreground gap-2'>
                   <Users className='w-6 h-6 opacity-70' />
                   <span>
@@ -136,8 +139,7 @@ export default function LearnersView() {
         }
         confirmText='حذف'
         cancelText='إلغاء'
-        variant='solid'
-        color='danger'
+        intent='destructive'
         onConfirm={vm.confirmDeleteLearner}
       />
     </div>

@@ -43,16 +43,16 @@ export function StudentTableItem({
         </div>
       </TableCell>
       <TableCell className='px-4 py-3'>
-        <TimezoneDisplay
-          timezone={learner.timezone}
-          variant='soft'
-          color='muted'
-          size='sm'
-        />
+        <TimezoneDisplay timezone={learner.timezone} />
       </TableCell>
       <TableCell className='px-4 py-3 max-w-72'>
         <div className='truncate text-xs text-gray-600 dark:text-gray-400'>
           {learner.contact.notes || 'لا توجد ملاحظات'}
+        </div>
+      </TableCell>
+      <TableCell className='px-4 py-3'>
+        <div className='text-sm font-medium text-gray-900 dark:text-gray-100'>
+          {learner.groupCount ?? 0}
         </div>
       </TableCell>
       <TableCell className='px-4 py-3 text-right'>

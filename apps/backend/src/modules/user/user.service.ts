@@ -122,11 +122,6 @@ export class UserService {
         ...(dto.username !== undefined ? { username: dto.username } : {}),
         ...(dto.role !== undefined ? { role: dto.role } : {}),
         ...(dto.timezone !== undefined ? { timezone: dto.timezone } : {}),
-        ...(dto.password
-          ? {
-              password: await argon.hash(dto.password),
-            }
-          : {}),
       },
     });
 
@@ -256,6 +251,7 @@ export class UserService {
   }
 
   async queryLearners(
+    actor: User,
     query: QueryLearnersDto,
   ): Promise<QueryLearnersResponseDto> {
     const { skip, take, page } =
@@ -264,6 +260,17 @@ export class UserService {
 
     const where: Prisma.UserWhereInput = {
       role: UserRole.STUDENT,
+      ...(actor.role === UserRole.TUTOR
+        ? {
+            studentGroups: {
+              some: {
+                group: {
+                  tutorId: actor.id,
+                },
+              },
+            },
+          }
+        : {}),
       ...(searchQuery
         ? {
             name: {
@@ -280,6 +287,25 @@ export class UserService {
         take,
         orderBy: {
           createdAt: 'desc',
+        },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          timezone: true,
+          notes: true,
+          createdAt: true,
+          updatedAt: true,
+          studentGroups: {
+            select: {
+              group: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
         },
       }),
       this.prismaService.user.count({ where }),
@@ -485,7 +511,20 @@ export class UserService {
     notes: string | null;
     createdAt: Date;
     updatedAt: Date;
+    studentGroups?: {
+      group: {
+        id: string;
+        name: string;
+      };
+    }[];
   }): LearnerDto {
+    const groups = user.studentGroups
+      ?.map((studentGroup) => ({
+        id: studentGroup.group.id,
+        name: studentGroup.group.name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
     return {
       id: user.id,
       name: user.name,
@@ -494,6 +533,8 @@ export class UserService {
       contact: {
         notes: user.notes ?? undefined,
       },
+      groupCount: groups?.length ?? 0,
+      groups,
       createdAt: user.createdAt.toISOString() as ISODateString,
       updatedAt: user.updatedAt.toISOString() as ISODateString,
     };

@@ -21,13 +21,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Typography } from '@/components/ui/typography';
-import { getSessionStatusConfig } from '@/modules/session/utils/session.util';
+import { getSessionStatusConfig } from '../utils/session.util';
 import { HistoryFilterContainer } from '../components/HistoryFilterContainer';
-import { useHistoryViewModel } from '../viewmodels/history.viewmodel';
+import { useSessionHistoryViewModel } from '../viewmodels/session-history.viewmodel';
 
-export function HistoryView() {
+export function SessionHistoryView() {
   const { user } = useApp();
-  const vm = useHistoryViewModel();
+  const vm = useSessionHistoryViewModel();
 
   if (!user) {
     return null;
@@ -43,7 +43,7 @@ export function HistoryView() {
 
   if (vm.groupsError) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert className='border-danger/30 bg-danger/10 text-danger'>
         <AlertDescription>{vm.groupsError}</AlertDescription>
       </Alert>
     );
@@ -68,30 +68,30 @@ export function HistoryView() {
       />
 
       {vm.historyError && (
-        <Alert variant='soft' color='danger'>
+        <Alert className='border-danger/30 bg-danger/10 text-danger'>
           <AlertDescription>{vm.historyError}</AlertDescription>
         </Alert>
       )}
 
-      <Table className='bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700'>
-        <TableHeader className='bg-gray-50 dark:bg-gray-900/50'>
+      <Table className='rounded-lg border bg-card shadow-sm'>
+        <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               الحلقة
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               المعلم
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               التاريخ
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               الوقت
             </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-right text-xs'>
               الحالة
             </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs text-gray-700 dark:text-gray-300'>
+            <TableHead className='px-4 py-3 text-left text-xs'>
               الإجراءات
             </TableHead>
           </TableRow>
@@ -125,7 +125,7 @@ export function HistoryView() {
               const formattedTime = minutesToTimeString(time as TimeMinutes);
 
               return (
-                <TableRow key={session.id} className='bg-white dark:bg-gray-800'>
+                <TableRow key={session.id}>
                   <TableCell className='px-4 py-3'>{session.groupName}</TableCell>
                   <TableCell className='px-4 py-3'>{session.tutorName}</TableCell>
                   <TableCell className='px-4 py-3'>
@@ -134,7 +134,7 @@ export function HistoryView() {
                         {startedDateTime}
                       </Typography>
                       {session.originalStartedAt && (
-                        <Typography as='div' size='xs' variant='ghost' color='muted'>
+                        <Typography as='div' size='xs' className='text-muted-foreground'>
                           الموعد الأصلي:{' '}
                           {formatDateShort(session.originalStartedAt, user.timezone)}
                         </Typography>

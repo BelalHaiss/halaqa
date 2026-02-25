@@ -1,100 +1,15 @@
 import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
-import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 import { Typography } from '@/components/ui/typography';
 
-const dropdownMenuContentVariants = cva(
-  'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md',
-  {
-    variants: {
-      variant: {
-        solid: '',
-        outline: '',
-        ghost: '',
-        soft: ''
-      },
-      color: {
-        primary: '',
-        success: '',
-        danger: '',
-        muted: ''
-      }
-    },
-    compoundVariants: [
-      { variant: 'solid', color: 'muted', className: '' },
-      { variant: 'solid', color: 'primary', className: 'border-primary/20' },
-      { variant: 'solid', color: 'success', className: 'border-success/20' },
-      { variant: 'solid', color: 'danger', className: 'border-danger/20' },
+const dropdownMenuContentClassName =
+  'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md';
 
-      { variant: 'outline', color: 'muted', className: '' },
-      { variant: 'outline', color: 'primary', className: 'border-primary/30' },
-      { variant: 'outline', color: 'success', className: 'border-success/30' },
-      { variant: 'outline', color: 'danger', className: 'border-danger/30' },
-
-      { variant: 'ghost', color: 'muted', className: 'border-transparent shadow-none' },
-      { variant: 'ghost', color: 'primary', className: 'border-transparent shadow-none' },
-      { variant: 'ghost', color: 'success', className: 'border-transparent shadow-none' },
-      { variant: 'ghost', color: 'danger', className: 'border-transparent shadow-none' },
-
-      { variant: 'soft', color: 'muted', className: 'bg-muted/30' },
-      { variant: 'soft', color: 'primary', className: 'bg-muted/30 border-primary/20' },
-      { variant: 'soft', color: 'success', className: 'bg-muted/30 border-success/20' },
-      { variant: 'soft', color: 'danger', className: 'bg-muted/30 border-danger/20' }
-    ],
-    defaultVariants: {
-      variant: 'solid',
-      color: 'muted'
-    }
-  }
-);
-
-const dropdownMenuItemVariants = cva(
-  "focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-  {
-    variants: {
-      variant: {
-        solid: '',
-        ghost: '',
-        outline: '',
-        soft: ''
-      },
-      color: {
-        primary: '',
-        success: '',
-        danger: '',
-        muted: ''
-      }
-    },
-    compoundVariants: [
-      { variant: 'solid', color: 'muted', className: '' },
-      { variant: 'solid', color: 'primary', className: '' },
-      { variant: 'solid', color: 'success', className: '' },
-      { variant: 'solid', color: 'danger', className: '' },
-
-      { variant: 'ghost', color: 'muted', className: '' },
-      { variant: 'ghost', color: 'primary', className: '' },
-      { variant: 'ghost', color: 'success', className: '' },
-      { variant: 'ghost', color: 'danger', className: '' },
-
-      { variant: 'outline', color: 'muted', className: '' },
-      { variant: 'outline', color: 'primary', className: '' },
-      { variant: 'outline', color: 'success', className: '' },
-      { variant: 'outline', color: 'danger', className: '' },
-
-      { variant: 'soft', color: 'muted', className: '' },
-      { variant: 'soft', color: 'primary', className: '' },
-      { variant: 'soft', color: 'success', className: '' },
-      { variant: 'soft', color: 'danger', className: '' }
-    ],
-    defaultVariants: {
-      variant: 'solid',
-      color: 'muted'
-    }
-  }
-);
+const dropdownMenuItemClassName =
+  "focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 dark:data-[variant=destructive]:focus:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4";
 
 function DropdownMenu({
   ...props
@@ -124,20 +39,14 @@ function DropdownMenuTrigger({
 function DropdownMenuContent({
   className,
   sideOffset = 4,
-  variant,
-  color,
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Content> &
-  VariantProps<typeof dropdownMenuContentVariants>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         data-slot='dropdown-menu-content'
         sideOffset={sideOffset}
-        className={cn(
-          dropdownMenuContentVariants({ variant, color }),
-          className
-        )}
+        className={cn(dropdownMenuContentClassName, className)}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
@@ -155,12 +64,9 @@ function DropdownMenuGroup({
 function DropdownMenuItem({
   className,
   inset,
-  variant = 'solid',
-  color = 'muted',
   intent = 'default',
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Item> &
-  VariantProps<typeof dropdownMenuItemVariants> & {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {
   inset?: boolean
   intent?: 'default' | 'destructive'
 }) {
@@ -169,10 +75,7 @@ function DropdownMenuItem({
       data-slot='dropdown-menu-item'
       data-inset={inset}
       data-variant={intent}
-      className={cn(
-        dropdownMenuItemVariants({ variant, color }),
-        className
-      )}
+      className={cn(dropdownMenuItemClassName, className)}
       {...props}
     />
   );
@@ -281,10 +184,8 @@ function DropdownMenuShortcut({
       data-slot='dropdown-menu-shortcut'
       as='span'
       size='xs'
-      variant='ghost'
-      color='muted'
       className={cn(
-        'ml-auto tracking-widest',
+        'ml-auto tracking-widest text-muted-foreground',
         className
       )}
       {...props}

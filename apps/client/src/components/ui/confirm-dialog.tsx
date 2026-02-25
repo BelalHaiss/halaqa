@@ -9,7 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from './alert-dialog';
-import { ButtonColors, ButtonVariants } from './button';
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -19,8 +18,7 @@ type ConfirmDialogProps = {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => Promise<void> | void;
-  variant?: ButtonVariants;
-  color?: ButtonColors;
+  intent?: 'default' | 'destructive';
 };
 
 export function ConfirmDialog({
@@ -31,8 +29,7 @@ export function ConfirmDialog({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   onConfirm,
-  variant = 'solid',
-  color = 'primary'
+  intent = 'default'
 }: ConfirmDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,8 +60,7 @@ export function ConfirmDialog({
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isLoading}
-            variant={variant}
-            color={color}
+            intent={intent}
           >
             {isLoading ? 'Processing...' : confirmText}
           </AlertDialogAction>

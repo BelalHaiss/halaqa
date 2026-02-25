@@ -93,7 +93,6 @@ export interface UpdateStaffUserDto {
   username?: string;
   name?: string;
   role?: UserAuthRole;
-  password?: string;
   timezone?: string;
 }
 
@@ -110,19 +109,6 @@ export interface ChangeOwnPasswordDto {
   newPassword: string;
   confirmPassword?: string;
 }
-
-export type UpdateProfileDto = UpdateOwnProfileDto;
-export type ChangePasswordDto = ChangeOwnPasswordDto;
-
-export type UserFormDto = Omit<
-  Pick<
-    CreateStaffUserDto,
-    'name' | 'username' | 'role' | 'password' | 'timezone'
-  >,
-  'password'
-> & {
-  password?: string;
-};
 
 export interface UpdateUserProfileDto {
   userId: string;
@@ -159,7 +145,7 @@ export type NonLearnerUserWithCredentials = UserWithOptionalCredentials & {
 };
 
 export const isLearnerUser = (
-  user: UserWithOptionalCredentials,
+  user: UserWithOptionalCredentials
 ): user is LearnerUser => {
   return (
     user.role === 'STUDENT' &&
@@ -169,7 +155,7 @@ export const isLearnerUser = (
 };
 
 export const isNonLearnerUserWithCredentials = (
-  user: UserWithOptionalCredentials,
+  user: UserWithOptionalCredentials
 ): user is NonLearnerUserWithCredentials => {
   return (
     user.role !== 'STUDENT' &&

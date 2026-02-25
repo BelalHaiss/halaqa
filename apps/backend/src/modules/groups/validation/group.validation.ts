@@ -1,4 +1,5 @@
 import {
+  AddLearnersToGroupDto,
   CreateLearnerDto,
   CreateGroupDto,
   GroupScheduleDay,
@@ -7,6 +8,16 @@ import {
   UpdateGroupSettingsDto,
 } from '@halaqa/shared';
 import z, { ZodType } from 'zod';
+import {
+  dayOfWeekSchema,
+  descriptionSchema,
+  durationMinutesSchema,
+  nameSchema,
+  nonEmptyIdSchema,
+  notesSchema,
+  timeMinutesSchema,
+  tutorIdSchema,
+} from 'src/utils/validation/fields.schema';
 import { timezoneFieldSchema } from 'src/utils/validation/timezone.schema';
 
 const groupStatusSchema = z.enum([
@@ -16,9 +27,9 @@ const groupStatusSchema = z.enum([
 ]) satisfies ZodType<GroupStatus>;
 
 const groupScheduleDaySchema = z.object({
-  dayOfWeek: z.number().int().min(0).max(6),
-  startMinutes: z.number().int().min(0).max(1439),
-  durationMinutes: z.number().int().min(15).max(720),
+  dayOfWeek: dayOfWeekSchema,
+  startMinutes: timeMinutesSchema,
+  durationMinutes: durationMinutesSchema,
 }) satisfies ZodType<GroupScheduleDay>;
 
 const uniqueScheduleDays = (value: GroupScheduleDay[]) => {
@@ -27,9 +38,9 @@ const uniqueScheduleDays = (value: GroupScheduleDay[]) => {
 };
 
 const createGroupBaseSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  description: z.string().trim().min(1).max(500).optional(),
-  tutorId: z.string().trim().min(1),
+  name: nameSchema,
+  description: descriptionSchema.optional(),
+  tutorId: tutorIdSchema,
   status: groupStatusSchema.optional(),
   scheduleDays: z
     .array(groupScheduleDaySchema)
@@ -46,9 +57,9 @@ export const createGroupSchema = z.intersection(
 
 const updateGroupBaseSchema = z
   .object({
-    name: z.string().trim().min(2).max(100).optional(),
-    description: z.string().trim().min(1).max(500).optional(),
-    tutorId: z.string().trim().min(1).optional(),
+    name: nameSchema.optional(),
+    description: descriptionSchema.optional(),
+    tutorId: tutorIdSchema.optional(),
     status: groupStatusSchema.optional(),
     scheduleDays: z
       .array(groupScheduleDaySchema)
@@ -89,10 +100,10 @@ export const updateGroupSettingsSchema = z
   }) satisfies ZodType<UpdateGroupSettingsDto>;
 
 const createLearnerBaseSchema = z.object({
-  name: z.string().trim().min(2).max(100),
+  name: nameSchema,
   contact: z
     .object({
-      notes: z.string().trim().max(2000).optional(),
+      notes: notesSchema.optional(),
     })
     .optional(),
 });
@@ -101,3 +112,7 @@ export const createLearnerForGroupSchema = z.intersection(
   createLearnerBaseSchema,
   timezoneFieldSchema,
 ) satisfies ZodType<CreateLearnerDto>;
+
+export const addLearnersToGroupSchema = z.object({
+  learnerIds: z.array(nonEmptyIdSchema).min(1),
+}) satisfies ZodType<AddLearnersToGroupDto>;

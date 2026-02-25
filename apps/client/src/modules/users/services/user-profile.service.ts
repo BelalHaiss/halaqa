@@ -6,7 +6,7 @@ import {
   UserAuthType
 } from '@halaqa/shared';
 
-export const profileService = {
+export const userProfileService = {
   /**
    * Update current user profile
    */
@@ -33,4 +33,4 @@ export const profileService = {
   }
 };
 
-export default profileService;
+export default userProfileService;

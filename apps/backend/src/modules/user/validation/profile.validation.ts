@@ -1,21 +1,15 @@
 import { ChangeOwnPasswordDto, UpdateOwnProfileDto } from '@halaqa/shared';
 import { timezoneFieldSchema } from 'src/utils/validation/timezone.schema';
+import {
+  nameSchema,
+  passwordSchema,
+  usernameAccountSchema,
+} from 'src/utils/validation/fields.schema';
 import z, { ZodType } from 'zod';
 
-const usernameSchema = z
-  .string()
-  .trim()
-  .min(3, 'Username must be at least 3 characters')
-  .max(50, 'Username must be less than 50 characters');
-
-const passwordSchema = z
-  .string()
-  .min(8, 'Password must be at least 8 characters')
-  .max(100, 'Password must be less than 100 characters');
-
 const updateOwnProfileBaseSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  username: usernameSchema,
+  name: nameSchema,
+  username: usernameAccountSchema,
 });
 
 export const updateOwnProfileSchema = z.intersection(

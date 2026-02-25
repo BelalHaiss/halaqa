@@ -1,14 +1,14 @@
-export type InteractiveVariant = "solid" | "ghost" | "outline" | "soft";
+export type InteractiveVariant = 'solid' | 'ghost' | 'outline' | 'soft';
 
 export type InteractiveColor =
-  | "primary"
-  | "success"
-  | "danger"
-  | "muted"
-  | "admin"
-  | "moderator"
-  | "tutor"
-  | "student";
+  | 'primary'
+  | 'success'
+  | 'danger'
+  | 'muted'
+  | 'purple'
+  | 'blue'
+  | 'emerald'
+  | 'teal';
 
 export type InteractiveVariantProps = {
   variant?: InteractiveVariant;

@@ -27,7 +27,7 @@ export const DashboardView = () => {
 
   if (error) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert className='border-danger/30 bg-danger/10 text-danger'>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
@@ -40,28 +40,28 @@ export const DashboardView = () => {
       <PageHeader title={`مرحباً، ${user.name}`} description='نظرة عامة على اليوم' />
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-5'>
+      <div className='mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4'>
         <MetricCard
-          color='primary'
           icon={<Calendar className='w-4 h-4' />}
+          iconClassName='bg-primary/10 text-primary'
           value={stats.todaySessions}
           label='جلسات اليوم'
         />
         <MetricCard
-          color='success'
           icon={<BookOpen className='w-4 h-4' />}
+          iconClassName='bg-success/10 text-success'
           value={stats.totalGroups}
           label='إجمالي الحلقات'
         />
         <MetricCard
-          color='muted'
           icon={<UsersIcon className='w-4 h-4' />}
+          iconClassName='bg-muted text-muted-foreground'
           value={stats.totalStudents}
           label='عدد الطلاب'
         />
         <MetricCard
-          color='danger'
           icon={<AlertCircle className='w-4 h-4' />}
+          iconClassName='bg-danger/10 text-danger'
           value={stats.studentsNeedingFollowUp}
           label='يحتاجون متابعة'
         />

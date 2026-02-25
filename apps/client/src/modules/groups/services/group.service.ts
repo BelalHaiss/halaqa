@@ -1,5 +1,6 @@
 import { apiClient } from '@/services';
 import {
+  AddLearnersToGroupDto,
   CountDto,
   CreateLearnerDto,
   CreateGroupDto,
@@ -59,6 +60,13 @@ export class GroupService {
       `/groups/${groupId}/students/create`,
       dto
     );
+  }
+
+  async addExistingLearnersToGroup(
+    groupId: string,
+    dto: AddLearnersToGroupDto
+  ): Promise<UnifiedApiResponse<GroupDetailsDto>> {
+    return apiClient.post<GroupDetailsDto>(`/groups/${groupId}/students/attach`, dto);
   }
 
   async removeStudentFromGroup(

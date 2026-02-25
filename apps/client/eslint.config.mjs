@@ -57,7 +57,7 @@ export default tseslint.config(
           ...tanstackRestriction,
           patterns: [
             {
-              group: ['@/modules/*'],
+              group: ['@/modules/*', '!@/modules/users'],
               message:
                 'Shared layers (components/lib/services/contexts/hoc) must not import module internals directly.',
             },

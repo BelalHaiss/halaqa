@@ -5,6 +5,7 @@ export * from './learner.types';
 export * from './group.types';
 export * from './session.types';
 export * from './attendance.types';
+export * from './validation/fields.constants';
 
 // Export utilities
 export * from './utils/date.util';

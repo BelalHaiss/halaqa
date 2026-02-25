@@ -53,7 +53,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 const fieldVariants = cva(
-  'group/field flex w-full gap-3 data-[invalid=true]:text-destructive',
+  'group/field flex w-full gap-3 data-[invalid=true]:text-danger',
   {
     variants: {
       orientation: {
@@ -202,18 +202,7 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values()
     ];
 
-    if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message;
-    }
-
-    return (
-      <ul className='ml-4 flex list-disc flex-col gap-1'>
-        {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
-        )}
-      </ul>
-    );
+    return uniqueErrors[0]?.message;
   }, [children, errors]);
 
   if (!content) {
@@ -224,7 +213,7 @@ function FieldError({
     <div
       role='alert'
       data-slot='field-error'
-      className={cn('text-destructive text-sm font-normal', className)}
+      className={cn('text-danger text-sm font-normal', className)}
       {...props}
     >
       {content}
