@@ -107,7 +107,7 @@ export interface UpdateOwnProfileDto {
 export interface ChangeOwnPasswordDto {
   currentPassword: string;
   newPassword: string;
-  confirmPassword?: string;
+  confirmPassword: string;
 }
 
 export interface UpdateUserProfileDto {

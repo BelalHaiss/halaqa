@@ -21,14 +21,9 @@ export const changeOwnPasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: passwordSchema,
-    confirmPassword: z.string().optional(),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
   })
-  .refine(
-    (value) =>
-      value.confirmPassword === undefined ||
-      value.newPassword === value.confirmPassword,
-    {
-      message: 'Password confirmation does not match',
-      path: ['confirmPassword'],
-    },
-  ) satisfies ZodType<ChangeOwnPasswordDto>;
+  .refine((value) => value.newPassword === value.confirmPassword, {
+    message: 'Password confirmation does not match',
+    path: ['confirmPassword'],
+  }) satisfies ZodType<ChangeOwnPasswordDto>;

@@ -220,10 +220,7 @@ export class UserService {
       throw new BadRequestException('Current password is incorrect');
     }
 
-    if (
-      dto.confirmPassword !== undefined &&
-      dto.newPassword !== dto.confirmPassword
-    ) {
+    if (dto.newPassword !== dto.confirmPassword) {
       throw new BadRequestException('Password confirmation does not match');
     }
 

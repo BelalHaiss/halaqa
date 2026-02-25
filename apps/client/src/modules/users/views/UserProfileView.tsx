@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { BackButton } from '@/components/ui/back-button';
 import {
   Card,
   CardContent,
@@ -11,6 +12,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Lock, AlertCircle } from 'lucide-react';
@@ -21,17 +23,13 @@ import {
   UpdateOwnProfileDto
 } from '@halaqa/shared';
 import {
-  changePasswordSchema,
-  profileSchema
+  changeOwnPasswordSchema,
+  updateOwnProfileSchema
 } from '../schema/user-profile.schema';
 import { FormField } from '@/components/forms/form-field';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { UserBadge } from '../components/UserBadge';
 import { useUserProfileViewModel } from '../viewmodels/user-profile.viewmodel';
-
-type ChangePasswordFormValues = ChangeOwnPasswordDto & {
-  confirmPassword: string;
-};
 
 export function UserProfileView() {
   const { user, setUser } = useApp();
@@ -39,7 +37,7 @@ export function UserProfileView() {
 
   // Profile form
   const profileForm = useForm<UpdateOwnProfileDto>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(updateOwnProfileSchema),
     defaultValues: {
       name: user?.name || '',
       username: user?.username || '',
@@ -49,8 +47,8 @@ export function UserProfileView() {
   });
 
   // Password form
-  const passwordForm = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
+  const passwordForm = useForm<ChangeOwnPasswordDto>({
+    resolver: zodResolver(changeOwnPasswordSchema),
     defaultValues: {
       currentPassword: '',
       newPassword: '',
@@ -68,19 +66,14 @@ export function UserProfileView() {
   if (!user) return null;
 
   return (
-    <div className='max-w-4xl mx-auto'>
-      {/* Header */}
-      <div className='mb-6'>
-        <h1 className='text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1'>
-          الإعدادات الشخصية
-        </h1>
-        <p className='text-sm text-gray-600 dark:text-gray-400'>
-          إدارة معلومات حسابك وإعداداتك
-        </p>
-      </div>
+    <div className='mx-auto max-w-4xl space-y-6'>
+      <PageHeader
+        title='الإعدادات الشخصية'
+        description='إدارة معلومات حسابك وإعداداتك'
+        actions={<BackButton />}
+      />
 
-      {/* User Info Card */}
-      <Card className='mb-6'>
+      <Card>
         <CardContent className='pt-6'>
           <div className='flex items-center gap-4'>
             <Avatar size='lg'>

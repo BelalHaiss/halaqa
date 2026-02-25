@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, Calendar, Clock, Loader2, Save, Users } from 'lucide-react';
+import { Calendar, Clock, Loader2, Save, Users } from 'lucide-react';
 import {
   AttendanceStatus,
   formatISODateToUserTimezone,
@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { BackButton } from '@/components/ui/back-button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
 import {
@@ -137,14 +138,7 @@ export const SessionDetailsView = () => {
       <PageHeader
         title='تفاصيل الجلسة'
         description={vm.session.groupInfo.name}
-        actions={
-          <Button asChild variant='outline' color='muted' className='gap-2'>
-            <Link to='/sessions'>
-              <ArrowLeft className='h-4 w-4' />
-              العودة
-            </Link>
-          </Button>
-        }
+        actions={<BackButton fallbackTo='/sessions' />}
       />
 
       <Card>

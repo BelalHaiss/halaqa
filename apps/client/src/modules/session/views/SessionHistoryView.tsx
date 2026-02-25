@@ -9,6 +9,7 @@ import {
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { PaginationControls } from '@/components/ui/pagination-controls';
@@ -51,7 +52,11 @@ export function SessionHistoryView() {
 
   return (
     <div className='space-y-4'>
-      <PageHeader title='السجل' description='سجل الجلسات مع فلترة متقدمة' />
+      <PageHeader
+        title='السجل'
+        description='سجل الجلسات مع فلترة متقدمة'
+        actions={<BackButton fallbackTo='/sessions' />}
+      />
 
       <HistoryFilterContainer
         fromDate={vm.filters.fromDate}

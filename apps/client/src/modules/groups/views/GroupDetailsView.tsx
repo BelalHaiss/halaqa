@@ -4,6 +4,7 @@ import { History, Loader2, Plus, Users } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { BackButton } from '@/components/ui/back-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -65,9 +66,12 @@ export const GroupDetailsView = () => {
         title={vm.group.name}
         description='تفاصيل الحلقة'
         actions={
-          vm.canManageGroup ? (
-            <Button onClick={() => setIsEditModalOpen(true)}>تعديل الحلقة</Button>
-          ) : null
+          <div className='flex items-center gap-2'>
+            <BackButton fallbackTo='/groups' />
+            {vm.canManageGroup ? (
+              <Button onClick={() => setIsEditModalOpen(true)}>تعديل الحلقة</Button>
+            ) : null}
+          </div>
         }
       />
 

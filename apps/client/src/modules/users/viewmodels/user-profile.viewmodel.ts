@@ -9,10 +9,6 @@ import { toast } from 'sonner';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { userProfileService } from '../services/user-profile.service';
 
-type ChangePasswordFormValues = ChangeOwnPasswordDto & {
-  confirmPassword: string;
-};
-
 type UseUserProfileViewModelArgs = {
   user: User | null;
   setUser: (nextUser: User | null) => void;
@@ -27,7 +23,7 @@ export const useUserProfileViewModel = ({
   const [pendingProfileData, setPendingProfileData] =
     useState<UpdateOwnProfileDto | null>(null);
   const [pendingPasswordData, setPendingPasswordData] =
-    useState<ChangePasswordFormValues | null>(null);
+    useState<ChangeOwnPasswordDto | null>(null);
   const [confirmProfileOpen, setConfirmProfileOpen] = useState(false);
   const [confirmPasswordOpen, setConfirmPasswordOpen] = useState(false);
 
@@ -87,7 +83,7 @@ export const useUserProfileViewModel = ({
     setConfirmProfileOpen(true);
   };
 
-  const requestPasswordChange = (data: ChangePasswordFormValues) => {
+  const requestPasswordChange = (data: ChangeOwnPasswordDto) => {
     setPendingPasswordData(data);
     setConfirmPasswordOpen(true);
   };
@@ -105,11 +101,7 @@ export const useUserProfileViewModel = ({
       return;
     }
 
-    await changePasswordMutation.mutateAsync({
-      currentPassword: pendingPasswordData.currentPassword,
-      newPassword: pendingPasswordData.newPassword,
-      confirmPassword: pendingPasswordData.confirmPassword
-    });
+    await changePasswordMutation.mutateAsync(pendingPasswordData);
   };
 
   return {

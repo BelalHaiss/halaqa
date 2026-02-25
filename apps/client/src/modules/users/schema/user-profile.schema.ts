@@ -7,32 +7,26 @@ import {
   usernameAccountSchema
 } from '@/lib/validation/fields.schema';
 
-/**
- * Schema for updating user profile
- */
-const profileBaseSchema = z.object({
+const updateOwnProfileBaseSchema = z.object({
   name: nameSchema,
   username: usernameAccountSchema
 });
 
-export const profileSchema = z.intersection(
-  profileBaseSchema,
+export const updateOwnProfileSchema = z.intersection(
+  updateOwnProfileBaseSchema,
   timezoneFieldSchema
 ) satisfies ZodType<UpdateOwnProfileDto>;
 
-/**
- * Schema for changing password
- */
-const changePasswordBaseSchema = z.object({
+const changeOwnPasswordBaseSchema = z.object({
   currentPassword: z.string().min(1, 'كلمة المرور الحالية مطلوبة'),
-  newPassword: passwordSchema
+  newPassword: passwordSchema,
+  confirmPassword: z.string().min(1, 'تأكيد كلمة المرور مطلوب')
 }) satisfies ZodType<ChangeOwnPasswordDto>;
 
-export const changePasswordSchema = changePasswordBaseSchema
-  .extend({
-    confirmPassword: z.string().min(1, 'تأكيد كلمة المرور مطلوب')
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
+export const changeOwnPasswordSchema = changeOwnPasswordBaseSchema.refine(
+  (data) => data.newPassword === data.confirmPassword,
+  {
     message: 'كلمة المرور غير متطابقة',
     path: ['confirmPassword']
-  });
+  }
+);
