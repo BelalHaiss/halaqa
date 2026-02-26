@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/forms/form-field';
 import {
@@ -19,7 +19,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -60,13 +60,9 @@ function UsersView() {
         />
         <DialogContent className='w-full sm:max-w-md' dir='rtl'>
           <DialogHeader>
-            <DialogTitle>
-              {vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
-            </DialogTitle>
+            <DialogTitle>{vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}</DialogTitle>
             <DialogDescription>
-              {vm.editingUser
-                ? 'قم بتعديل بيانات المستخدم'
-                : 'أدخل بيانات المستخدم الجديد'}
+              {vm.editingUser ? 'قم بتعديل بيانات المستخدم' : 'أدخل بيانات المستخدم الجديد'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={vm.onSubmit}>
@@ -110,15 +106,11 @@ function UsersView() {
                 type='select'
                 disabled={
                   vm.isSubmitting ||
-                  Boolean(
-                    vm.editingUser?.role === 'ADMIN' &&
-                    vm.user.role === 'MODERATOR'
-                  )
+                  Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')
                 }
                 options={vm.availableRoles.map((role) => ({
                   value: role,
-                  label:
-                    ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.label || role
+                  label: ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.label || role,
                 }))}
               />
 
@@ -130,16 +122,13 @@ function UsersView() {
                 disabled={vm.isSubmitting}
                 options={TIMEZONES.map((tz) => ({
                   value: tz.value,
-                  label: tz.label
+                  label: tz.label,
                 }))}
               />
             </div>
 
             <DialogFooter>
-              <Button
-                type='submit'
-                disabled={vm.isSubmitting || !vm.canSubmitForm}
-              >
+              <Button type='submit' disabled={vm.isSubmitting || !vm.canSubmitForm}>
                 {vm.editingUser ? 'حفظ التعديلات' : 'إضافة'}
               </Button>
             </DialogFooter>
@@ -150,21 +139,11 @@ function UsersView() {
       <Table className='rounded-lg border bg-card shadow-sm'>
         <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الاسم
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              اسم الحساب
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الدور
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              المنطقة الزمنية
-            </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs'>
-              الإجراءات
-            </TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الاسم</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>اسم الحساب</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الدور</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>المنطقة الزمنية</TableHead>
+            <TableHead className='px-4 py-3 text-left text-xs'>الإجراءات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -179,10 +158,7 @@ function UsersView() {
             </TableRow>
           ) : vm.users.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={5}
-                className='py-10 text-center text-muted-foreground'
-              >
+              <TableCell colSpan={5} className='py-10 text-center text-muted-foreground'>
                 لا يوجد مستخدمون
               </TableCell>
             </TableRow>

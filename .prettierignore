@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+.next
+.nuxt
+output
+.env
+.env.*
+*.log
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.git
+.vscode
+.idea
+coverage
+.turbo
