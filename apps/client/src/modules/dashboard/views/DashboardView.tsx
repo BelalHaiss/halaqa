@@ -27,7 +27,7 @@ export const DashboardView = () => {
 
   if (error) {
     return (
-      <Alert className='border-danger/30 bg-danger/10 text-danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     );

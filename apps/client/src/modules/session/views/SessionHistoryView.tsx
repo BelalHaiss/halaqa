@@ -44,7 +44,7 @@ export function SessionHistoryView() {
 
   if (vm.groupsError) {
     return (
-      <Alert className='border-danger/30 bg-danger/10 text-danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{vm.groupsError}</AlertDescription>
       </Alert>
     );
@@ -73,7 +73,7 @@ export function SessionHistoryView() {
       />
 
       {vm.historyError && (
-        <Alert className='border-danger/30 bg-danger/10 text-danger'>
+        <Alert alertType='ERROR'>
           <AlertDescription>{vm.historyError}</AlertDescription>
         </Alert>
       )}

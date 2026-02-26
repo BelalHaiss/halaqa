@@ -179,7 +179,7 @@ export function UserProfileView() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Alert className='mb-4'>
+              <Alert alertType='WARN' className='mb-4'>
                 <AlertCircle className='h-4 w-4' />
                 <AlertDescription>
                   تأكد من استخدام كلمة مرور قوية تحتوي على حروف كبيرة وصغيرة

@@ -120,7 +120,7 @@ export const SessionDetailsView = () => {
 
   if (vm.error || !vm.session) {
     return (
-      <Alert className='border-danger/30 bg-danger/10 text-danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{vm.error || 'الجلسة غير موجودة'}</AlertDescription>
       </Alert>
     );
@@ -200,7 +200,7 @@ export const SessionDetailsView = () => {
 
           {vm.session.originalStartedAt ? (
             <div className='border-t border-border pt-2'>
-              <Alert className='border-border bg-muted/30'>
+              <Alert alertType='WARN'>
                 <AlertDescription>
                   <RescheduledNotice
                     originalStartedAt={vm.session.originalStartedAt}
@@ -280,7 +280,7 @@ export const SessionDetailsView = () => {
             ) : (
               <>
                 {canStoreAttendance && vm.session.status !== 'COMPLETED' ? (
-                  <Alert className='border-border bg-muted/30'>
+                  <Alert alertType='WARN'>
                     <AlertDescription>
                       لا توجد قيم افتراضية للحضور. يجب تحديد حالة كل طالب قبل
                       حفظ الحضور.

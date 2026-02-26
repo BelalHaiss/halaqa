@@ -25,7 +25,7 @@ export const TodaySessionsView = () => {
 
   if (vm.error) {
     return (
-      <Alert className='border-danger/30 bg-danger/10 text-danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{vm.error}</AlertDescription>
       </Alert>
     );
