@@ -2,15 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './interceptor/response.interceptor';
 import {
-  UncaughtExceptionFilter,
   HttpExceptionFilter,
-  ZodExceptionFilter,
   PrismaExceptionFilter,
+  UncaughtExceptionFilter,
+  ZodExceptionFilter,
 } from './exceptions/exception';
+import { AppLogger } from './modules/logging/app-logger.service';
 import { isDevelopment } from './utils/util';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const appLogger = app.get(AppLogger);
+  app.useLogger(appLogger);
+
   if (isDevelopment) {
     app.enableCors({
       origin: '*', // Adjust this to your frontend URL and port
@@ -20,10 +24,10 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
 
   app.useGlobalFilters(
-    new UncaughtExceptionFilter(),
-    new HttpExceptionFilter(),
-    new ZodExceptionFilter(),
-    new PrismaExceptionFilter(),
+    new UncaughtExceptionFilter(appLogger),
+    new PrismaExceptionFilter(appLogger),
+    new ZodExceptionFilter(appLogger),
+    new HttpExceptionFilter(appLogger),
   );
   await app.listen(process.env.PORT ?? 5000);
 }

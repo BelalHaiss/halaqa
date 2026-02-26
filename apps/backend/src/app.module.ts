@@ -10,6 +10,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { SessionModule } from './modules/session/session.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
+import { LoggingModule } from './modules/logging/logging.module';
+import { ObservabilityModule } from './modules/observability/observability.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
     SessionModule,
     GroupModule,
     OrchestratorModule,
+    LoggingModule,
+    ObservabilityModule,
   ],
   providers: [
     {

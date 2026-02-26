@@ -17,9 +17,7 @@
     "baseUrl": "./",
     "paths": {
       "src/*": ["src/*"],
-      "generated/*": ["generated/*"],
-      "@halaqa/shared": ["../../packages/shared/src/index.ts"],
-      "@halaqa/shared/*": ["../../packages/shared/src/*"]
+      "generated/*": ["generated/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

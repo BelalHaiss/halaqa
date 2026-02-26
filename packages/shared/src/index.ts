@@ -1,5 +1,5 @@
-// Export all types from a single entry point
 export * from './types/api.types';
+export * from './types/client-error-log.types';
 export * from './user.types';
 export * from './learner.types';
 export * from './group.types';

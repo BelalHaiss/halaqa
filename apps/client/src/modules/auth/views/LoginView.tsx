@@ -1,12 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { Navigate } from 'react-router-dom';
-import {
-  CalendarDays,
-  Loader2,
-  ShieldCheck,
-  Sparkles,
-  Users
-} from 'lucide-react';
+import { CalendarDays, Loader2, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginCredentialsDto } from '@halaqa/shared';
 import { useApp } from '@/contexts/AppContext';
@@ -15,13 +9,7 @@ import { FormError } from '@/components/forms/form-error';
 import { FormField } from '@/components/forms/form-field';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Typography } from '@/components/ui/typography';
 import { loginSchema } from '../schema/login.schema';
 import { useAuthViewModel } from '../viewmodels/auth.viewmodel';
@@ -34,18 +22,18 @@ export const LoginView = () => {
     {
       title: 'إدارة الحلقات',
       description: 'عرض المجموعات وتنظيم جدول كل حلقة بسهولة.',
-      icon: Users
+      icon: Users,
     },
     {
       title: 'جلسات يومية',
       description: 'متابعة الحضور والتحديثات اللحظية لكل جلسة.',
-      icon: CalendarDays
+      icon: CalendarDays,
     },
     {
       title: 'بيئة موثوقة',
       description: 'صلاحيات واضحة وحماية للحسابات والبيانات.',
-      icon: ShieldCheck
-    }
+      icon: ShieldCheck,
+    },
   ];
 
   if (user) {
@@ -55,14 +43,14 @@ export const LoginView = () => {
   const {
     control,
     handleSubmit,
-    formState: { isDirty, isValid }
+    formState: { isDirty, isValid },
   } = useForm<LoginCredentialsDto>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: '',
-      password: ''
+      password: '',
     },
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
 
   const onSubmit = (data: LoginCredentialsDto) => login(data);
@@ -81,18 +69,13 @@ export const LoginView = () => {
               <CardTitle as='h2' size='xl'>
                 أهلاً بعودتك
               </CardTitle>
-              <CardDescription>
-                أدخل بياناتك للوصول إلى لوحة التحكم
-              </CardDescription>
+              <CardDescription>أدخل بياناتك للوصول إلى لوحة التحكم</CardDescription>
             </div>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
-              {isError && error ? (
-                <FormError error={{ message: error.message }} />
-              ) : null}
-
+              {isError && error ? <FormError error={{ message: error.message }} /> : null}
               <div className='space-y-4 rounded-xl border border-border bg-background/80 p-4'>
                 <FormField
                   control={control}
@@ -123,17 +106,11 @@ export const LoginView = () => {
                 size='lg'
                 disabled={isLoading || !canSubmit}
               >
-                {isLoading ? (
-                  <Loader2 className='h-4 w-4 animate-spin' />
-                ) : null}
+                {isLoading ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
                 {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
               </Button>
 
-              <Typography
-                as='div'
-                size='sm'
-                className='text-center text-muted-foreground'
-              >
+              <Typography as='div' size='sm' className='text-center text-muted-foreground'>
                 تسجيل سريع وآمن للوصول إلى جميع أدوات الإدارة.
               </Typography>
             </form>
@@ -151,8 +128,7 @@ export const LoginView = () => {
                 نظام إدارة الحلقات
               </CardTitle>
               <CardDescription className='max-w-xl'>
-                تجربة إدارة حديثة للحلقات القرآنية مع تنظيم الجلسات والحضور في
-                واجهة واضحة وسريعة.
+                تجربة إدارة حديثة للحلقات القرآنية مع تنظيم الجلسات والحضور في واجهة واضحة وسريعة.
               </CardDescription>
             </div>
           </CardHeader>
@@ -170,11 +146,7 @@ export const LoginView = () => {
                   <Typography as='div' size='md' weight='semibold'>
                     {item.title}
                   </Typography>
-                  <Typography
-                    as='div'
-                    size='sm'
-                    className='text-muted-foreground'
-                  >
+                  <Typography as='div' size='sm' className='text-muted-foreground'>
                     {item.description}
                   </Typography>
                 </div>

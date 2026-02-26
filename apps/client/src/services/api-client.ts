@@ -1,19 +1,17 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { UnifiedApiResponse } from '@halaqa/shared';
+import { normalizeError } from '@/lib/errors/normalize-error';
 
 class ApiClient {
   private client: AxiosInstance;
 
-  constructor(
-    baseURL: string = import.meta.env.VITE_API_URL ||
-      'http://localhost:5000/api'
-  ) {
+  constructor(baseURL: string = import.meta.env.VITE_API_URL || 'http://localhost:5000/api') {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     });
 
     this.setupInterceptors();
@@ -51,24 +49,12 @@ class ApiClient {
     );
   }
 
-  async get<T>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<UnifiedApiResponse<T>> {
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<UnifiedApiResponse<T>> =
-        await this.client.get(url, config);
+      const response: AxiosResponse<UnifiedApiResponse<T>> = await this.client.get(url, config);
       return response.data;
-    } catch (error: any) {
-      throw {
-        message:
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'حدث خطأ غير متوقع',
-        statusCode: error.response?.status,
-        fields: error.response?.data?.fields
-      };
+    } catch (error) {
+      throw normalizeError(error);
     }
   }
 
@@ -78,19 +64,14 @@ class ApiClient {
     config?: AxiosRequestConfig
   ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<UnifiedApiResponse<T>> =
-        await this.client.post(url, data, config);
+      const response: AxiosResponse<UnifiedApiResponse<T>> = await this.client.post(
+        url,
+        data,
+        config
+      );
       return response.data;
-    } catch (error: any) {
-      throw {
-        message:
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'حدث خطأ غير متوقع',
-        statusCode: error.response?.status,
-        fields: error.response?.data?.fields
-      };
+    } catch (error) {
+      throw normalizeError(error);
     }
   }
 
@@ -100,19 +81,14 @@ class ApiClient {
     config?: AxiosRequestConfig
   ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<UnifiedApiResponse<T>> =
-        await this.client.put(url, data, config);
+      const response: AxiosResponse<UnifiedApiResponse<T>> = await this.client.put(
+        url,
+        data,
+        config
+      );
       return response.data;
-    } catch (error: any) {
-      throw {
-        message:
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'حدث خطأ غير متوقع',
-        statusCode: error.response?.status,
-        fields: error.response?.data?.fields
-      };
+    } catch (error) {
+      throw normalizeError(error);
     }
   }
 
@@ -122,40 +98,23 @@ class ApiClient {
     config?: AxiosRequestConfig
   ): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<UnifiedApiResponse<T>> =
-        await this.client.patch(url, data, config);
+      const response: AxiosResponse<UnifiedApiResponse<T>> = await this.client.patch(
+        url,
+        data,
+        config
+      );
       return response.data;
-    } catch (error: any) {
-      throw {
-        message:
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'حدث خطأ غير متوقع',
-        statusCode: error.response?.status,
-        fields: error.response?.data?.fields
-      };
+    } catch (error) {
+      throw normalizeError(error);
     }
   }
 
-  async delete<T>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<UnifiedApiResponse<T>> {
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<UnifiedApiResponse<T>> {
     try {
-      const response: AxiosResponse<UnifiedApiResponse<T>> =
-        await this.client.delete(url, config);
+      const response: AxiosResponse<UnifiedApiResponse<T>> = await this.client.delete(url, config);
       return response.data;
-    } catch (error: any) {
-      throw {
-        message:
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          error.message ||
-          'حدث خطأ غير متوقع',
-        statusCode: error.response?.status,
-        fields: error.response?.data?.fields
-      };
+    } catch (error) {
+      throw normalizeError(error);
     }
   }
 }

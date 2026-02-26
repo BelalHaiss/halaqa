@@ -1,67 +1,66 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { LoginView } from '@/modules/auth';
 import { GroupsView, GroupDetailsView } from '@/modules/groups';
-import {
-  TodaySessionsView,
-  SessionDetailsView,
-  SessionHistoryView
-} from '@/modules/session';
+import { TodaySessionsView, SessionDetailsView, SessionHistoryView } from '@/modules/session';
 import { UsersView, UserProfileView } from '@/modules/users';
 import { LearnersView } from '@/modules/learners';
+import { RouteErrorElement } from '@/modules/observability';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginView />
+    element: <LoginView />,
+    errorElement: <RouteErrorElement />,
   },
   {
     path: '/',
     element: <ProtectedLayout />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         index: true,
-        element: <GroupsView />
+        element: <GroupsView />,
       },
       {
         path: 'groups',
-        element: <GroupsView />
+        element: <GroupsView />,
       },
       {
         path: 'groups/:id',
-        element: <GroupDetailsView />
+        element: <GroupDetailsView />,
       },
       {
         path: 'sessions',
-        element: <TodaySessionsView />
+        element: <TodaySessionsView />,
       },
       {
         path: 'sessions/history',
-        element: <SessionHistoryView />
+        element: <SessionHistoryView />,
       },
       {
         path: 'sessions/:id',
-        element: <SessionDetailsView />
+        element: <SessionDetailsView />,
       },
       {
         path: 'users',
-        element: <UsersView />
+        element: <UsersView />,
       },
       {
         path: 'learners',
-        element: <LearnersView />
+        element: <LearnersView />,
       },
       {
         path: 'profile',
-        element: <UserProfileView />
-      }
-    ]
+        element: <UserProfileView />,
+      },
+    ],
   },
   {
     path: '*',
     lazy: async () => {
       const { Navigate } = await import('react-router-dom');
       return { Component: () => <Navigate to='/' replace /> };
-    }
-  }
+    },
+  },
 ]);
