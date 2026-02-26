@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
@@ -15,7 +16,7 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Typography } from '@/components/ui/typography';
 import { Field, FieldError } from '@/components/ui/field';
 import {
-  rescheduleSchema,
+  createRescheduleSchema,
   type RescheduleFormData
 } from '../schema/reschedule.schema';
 
@@ -34,6 +35,11 @@ export const RescheduleDialog = ({
   isLoading = false,
   timezone
 }: RescheduleDialogProps) => {
+  const rescheduleSchema = useMemo(
+    () => createRescheduleSchema(timezone),
+    [timezone]
+  );
+
   const {
     control,
     handleSubmit,
@@ -94,6 +100,7 @@ export const RescheduleDialog = ({
                         invalid={
                           dateFieldState.invalid || timeFieldState.invalid
                         }
+                        disablePastDates
                         disabled={isLoading}
                       />
                     </Field>

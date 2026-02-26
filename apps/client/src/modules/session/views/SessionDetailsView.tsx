@@ -170,7 +170,7 @@ export const SessionDetailsView = () => {
               المعلم
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
-              {vm.session.tutorInfo.name}
+              {vm.session.tutorInfo?.name ?? 'غير محدد'}
             </Typography>
           </div>
 

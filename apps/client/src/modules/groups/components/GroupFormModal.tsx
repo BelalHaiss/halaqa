@@ -165,7 +165,7 @@ export function GroupFormModal({
         const payload: UpdateGroupDto = {
           name: values.name.trim(),
           description: values.description?.trim() || undefined,
-          tutorId: values.tutorId,
+          tutorId: values.tutorId || undefined,
           timezone: values.timezone,
           status: values.status,
           scheduleDays

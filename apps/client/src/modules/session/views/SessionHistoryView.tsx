@@ -132,7 +132,9 @@ export function SessionHistoryView() {
               return (
                 <TableRow key={session.id}>
                   <TableCell className='px-4 py-3'>{session.groupName}</TableCell>
-                  <TableCell className='px-4 py-3'>{session.tutorName}</TableCell>
+                  <TableCell className='px-4 py-3'>
+                    {session.tutorName ?? 'غير محدد'}
+                  </TableCell>
                   <TableCell className='px-4 py-3'>
                     <div className='space-y-1'>
                       <Typography as='div' size='sm' weight='medium'>

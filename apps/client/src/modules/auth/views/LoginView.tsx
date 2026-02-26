@@ -69,18 +69,9 @@ export const LoginView = () => {
   const canSubmit = isDirty && isValid;
 
   return (
-    <div
-      dir='rtl'
-      className='relative min-h-screen overflow-hidden bg-muted/30 p-4 sm:p-6'
-    >
-      <div className='pointer-events-none absolute inset-0'>
-        <div className='absolute -top-16 left-8 h-56 w-56 rounded-full bg-primary/15 blur-3xl' />
-        <div className='absolute bottom-0 right-0 h-72 w-72 rounded-full bg-success/10 blur-3xl' />
-        <div className='absolute top-1/3 right-1/4 h-40 w-40 rounded-full bg-primary/10 blur-2xl' />
-      </div>
-
-      <div className='relative mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center gap-6 lg:flex-row-reverse'>
-        <Card className='w-full max-w-md border-border/80 bg-muted/30 shadow-xl backdrop-blur sm:max-w-lg lg:w-96'>
+    <div dir='rtl' className='min-h-screen bg-muted/30 p-4 sm:p-6'>
+      <div className='mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center gap-6 lg:flex-row'>
+        <Card className='w-full max-w-md border-border/80 bg-muted/30 shadow-xl backdrop-blur lg:w-96'>
           <CardHeader className='space-y-4 text-center'>
             <AppLogo className='mx-auto' />
             <div className='space-y-2'>
@@ -132,7 +123,9 @@ export const LoginView = () => {
                 size='lg'
                 disabled={isLoading || !canSubmit}
               >
-                {isLoading ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
+                {isLoading ? (
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                ) : null}
                 {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
               </Button>
 
@@ -177,7 +170,11 @@ export const LoginView = () => {
                   <Typography as='div' size='md' weight='semibold'>
                     {item.title}
                   </Typography>
-                  <Typography as='div' size='sm' className='text-muted-foreground'>
+                  <Typography
+                    as='div'
+                    size='sm'
+                    className='text-muted-foreground'
+                  >
                     {item.description}
                   </Typography>
                 </div>

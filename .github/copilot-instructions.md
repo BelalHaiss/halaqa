@@ -65,7 +65,9 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 ## 🎨 Design / Tailwind
 
 - `index.css` = Tailwind source
-- Tokens only, no arbitrary values
+- Tailwind v4 only (`@import 'tailwindcss'`, `@theme inline`, `@custom-variant`)
+- Prefer tokens from `index.css` and semantic utilities (`bg-background`, `text-foreground`, etc.)
+- Avoid arbitrary values unless required for Radix/Base UI CSS variables or advanced state selectors
 - Minimal layout classes
 - use simple flex box with no much elements and wrapper just style the elements with tokens and CVA variants or make wrapper div if needed
 - No shadcn overrides

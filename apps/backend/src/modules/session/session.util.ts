@@ -57,7 +57,7 @@ type SessionDetailsRecordLike = {
     tutor: {
       id: string;
       name: string;
-    };
+    } | null;
     students: {
       user: {
         id: string;
@@ -81,7 +81,7 @@ type VirtualSessionGroupLike = {
   tutor: {
     id: string;
     name: string;
-  };
+  } | null;
   students: {
     user: {
       id: string;
@@ -205,7 +205,7 @@ export function canSessionBeRescheduled(args: {
 export function mapSessionSummary(args: {
   groupId: string;
   groupName: string;
-  tutorName: string;
+  tutorName: string | null;
   startedAt: Date;
   sessionRecord?: SessionRecordLike | null;
   nowUtcIso?: string;
@@ -239,10 +239,12 @@ export function mapSessionDetails(args: {
       id: args.sessionRecord.group.id,
       name: args.sessionRecord.group.name,
     },
-    tutorInfo: {
-      id: args.sessionRecord.group.tutor.id,
-      name: args.sessionRecord.group.tutor.name,
-    },
+    tutorInfo: args.sessionRecord.group.tutor
+      ? {
+          id: args.sessionRecord.group.tutor.id,
+          name: args.sessionRecord.group.tutor.name,
+        }
+      : null,
     status: resolveSessionStatus({
       startedAt: args.sessionRecord.startedAt,
       sessionRecord: args.sessionRecord,
@@ -283,10 +285,12 @@ export function mapVirtualSessionDetails(args: {
       id: args.group.id,
       name: args.group.name,
     },
-    tutorInfo: {
-      id: args.group.tutor.id,
-      name: args.group.tutor.name,
-    },
+    tutorInfo: args.group.tutor
+      ? {
+          id: args.group.tutor.id,
+          name: args.group.tutor.name,
+        }
+      : null,
     status: resolveSessionStatus({
       startedAt: args.startedAt,
       nowUtcIso: args.nowUtcIso,

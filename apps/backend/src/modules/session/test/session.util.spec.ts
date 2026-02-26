@@ -52,6 +52,17 @@ describe('session.util', () => {
       expect(summary).not.toHaveProperty('time');
     });
 
+    it('maps summary with null tutor name when group has no tutor', () => {
+      const summary = mapSessionSummary({
+        groupId: 'g1',
+        groupName: 'Halaqa A',
+        tutorName: null,
+        startedAt: baseStartedAt,
+      });
+
+      expect(summary.tutorName).toBeNull();
+    });
+
     it('maps details with canonical timestamps', () => {
       const details = mapSessionDetails({
         sessionRecord: {
@@ -92,6 +103,26 @@ describe('session.util', () => {
       expect(details.originalStartedAt).toBe('2026-02-20T09:00:00.000Z');
       expect(details).not.toHaveProperty('date');
       expect(details).not.toHaveProperty('time');
+    });
+
+    it('maps details with null tutor info when group has no tutor', () => {
+      const details = mapSessionDetails({
+        sessionRecord: {
+          id: 's1',
+          startedAt: baseStartedAt,
+          originalStartedAt,
+          status: 'RESCHEDULED' as never,
+          group: {
+            id: 'g1',
+            name: 'Halaqa A',
+            tutor: null,
+            students: [],
+          },
+          attendance: [],
+        },
+      });
+
+      expect(details.tutorInfo).toBeNull();
     });
 
     it('maps virtual details with startedAt and null originalStartedAt', () => {

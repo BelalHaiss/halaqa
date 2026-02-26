@@ -27,6 +27,7 @@ interface DateTimePickerProps {
   dateLabel?: string;
   timeStep?: number;
   invalid?: boolean;
+  disablePastDates?: boolean;
 }
 
 export function DateTimePicker({
@@ -40,7 +41,8 @@ export function DateTimePicker({
   disabled = false,
   dateLabel = 'اختر التاريخ',
   timeStep = 15,
-  invalid = false
+  invalid = false,
+  disablePastDates = false
 }: DateTimePickerProps) {
   const selectedDate = date ? parseDateString(date) : undefined;
   const showDate = mode !== 'timeOnly';
@@ -88,7 +90,7 @@ export function DateTimePicker({
               mode='single'
               selected={selectedDate}
               onSelect={handleDateSelect}
-              initialFocus
+              disablePastDates={disablePastDates}
               disabled={disabled}
             />
           </PopoverContent>

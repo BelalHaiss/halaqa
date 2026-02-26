@@ -247,7 +247,7 @@ export class SessionService {
           summary: mapSessionSummary({
             groupId: group.id,
             groupName: group.name,
-            tutorName: group.tutor.name,
+            tutorName: group.tutor?.name ?? null,
             startedAt,
             sessionRecord,
           }),
@@ -330,7 +330,7 @@ export class SessionService {
       mapSessionSummary({
         groupId: sessionRecord.groupId,
         groupName: sessionRecord.group.name,
-        tutorName: sessionRecord.group.tutor.name,
+        tutorName: sessionRecord.group.tutor?.name ?? null,
         startedAt: sessionRecord.startedAt,
         sessionRecord,
       }),
@@ -539,14 +539,8 @@ export class SessionService {
     payload: UpdateSessionActionDTO,
     userTimezone: string,
   ): Promise<SessionDetailsDTO> {
-    if (!payload.date || !payload.time) {
-      throw new BadRequestException(
-        'Date and time are required for RESCHEDULE action',
-      );
-    }
-
     const newStartedAt = new Date(
-      combineDateTime(payload.date, payload.time, userTimezone),
+      combineDateTime(payload.date!, payload.time!, userTimezone),
     );
 
     const updatedSession = target.sessionRecord
@@ -707,7 +701,7 @@ export class SessionService {
     });
 
     if (foundSession) {
-      this.assertTutorAccess(user, foundSession.group.tutor.id);
+      this.assertTutorAccess(user, foundSession.group.tutorId);
 
       return {
         group: foundSession.group,
@@ -723,7 +717,7 @@ export class SessionService {
     }
 
     const group = await this.findGroupWithDetails(parsedVirtualId.groupId);
-    this.assertTutorAccess(user, group.tutor.id);
+    this.assertTutorAccess(user, group.tutorId);
 
     // Check if a session record was created for this virtual occurrence
     const linkedSession = await this.findLinkedSessionByOccurrence(
@@ -798,7 +792,7 @@ export class SessionService {
     });
   }
 
-  private assertTutorAccess(user: User, tutorId: string) {
+  private assertTutorAccess(user: User, tutorId: string | null) {
     if (user.role === UserRole.TUTOR && user.id !== tutorId) {
       throw new ForbiddenException('Tutor can only access own group sessions');
     }

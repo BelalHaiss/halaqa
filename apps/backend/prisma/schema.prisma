@@ -30,7 +30,7 @@ model Group {
   id           String             @id @default(ulid())
   name         String             @db.VarChar(100)
   description  String?            @db.VarChar(500)
-  tutorId      String             @map("tutor_id")
+  tutorId      String?            @map("tutor_id")
   status       GroupStatus        @default(ACTIVE)
   createdAt    DateTime           @default(now()) @map("created_at")
   updatedAt    DateTime           @updatedAt @map("updated_at")
@@ -40,7 +40,7 @@ model Group {
   sessions     Session[]
 
   //  we should have relation for tutor and user
-  tutor User @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  tutor User? @relation(fields: [tutorId], references: [id], onDelete: SetNull)
 
   @@index([tutorId])
   @@index([status])

@@ -90,7 +90,7 @@ export const GroupDetailsView = () => {
               المعلم
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
-              {vm.group.tutor.name}
+              {vm.group.tutor?.name ?? 'غير محدد'}
             </Typography>
           </div>
 

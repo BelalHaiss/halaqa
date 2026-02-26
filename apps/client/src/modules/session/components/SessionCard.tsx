@@ -15,7 +15,7 @@ import { RescheduledNotice } from './RescheduledNotice';
 interface SessionCardProps {
   id: string;
   groupName: string;
-  tutorName: string;
+  tutorName: string | null;
   startedAt: ISODateString;
   originalStartedAt?: ISODateString | null;
   sessionStatus: SessionComputedStatus;
@@ -58,7 +58,7 @@ export const SessionCard = ({
                 المعلم
               </Typography>
               <Typography as='div' size='xs' weight='medium'>
-                {tutorName}
+                {tutorName ?? 'غير محدد'}
               </Typography>
             </div>
 

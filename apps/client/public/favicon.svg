@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Halaqa">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f766e" />
+      <stop offset="100%" stop-color="#155e75" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#bg)" />
+  <path
+    d="M18 22c5-2 10-2 14 1v19c-4-3-9-3-14-1V22Zm28 0c-5-2-10-2-14 1v19c4-3 9-3 14-1V22Z"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path d="M32 23v18" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+</svg>
