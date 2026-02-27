@@ -28,7 +28,7 @@ export const RescheduledNotice = ({
 
   if (variant === 'compact') {
     return (
-      <Typography as='div' size='xs' variant='ghost' color='muted'>
+      <Typography as='div' size='xs' className='text-muted-foreground'>
         معاد جدولتها من الموعد الرسمي "{originalFormattedDate}{' '}
         {originalFormattedTime}"
       </Typography>
@@ -36,7 +36,7 @@ export const RescheduledNotice = ({
   }
 
   return (
-    <Typography as='div' size='sm' variant='ghost' color='muted'>
+    <Typography as='div' size='sm' className='text-muted-foreground'>
       تم إعادة جدولة هذه الجلسة من موعدها الرسمي "{originalFormattedDate}{' '}
       {originalFormattedTime}"
     </Typography>

@@ -29,7 +29,7 @@ export type SessionComputedStatus = SessionRecordStatus | 'SCHEDULED';
 export interface SessionSummaryDTO {
   id: string;
   groupName: string;
-  tutorName: string;
+  tutorName: string | null;
   startedAt: ISODateString;
   originalStartedAt: ISODateString | null;
   sessionStatus: SessionComputedStatus;
@@ -39,7 +39,7 @@ export interface SessionSummaryDTO {
 export interface SessionDetailsDTO {
   id: string;
   groupInfo: { id: string; name: string };
-  tutorInfo: { id: string; name: string };
+  tutorInfo: { id: string; name: string } | null;
   status: SessionComputedStatus;
   canBeRescheduled: boolean;
   startedAt: ISODateString;

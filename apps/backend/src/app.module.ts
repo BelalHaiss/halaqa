@@ -10,6 +10,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { SessionModule } from './modules/session/session.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
+import { LoggingModule } from './modules/logging/logging.module';
+import { ObservabilityModule } from './modules/observability/observability.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -17,6 +20,12 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 seconds
+        limit: 100, // 100 requests per minute
+      },
+    ]),
     ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
@@ -24,8 +33,14 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
     SessionModule,
     GroupModule,
     OrchestratorModule,
+    LoggingModule,
+    ObservabilityModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

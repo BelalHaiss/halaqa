@@ -2,10 +2,15 @@ import { z } from 'zod';
 import type {
   UpdateSessionActionDTO,
   SessionAttendanceUpdateDTO,
-  AttendanceStatus,
-  ISODateOnlyString,
-  TimeMinutes
+  AttendanceStatus
 } from '@halaqa/shared';
+import {
+  isoDateOnlySchema,
+  nameSchema,
+  nonEmptyIdSchema,
+  notesSchema,
+  timeMinutesSchema
+} from '@/lib/validation/fields.schema';
 
 const attendanceStatusSchema = z.enum([
   'ATTENDED',
@@ -14,16 +19,16 @@ const attendanceStatusSchema = z.enum([
 ] satisfies [AttendanceStatus, ...AttendanceStatus[]]);
 
 const sessionAttendanceSchema = z.object({
-  studentId: z.string().min(1, 'معرف الطالب مطلوب'),
+  studentId: nonEmptyIdSchema,
   status: attendanceStatusSchema,
-  notes: z.string().optional()
+  notes: notesSchema.optional()
 }) satisfies z.ZodType<SessionAttendanceUpdateDTO>;
 
 const attendanceEditItemSchema = z.object({
-  studentId: z.string().min(1, 'معرف الطالب مطلوب'),
-  studentName: z.string().min(1, 'اسم الطالب مطلوب'),
+  studentId: nonEmptyIdSchema,
+  studentName: nameSchema,
   status: attendanceStatusSchema.nullable(),
-  notes: z.string().optional()
+  notes: notesSchema.optional()
 });
 
 export const attendanceEditSchema = z
@@ -44,22 +49,20 @@ export const attendanceEditSchema = z
 
 export const updateSessionSchema = z.object({
   action: z.enum(['CANCEL', 'RESCHEDULE', 'ATTENDANCE']),
-  date: z
-    .custom<ISODateOnlyString>(
-      (value) => typeof value === 'string' && value.length > 0
-    )
-    .optional(),
-  time: z
-    .custom<TimeMinutes>(
-      (value) =>
-        typeof value === 'number' &&
-        Number.isInteger(value) &&
-        value >= 0 &&
-        value <= 1439
-    )
-    .optional(),
+  date: isoDateOnlySchema.optional(),
+  time: timeMinutesSchema.optional(),
   attendance: z.array(sessionAttendanceSchema).optional()
 }) satisfies z.ZodType<UpdateSessionActionDTO>;
 
-export type UpdateSessionFormData = z.infer<typeof updateSessionSchema>;
-export type AttendanceEditFormData = z.infer<typeof attendanceEditSchema>;
+export type UpdateSessionFormData = UpdateSessionActionDTO;
+
+export type AttendanceEditItem = {
+  studentId: string;
+  studentName: string;
+  status: AttendanceStatus | null;
+  notes?: string;
+};
+
+export type AttendanceEditFormData = {
+  attendance: AttendanceEditItem[];
+};

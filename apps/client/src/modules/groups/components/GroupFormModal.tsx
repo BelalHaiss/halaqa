@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateGroupDto,
   DEFAULT_TIMEZONE,
   GroupDetailsDto,
-  GroupStatus,
   GroupTutorSummaryDto,
   TIMEZONES,
+  type TimeMinutes,
   UpdateGroupDto,
+  minutesToInputTimeString,
   timeToStartMinutes
 } from '@halaqa/shared';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Dialog,
@@ -23,13 +26,19 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Typography } from '@/components/ui/typography';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
+import { Field, FieldError } from '@/components/ui/field';
 import { dayNames } from '../constants';
 import { createGroupSchema, updateGroupSchema } from '../schema/group.schema';
+import {
+  groupFormSchema,
+  type GroupFormValues
+} from '../schema/group-form.schema';
 
 type BaseGroupFormModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  tutors?: GroupTutorSummaryDto[];
+  tutors: GroupTutorSummaryDto[];
   group?: GroupDetailsDto | null;
   isLoading?: boolean;
 };
@@ -46,28 +55,22 @@ type EditGroupFormModalProps = BaseGroupFormModalProps & {
 
 type GroupFormModalProps = CreateGroupFormModalProps | EditGroupFormModalProps;
 
-type GroupFormValues = {
-  name: string;
-  description: string;
-  tutorId: string;
-  timezone: string;
-  status: GroupStatus;
-  time: string;
-  durationMinutes: string;
-  selectedDays: number[];
-};
-
 const groupStatusOptions = [
   { value: 'ACTIVE', label: 'نشط' },
   { value: 'INACTIVE', label: 'غير نشط' },
   { value: 'COMPLETED', label: 'مكتمل' }
 ];
 
+const DEFAULT_GROUP_TIME = '17:00';
+
+const buildUniformDayTimes = (time: string) =>
+  Array.from({ length: dayNames.length }, () => time);
+
 export function GroupFormModal({
   open,
   onOpenChange,
   mode,
-  tutors = [],
+  tutors,
   group,
   isLoading = false,
   onSubmit
@@ -77,6 +80,21 @@ export function GroupFormModal({
 
   const defaultValues = useMemo<GroupFormValues>(() => {
     const firstSchedule = group?.scheduleDays[0];
+    const defaultTime =
+      firstSchedule && Number.isFinite(firstSchedule.startMinutes)
+        ? minutesToInputTimeString(firstSchedule.startMinutes as TimeMinutes)
+        : DEFAULT_GROUP_TIME;
+    const dayTimes = buildUniformDayTimes(defaultTime);
+
+    for (const scheduleDay of group?.scheduleDays ?? []) {
+      dayTimes[scheduleDay.dayOfWeek] = minutesToInputTimeString(
+        scheduleDay.startMinutes as TimeMinutes
+      );
+    }
+
+    const hasSameTimeForAllDays =
+      new Set((group?.scheduleDays ?? []).map((day) => day.startMinutes))
+        .size <= 1;
 
     return {
       name: group?.name ?? '',
@@ -84,10 +102,9 @@ export function GroupFormModal({
       tutorId: group?.tutorId ?? '',
       timezone: group?.timezone ?? DEFAULT_TIMEZONE,
       status: group?.status ?? 'ACTIVE',
-      time:
-        firstSchedule && Number.isFinite(firstSchedule.startMinutes)
-          ? `${String(Math.floor(firstSchedule.startMinutes / 60)).padStart(2, '0')}:${String(firstSchedule.startMinutes % 60).padStart(2, '0')}`
-          : '17:00',
+      sameTimeForAllDays: hasSameTimeForAllDays,
+      time: defaultTime,
+      dayTimes,
       durationMinutes: String(firstSchedule?.durationMinutes ?? 60),
       selectedDays: group?.scheduleDays.map((day) => day.dayOfWeek) ?? []
     };
@@ -95,28 +112,32 @@ export function GroupFormModal({
 
   const form = useForm<GroupFormValues>({
     values: defaultValues,
-    mode: 'onBlur'
+    resolver: zodResolver(groupFormSchema),
+    mode: 'onTouched'
   });
+  const selectedDays = form.watch('selectedDays');
+  const sameTimeForAllDays = form.watch('sameTimeForAllDays');
+  const dayTimes = form.watch('dayTimes');
+
+  const canSubmit =
+    !isLoading && form.formState.isDirty && form.formState.isValid;
 
   const handleSave = async () => {
     const values = form.getValues();
 
     const durationMinutes = Number(values.durationMinutes);
-    if (!Number.isFinite(durationMinutes) || durationMinutes < 15) {
-      setErrorMessage('المدة يجب أن تكون 15 دقيقة أو أكثر');
-      return;
-    }
 
-    if (values.selectedDays.length === 0) {
-      setErrorMessage('يجب اختيار يوم واحد على الأقل');
-      return;
-    }
-
-    const scheduleDays = values.selectedDays.map((dayOfWeek) => ({
-      dayOfWeek,
-      startMinutes: timeToStartMinutes(values.time),
-      durationMinutes
-    }));
+    const scheduleDays = [...values.selectedDays]
+      .sort((a, b) => a - b)
+      .map((dayOfWeek) => ({
+        dayOfWeek,
+        startMinutes: timeToStartMinutes(
+          values.sameTimeForAllDays
+            ? values.time
+            : (values.dayTimes[dayOfWeek] ?? values.time)
+        ),
+        durationMinutes
+      }));
 
     try {
       setErrorMessage(null);
@@ -124,7 +145,7 @@ export function GroupFormModal({
       if (mode === 'create') {
         const payload: CreateGroupDto = {
           name: values.name.trim(),
-          description: values.description.trim() || undefined,
+          description: values.description?.trim() || undefined,
           tutorId: values.tutorId,
           timezone: values.timezone,
           status: values.status,
@@ -143,8 +164,8 @@ export function GroupFormModal({
       } else {
         const payload: UpdateGroupDto = {
           name: values.name.trim(),
-          description: values.description.trim() || undefined,
-          tutorId: values.tutorId,
+          description: values.description?.trim() || undefined,
+          tutorId: values.tutorId || undefined,
           timezone: values.timezone,
           status: values.status,
           scheduleDays
@@ -182,7 +203,7 @@ export function GroupFormModal({
           onOpenChange(nextOpen);
         }}
       >
-        <DialogContent dir='rtl' className='sm:max-w-xl'>
+        <DialogContent dir='rtl' className='w-full sm:max-w-xl'>
           <DialogHeader>
             <DialogTitle>
               {mode === 'create' ? 'إضافة حلقة' : 'تعديل الحلقة'}
@@ -261,83 +282,189 @@ export function GroupFormModal({
               <Controller
                 control={form.control}
                 name='selectedDays'
-                render={({ field }) => (
-                  <div className='grid grid-cols-4 gap-2'>
-                    {dayNames.map((day, dayIndex) => {
-                      const isSelected = field.value.includes(dayIndex);
-                      return (
-                        <Button
-                          key={day}
-                          type='button'
-                          variant={isSelected ? 'solid' : 'outline'}
-                          color={isSelected ? 'primary' : 'muted'}
-                          onClick={() => {
-                            if (isSelected) {
-                              field.onChange(
-                                field.value.filter(
-                                  (value) => value !== dayIndex
-                                )
-                              );
-                              return;
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    className='space-y-2'
+                  >
+                    <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
+                      {dayNames.map((day, dayIndex) => {
+                        const isSelected = field.value.includes(dayIndex);
+                        return (
+                          <Button
+                            key={day}
+                            type='button'
+                            variant={isSelected ? 'solid' : 'outline'}
+                            color={isSelected ? 'primary' : 'muted'}
+                            aria-invalid={fieldState.invalid}
+                            className={
+                              fieldState.invalid ? 'border-danger' : undefined
                             }
-                            field.onChange(
-                              [...field.value, dayIndex].sort((a, b) => a - b)
-                            );
-                          }}
-                          disabled={isLoading}
-                        >
-                          {day}
-                        </Button>
-                      );
-                    })}
-                  </div>
+                            onClick={() => {
+                              if (isSelected) {
+                                field.onChange(
+                                  field.value.filter(
+                                    (value) => value !== dayIndex
+                                  )
+                                );
+                                field.onBlur();
+                                return;
+                              }
+                              const nextValue = [...field.value, dayIndex].sort(
+                                (a, b) => a - b
+                              );
+                              field.onChange(nextValue);
+                              field.onBlur();
+                            }}
+                            disabled={isLoading}
+                          >
+                            {day}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
                 )}
               />
             </div>
 
-            <div className='grid grid-cols-2 gap-3'>
+            <div className='space-y-3 rounded-xl border border-border bg-muted/20 p-3'>
               <Controller
                 control={form.control}
-                name='time'
+                name='sameTimeForAllDays'
                 render={({ field }) => (
-                  <div className='space-y-2'>
-                    <Typography as='div' size='sm'>
-                      الوقت
-                    </Typography>
-                    <Input
-                      type='time'
-                      value={field.value}
-                      onChange={field.onChange}
+                  <Field orientation='horizontal' className='items-center'>
+                    <Checkbox
+                      id='group-same-time-for-days'
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true;
+                        field.onChange(isChecked);
+                        field.onBlur();
+
+                        if (!isChecked) {
+                          return;
+                        }
+
+                        const nextTime =
+                          form.getValues('dayTimes')[selectedDays[0] ?? 0] ??
+                          form.getValues('time');
+                        form.setValue('time', nextTime, {
+                          shouldDirty: true,
+                          shouldValidate: true
+                        });
+                        form.setValue(
+                          'dayTimes',
+                          buildUniformDayTimes(nextTime),
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true
+                          }
+                        );
+                      }}
                       disabled={isLoading}
                     />
-                  </div>
+                    <Typography as='div' size='sm'>
+                      وقت موحّد
+                    </Typography>
+                  </Field>
                 )}
               />
 
-              <Controller
-                control={form.control}
-                name='durationMinutes'
-                render={({ field }) => (
-                  <div className='space-y-2'>
-                    <Typography as='div' size='sm'>
-                      المدة (دقيقة)
-                    </Typography>
-                    <Input
-                      type='number'
-                      min={15}
-                      max={720}
-                      step={15}
-                      value={field.value}
-                      onChange={field.onChange}
-                      disabled={isLoading}
-                    />
-                  </div>
-                )}
-              />
+              {sameTimeForAllDays ? (
+                <Controller
+                  control={form.control}
+                  name='time'
+                  render={({ field, fieldState }) => (
+                    <Field
+                      data-invalid={fieldState.invalid}
+                      className='space-y-2'
+                    >
+                      <Typography as='div' size='sm'>
+                        الوقت
+                      </Typography>
+                      <DateTimePicker
+                        mode='timeOnly'
+                        time={timeToStartMinutes(field.value)}
+                        onTimeChange={(nextTime) => {
+                          const nextTimeString = minutesToInputTimeString(
+                            nextTime as TimeMinutes
+                          );
+                          field.onChange(nextTimeString);
+                          form.setValue(
+                            'dayTimes',
+                            buildUniformDayTimes(nextTimeString),
+                            { shouldDirty: true, shouldValidate: true }
+                          );
+                        }}
+                        onTimeBlur={field.onBlur}
+                        invalid={fieldState.invalid}
+                        disabled={isLoading}
+                      />
+                      <FieldError errors={[fieldState.error]} />
+                    </Field>
+                  )}
+                />
+              ) : (
+                <div className='space-y-2'>
+                  {selectedDays.map((dayIndex) => (
+                    <div
+                      key={dayNames[dayIndex]}
+                      className='flex flex-col gap-2 rounded-lg border border-border bg-background p-3 sm:flex-row sm:items-center sm:justify-between'
+                    >
+                      <Typography as='div' size='sm' className='text-muted-foreground'>
+                        {dayNames[dayIndex]}
+                      </Typography>
+                      <DateTimePicker
+                        mode='timeOnly'
+                        time={timeToStartMinutes(
+                          dayTimes[dayIndex] ?? form.getValues('time')
+                        )}
+                        onTimeChange={(nextTime) => {
+                          const nextDayTimes = [...form.getValues('dayTimes')];
+                          nextDayTimes[dayIndex] = minutesToInputTimeString(
+                            nextTime as TimeMinutes
+                          );
+                          form.setValue('dayTimes', nextDayTimes, {
+                            shouldDirty: true,
+                            shouldValidate: true
+                          });
+                        }}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
+            <Controller
+              control={form.control}
+              name='durationMinutes'
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className='space-y-2'>
+                  <Typography as='div' size='sm'>
+                    المدة (دقيقة)
+                  </Typography>
+                  <Input
+                    type='number'
+                    min={15}
+                    max={720}
+                    step={15}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    aria-invalid={fieldState.invalid}
+                    disabled={isLoading}
+                  />
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
 
             {errorMessage ? (
-              <Typography as='div' size='sm' color='danger'>
+              <Typography as='div' size='sm' className='text-danger'>
                 {errorMessage}
               </Typography>
             ) : null}
@@ -352,7 +479,7 @@ export function GroupFormModal({
               >
                 إلغاء
               </Button>
-              <Button type='submit' disabled={isLoading}>
+              <Button type='submit' disabled={!canSubmit}>
                 {mode === 'create' ? 'إضافة الحلقة' : 'حفظ التعديلات'}
               </Button>
             </DialogFooter>
@@ -371,8 +498,6 @@ export function GroupFormModal({
         }
         confirmText={mode === 'create' ? 'إضافة' : 'حفظ'}
         cancelText='إلغاء'
-        variant='solid'
-        color='primary'
         onConfirm={handleSave}
       />
     </>

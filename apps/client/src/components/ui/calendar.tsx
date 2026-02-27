@@ -2,6 +2,12 @@
 
 import * as React from 'react';
 import {
+  formatMonthShort,
+  formatWeekdayName,
+  formatMonthYear,
+  getStartAndEndOfDay
+} from '@halaqa/shared';
+import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon
@@ -9,16 +15,34 @@ import {
 import {
   DayPicker,
   getDefaultClassNames,
-  type DayButton
+  type DayButton,
+  type Matcher
 } from 'react-day-picker';
-import {
-  formatMonthShort,
-  formatWeekdayName,
-  formatMonthYear
-} from '@halaqa/shared';
 
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
+
+const mergeDisabledDates = (
+  disabled: React.ComponentProps<typeof DayPicker>['disabled'],
+  disablePastDates: boolean,
+  pastDatesMatcher: Matcher
+): React.ComponentProps<typeof DayPicker>['disabled'] => {
+  if (!disablePastDates) {
+    return disabled;
+  }
+
+  if (disabled === true) {
+    return true;
+  }
+
+  if (disabled === undefined || disabled === false) {
+    return pastDatesMatcher;
+  }
+
+  return Array.isArray(disabled)
+    ? [...disabled, pastDatesMatcher]
+    : [disabled, pastDatesMatcher];
+};
 
 function Calendar({
   className,
@@ -26,17 +50,31 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = 'label',
   buttonVariant = 'ghost',
+  disablePastDates = false,
+  disabled,
   formatters,
   components,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>['variant'];
+  disablePastDates?: boolean;
 }) {
   const defaultClassNames = getDefaultClassNames();
+  const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { startAsJSDate: todayStart } = getStartAndEndOfDay(browserTimezone);
+  const pastDatesMatcher: Matcher = {
+    before: todayStart
+  };
+  const mergedDisabled = mergeDisabledDates(
+    disabled,
+    disablePastDates,
+    pastDatesMatcher
+  );
 
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      disabled={mergedDisabled}
       dir='rtl'
       className={cn(
         'bg-background group/calendar p-3 [--cell-size:--spacing(8)] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent',
@@ -190,9 +228,11 @@ function CalendarDayButton({
   className,
   day,
   modifiers,
+  color: _color,
   ...props
 }: React.ComponentProps<typeof DayButton>) {
   const defaultClassNames = getDefaultClassNames();
+  void _color;
 
   const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {

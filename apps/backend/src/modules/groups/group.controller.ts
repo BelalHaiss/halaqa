@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import type {
+  AddLearnersToGroupDto,
   CountDto,
   CreateLearnerDto,
   CreateGroupDto,
@@ -23,6 +24,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { User } from 'src/decorators/user.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
+  addLearnersToGroupSchema,
   createGroupSchema,
   createLearnerForGroupSchema,
   updateGroupSchema,
@@ -88,6 +90,21 @@ export class GroupController {
     @User() user: UserEntity,
   ): Promise<GroupDetailsDto> {
     await this.groupLearnerOrchestrator.createLearnerAndAttachToGroup(
+      groupId,
+      dto,
+    );
+    return this.groupService.getGroupById(groupId, user);
+  }
+
+  @Post(':id/students/attach')
+  @Roles([UserRole.ADMIN, UserRole.MODERATOR])
+  async addExistingLearnersToGroup(
+    @Param('id') groupId: string,
+    @Body(new ZodValidationPipe(addLearnersToGroupSchema))
+    dto: AddLearnersToGroupDto,
+    @User() user: UserEntity,
+  ): Promise<GroupDetailsDto> {
+    await this.groupLearnerOrchestrator.addExistingLearnersToGroup(
       groupId,
       dto,
     );

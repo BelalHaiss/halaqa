@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "main": "./dist/index.js",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "luxon": "^3.7.2"
   },
@@ -12,8 +18,9 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "lint": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
+    "lint": "pnpm typecheck",
     "dev": "tsc --watch"
   }
 }

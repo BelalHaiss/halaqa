@@ -11,7 +11,14 @@ import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryClient, queryKeys } from '@/lib/query-client';
 import { groupService } from '../services/group.service';
 
-export const useGroupsViewModel = (currentUser: User) => {
+type UseGroupsViewModelOptions = {
+  shouldLoadTutors: boolean;
+};
+
+export const useGroupsViewModel = (
+  currentUser: User,
+  options: UseGroupsViewModelOptions
+) => {
   const canManageGroups =
     currentUser.role === 'ADMIN' || currentUser.role === 'MODERATOR';
 
@@ -24,25 +31,25 @@ export const useGroupsViewModel = (currentUser: User) => {
   });
 
   const groupsCountQuery = useApiQuery<CountDto>({
-    queryKey: [...queryKeys.groups.all, 'stats', 'groups-count'] as const,
+    queryKey: queryKeys.groups.stats('groups-count'),
     queryFn: async () => groupService.getGroupsCount(),
   });
 
   const learnersCountQuery = useApiQuery<CountDto>({
-    queryKey: [...queryKeys.groups.all, 'stats', 'learners-count'] as const,
+    queryKey: queryKeys.groups.stats('learners-count'),
     queryFn: async () => groupService.getLearnersCount(),
   });
 
   const tutorsCountQuery = useApiQuery<CountDto>({
-    queryKey: [...queryKeys.groups.all, 'stats', 'tutors-count'] as const,
+    queryKey: queryKeys.groups.stats('tutors-count'),
     queryFn: async () => groupService.getTutorsCount(),
     enabled: currentUser.role !== 'TUTOR',
   });
 
   const tutorsQuery = useApiQuery<{ id: string; name: string }[]>({
-    queryKey: [...queryKeys.groups.all, 'tutors'] as const,
+    queryKey: queryKeys.groups.tutors(),
     queryFn: async () => groupService.getTutors(),
-    enabled: canManageGroups,
+    enabled: canManageGroups && options.shouldLoadTutors,
   });
 
   const createGroupMutation = useApiMutation<CreateGroupDto, GroupDetailsDto>({

@@ -1,8 +1,9 @@
 // @ts-check
+import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: [
       '**/node_modules/**',
@@ -10,6 +11,7 @@ export default tseslint.config(
       '**/build/**',
       '**/.turbo/**',
       '**/eslint.config.mjs',
+      'lint-staged.config.cjs',
       'pnpm-lock.yaml',
     ],
   },

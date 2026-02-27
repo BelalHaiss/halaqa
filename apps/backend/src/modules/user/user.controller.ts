@@ -57,11 +57,13 @@ export class UserController {
   }
 
   @Get('learner')
+  @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
   queryLearners(
+    @User() actor: UserEntity,
     @Query(new ZodValidationPipe(queryLearnersSchema))
     query: QueryLearnersDto,
   ): Promise<QueryLearnersResponseDto> {
-    return this.userService.queryLearners(query);
+    return this.userService.queryLearners(actor, query);
   }
 
   @Patch('learner/:id')

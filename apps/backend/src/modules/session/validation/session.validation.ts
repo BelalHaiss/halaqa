@@ -1,15 +1,23 @@
-import type { UpdateSessionActionDTO, SessionQueryDTO } from '@halaqa/shared';
 import {
+  PAGINATION_MAX_LIMIT,
+  PAGINATION_MIN_LIMIT,
+  PAGINATION_MIN_PAGE,
+  type SessionQueryDTO,
+  type UpdateSessionActionDTO,
+} from '@halaqa/shared';
+import {
+  attendanceNotesSchema,
   isoDateOnlySchema,
+  nonEmptyIdSchema,
   optionalIsoDateOnlySchema,
   timeMinutesSchema,
-} from 'src/utils/api.util.validation';
+} from 'src/utils/validation/fields.schema';
 import z, { ZodType } from 'zod';
 
 const attendanceItemSchema = z.object({
-  studentId: z.string().min(1),
+  studentId: nonEmptyIdSchema,
   status: z.enum(['ATTENDED', 'MISSED', 'EXCUSED']),
-  notes: z.string().trim().max(1000).optional(),
+  notes: attendanceNotesSchema.optional(),
 });
 
 export const updateSessionActionSchema = z.discriminatedUnion('action', [
@@ -28,10 +36,14 @@ export const updateSessionActionSchema = z.discriminatedUnion('action', [
 ]) satisfies ZodType<UpdateSessionActionDTO>;
 
 export const sessionQuerySchema = z.object({
-  page: z.coerce.number().positive().optional(),
-  limit: z.coerce.number().positive().max(100).optional(),
-  fromDate: optionalIsoDateOnlySchema.optional(),
-  toDate: optionalIsoDateOnlySchema.optional(),
+  page: z.coerce.number().min(PAGINATION_MIN_PAGE).optional(),
+  limit: z.coerce
+    .number()
+    .min(PAGINATION_MIN_LIMIT)
+    .max(PAGINATION_MAX_LIMIT)
+    .optional(),
+  fromDate: optionalIsoDateOnlySchema,
+  toDate: optionalIsoDateOnlySchema,
   status: z.enum(['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED']).optional(),
   groupId: z.string().optional(),
 }) satisfies ZodType<SessionQueryDTO>;

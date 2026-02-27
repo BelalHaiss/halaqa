@@ -25,18 +25,20 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 - **One feature = one module**
 - Modules live in `src/modules/*`
-- No cross-module imports
-- Shared UI → `src/components/ui`
+- `src/components/ui` is only for generic, app-wide UI primitives (no feature/business logic)
+- Every module owns its components inside `src/modules/[module]/components`
+- Use Atomic Design inside modules (`atoms`, `molecules`, `organisms`) when needed
+- If another module needs a component, export it from that module public API (`src/modules/[module]/index.ts`)
+- Avoid deep cross-module imports; consume only module public exports
 - Types → `@halaqa/shared` or module-local
 
 ---
 
-## 🔐 Schemas
+## 🔐 zod Schemas in Client
 
 - Zod only in `schema/`
-- Must match shared DTOs
-- Always `satisfies ZodType<SharedDto>`
-- DTO edits via TS utility types only
+
+- Zod schema must satisfy shared DTOs and reusable validation zod schema inside utils/validation folder so use from it or edit if needed
 
 ---
 
@@ -51,8 +53,11 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 ## 🎨 MVVM
 
 - **View** = JSX only
-- **ViewModel** = logic/state
-- No logic in components
+- **ViewModel** = logic/state/actions (usually in `hooks/` or `view-model/`)
+- No business logic in View components
+- View components receive prepared state/handlers from ViewModel
+- Keep components small, focused, and easy to read
+- Atomic Design for components
 - Small, focused components
 
 ---
@@ -60,8 +65,11 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 ## 🎨 Design / Tailwind
 
 - `index.css` = Tailwind source
-- Tokens only, no arbitrary values
+- Tailwind v4 only (`@import 'tailwindcss'`, `@theme inline`, `@custom-variant`)
+- Prefer tokens from `index.css` and semantic utilities (`bg-background`, `text-foreground`, etc.)
+- Avoid arbitrary values unless required for Radix/Base UI CSS variables or advanced state selectors
 - Minimal layout classes
+- use simple flex box with no much elements and wrapper just style the elements with tokens and CVA variants or make wrapper div if needed
 - No shadcn overrides
 
 ---
@@ -69,7 +77,7 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 ## 🧩 shadcn
 
 - shadcn only (via MCP)
-- Use CVA for variants/colors
+- Use CVA for variants/colors for the components similar to button, badge, etc
 - Extend before creating
 
 ---
@@ -80,17 +88,8 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - Always use reusable components or shadcn
 - Single source of truth
 - No inline styles
-- make sure code is not too long and make it simple and readable and follow react best practices and patterns
-
----
-
-## 🎯 Component Variants
-
-- Every visual component requires:
-  - `variant`: solid | ghost | outline | soft
-  - `color`: primary | success | danger | muted
-- Use `compoundVariants` for all styling
-- variant + color handled ONLY via compoundVariants
+- Keep code simple, readable, and short and no too much nesting and wrapper
+- Follow React best practices and patterns
 
 ---
 
@@ -112,16 +111,14 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ## ⚠️ Forbidden Practices
 
-- No UseEffect unless its no other option
-
----
+- No `useEffect` unless there is no safer alternative
 
 ## 🔧 Backend
 
 - always use existing modules if exist or create with Nest CLI `nest g res modules/[name] --no-spec`
 - Shared DTOs only
 - `DatesAsObjects` backend-only
-- Zod schema must satisfy shared DTOs
+- Zod schema must satisfy shared DTOs and reusable validation zod schema inside utils/validation folder so use from it or edit if needed
 - we have 2 global guards applied AuthGuard, RolesGuard but we have decorators for customization them
 - we have zod-validation pipe for any DTO or Query and it should only applied Route parameter not route handler
 - we have user decorator that extract user info from request and attach it to request object use it in your controllers don't add any custom logic

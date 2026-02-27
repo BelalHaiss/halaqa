@@ -3,7 +3,8 @@ import {
   QueryLearnersDto,
   UpdateLearnerDto,
 } from '@halaqa/shared';
-import { paginationSchema } from 'src/utils/api.util.validation';
+import { paginationSchema } from 'src/utils/validation/api.schema';
+import { nameSchema, notesSchema } from 'src/utils/validation/fields.schema';
 import {
   optionalTimezoneFieldSchema,
   timezoneFieldSchema,
@@ -11,11 +12,11 @@ import {
 import z, { ZodType } from 'zod';
 
 const learnerContactSchema = z.object({
-  notes: z.string().trim().max(2000).optional(),
+  notes: notesSchema.optional(),
 });
 
 const createLearnerBaseSchema = z.object({
-  name: z.string().trim().min(2).max(100),
+  name: nameSchema,
   contact: learnerContactSchema.optional(),
 });
 
@@ -25,7 +26,7 @@ export const createLearnerSchema = z.intersection(
 ) satisfies ZodType<CreateLearnerDto>;
 
 const updateLearnerBaseSchema = z.object({
-  name: z.string().trim().min(2).max(100).optional(),
+  name: nameSchema.optional(),
   contact: learnerContactSchema.optional(),
 });
 

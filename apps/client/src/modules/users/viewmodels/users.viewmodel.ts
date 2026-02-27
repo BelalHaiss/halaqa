@@ -4,8 +4,7 @@ import {
   DEFAULT_TIMEZONE,
   StaffUserDto,
   UpdateStaffUserDto,
-  UserFormDto,
-  UserAuthRole,
+  UserAuthRole
 } from '@halaqa/shared';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
@@ -14,16 +13,28 @@ import { useApp } from '@/contexts/AppContext';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryClient, queryKeys } from '@/lib/query-client';
-import { userSchema } from '../schema/user.schema';
+import {
+  createStaffUserSchema,
+  updateStaffUserSchema
+} from '../schema/user.schema';
 import { userService } from '../services/user.service';
 
-const DEFAULT_FORM_VALUES = {
+const DEFAULT_FORM_VALUES: CreateStaffUserDto = {
   name: '',
   username: '',
   role: 'TUTOR' as UserAuthRole,
   password: '',
-  timezone: DEFAULT_TIMEZONE,
+  timezone: DEFAULT_TIMEZONE
 };
+
+const FORM_FIELDS = [
+  'name',
+  'username',
+  'role',
+  'timezone',
+  'password'
+] as const;
+type FormFieldName = (typeof FORM_FIELDS)[number];
 
 export function useUsersViewModel() {
   const { user } = useApp();
@@ -34,19 +45,23 @@ export function useUsersViewModel() {
     data: CreateStaffUserDto | UpdateStaffUserDto;
   } | null>(null);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
-  const [pendingDeleteUser, setPendingDeleteUser] = useState<StaffUserDto | null>(
-    null,
-  );
+  const [pendingDeleteUser, setPendingDeleteUser] =
+    useState<StaffUserDto | null>(null);
 
   const staffUsersQuery = useApiQuery<StaffUserDto[]>({
     queryKey: queryKeys.users.list({ scope: 'staff' }),
     queryFn: userService.getStaffUsers,
-    enabled: Boolean(user),
+    enabled: Boolean(user)
   });
 
-  const form = useForm<UserFormDto>({
-    resolver: zodResolver(userSchema),
+  const activeSchema = editingUser
+    ? updateStaffUserSchema
+    : createStaffUserSchema;
+
+  const form = useForm({
+    resolver: zodResolver(activeSchema),
     defaultValues: DEFAULT_FORM_VALUES,
+    mode: 'onTouched'
   });
 
   const createMutation = useApiMutation<CreateStaffUserDto, StaffUserDto>({
@@ -61,7 +76,7 @@ export function useUsersViewModel() {
     },
     onError: (error) => {
       toast.error(error.message || 'فشل إضافة المستخدم');
-    },
+    }
   });
 
   const updateMutation = useApiMutation<
@@ -80,7 +95,7 @@ export function useUsersViewModel() {
     },
     onError: (error) => {
       toast.error(error.message || 'فشل تعديل المستخدم');
-    },
+    }
   });
 
   const deleteMutation = useApiMutation<string, null>({
@@ -92,7 +107,7 @@ export function useUsersViewModel() {
     },
     onError: (error) => {
       toast.error(error.message || 'فشل حذف المستخدم');
-    },
+    }
   });
 
   const isAdmin = user?.role === 'ADMIN';
@@ -125,7 +140,7 @@ export function useUsersViewModel() {
     setEditingUser(null);
     form.reset({
       ...DEFAULT_FORM_VALUES,
-      role: availableRoles.includes('TUTOR') ? 'TUTOR' : availableRoles[0],
+      role: availableRoles.includes('TUTOR') ? 'TUTOR' : availableRoles[0]
     });
     setIsDialogOpen(true);
   };
@@ -140,46 +155,37 @@ export function useUsersViewModel() {
       username: targetUser.username,
       role: targetUser.role,
       password: '',
-      timezone: targetUser.timezone || DEFAULT_TIMEZONE,
+      timezone: targetUser.timezone || DEFAULT_TIMEZONE
     });
     setIsDialogOpen(true);
   };
 
   const onSubmit = form.handleSubmit((values) => {
-    if (!editingUser && !values.password) {
-      form.setError('password', {
-        message: 'كلمة المرور مطلوبة عند إنشاء مستخدم جديد',
-      });
+    const mode = editingUser ? 'update' : 'create';
+
+    const result =
+      mode === 'update'
+        ? updateStaffUserSchema.safeParse(values)
+        : createStaffUserSchema.safeParse(values);
+
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const field = issue.path[0];
+        if (
+          typeof field === 'string' &&
+          FORM_FIELDS.includes(field as FormFieldName)
+        ) {
+          form.setError(field as FormFieldName, {
+            message: issue.message
+          });
+        }
+      }
       return;
     }
 
-    if (editingUser) {
-      const data: UpdateStaffUserDto = {
-        name: values.name,
-        username: values.username,
-        role: values.role,
-        timezone: values.timezone,
-        ...(values.password ? { password: values.password } : {}),
-      };
-
-      setPendingSavePayload({
-        mode: 'update',
-        data,
-      });
-      setConfirmSaveOpen(true);
-      return;
-    }
-
-    const data: CreateStaffUserDto = {
-      name: values.name,
-      username: values.username,
-      role: values.role,
-      password: values.password || '',
-      timezone: values.timezone,
-    };
     setPendingSavePayload({
-      mode: 'create',
-      data,
+      mode,
+      data: result.data
     });
     setConfirmSaveOpen(true);
   });
@@ -190,16 +196,19 @@ export function useUsersViewModel() {
     }
 
     if (pendingSavePayload.mode === 'create') {
-      await createMutation.mutateAsync(pendingSavePayload.data as CreateStaffUserDto);
+      await createMutation.mutateAsync(
+        pendingSavePayload.data as CreateStaffUserDto
+      );
       return;
     }
 
     if (!editingUser) {
       return;
     }
+
     await updateMutation.mutateAsync({
       id: editingUser.id,
-      data: pendingSavePayload.data as UpdateStaffUserDto,
+      data: pendingSavePayload.data as UpdateStaffUserDto
     });
   };
 
@@ -238,6 +247,8 @@ export function useUsersViewModel() {
     confirmDelete,
 
     isSubmitting: createMutation.isPending || updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
+    canSubmitForm: form.formState.isDirty && form.formState.isValid,
+
+    isDeleting: deleteMutation.isPending
   };
 }

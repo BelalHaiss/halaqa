@@ -37,7 +37,7 @@ export interface GroupSummaryDto {
   id: string;
   name: string;
   description?: string;
-  tutorId: string;
+  tutorId: string | null;
   timezone: string;
   status: GroupStatus;
   scheduleDays: GroupScheduleDay[];
@@ -50,8 +50,8 @@ export interface GroupDetailsDto {
   id: string;
   name: string;
   description?: string;
-  tutorId: string;
-  tutor: GroupTutorSummaryDto;
+  tutorId: string | null;
+  tutor: GroupTutorSummaryDto | null;
   timezone: string;
   status: GroupStatus;
   scheduleDays: GroupScheduleDay[];
@@ -81,4 +81,8 @@ export interface UpdateGroupDto {
 export interface UpdateGroupSettingsDto {
   status?: GroupStatus;
   scheduleDays?: GroupScheduleDay[];
+}
+
+export interface AddLearnersToGroupDto {
+  learnerIds: string[];
 }

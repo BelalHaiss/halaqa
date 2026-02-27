@@ -1,9 +1,8 @@
 import { DEFAULT_TIMEZONE, TIMEZONES } from '@halaqa/shared';
 import { withRole } from '@/hoc/withRole';
-import { roleColorMap } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   Dialog,
   DialogContent,
@@ -24,20 +23,10 @@ import {
 } from '@/components/ui/table';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Edit2, GraduationCap, Loader2, Shield, Trash2, UserCog, UserPlus } from 'lucide-react';
+import { Edit2, Loader2, Trash2, UserPlus } from 'lucide-react';
 import { useUsersViewModel } from '../viewmodels/users.viewmodel';
-
-const roleLabels: Record<string, string> = {
-  ADMIN: 'مدير',
-  MODERATOR: 'مشرف',
-  TUTOR: 'معلم',
-};
-
-const roleIcons: Record<string, typeof Shield> = {
-  ADMIN: Shield,
-  MODERATOR: UserCog,
-  TUTOR: GraduationCap,
-};
+import { ROLE_CONFIG } from '../utils/user.util';
+import { UserBadge } from '../components/UserBadge';
 
 function UsersView() {
   const vm = useUsersViewModel();
@@ -48,135 +37,113 @@ function UsersView() {
 
   if (vm.queryError) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{vm.queryError}</AlertDescription>
       </Alert>
     );
   }
 
   return (
-    <div>
-      <div className='flex items-center justify-between mb-6'>
-        <div>
-          <h1 className='text-2xl text-gray-800 dark:text-gray-100 mb-1'>إدارة المستخدمين</h1>
-          <p className='text-sm text-gray-600 dark:text-gray-400'>
-            إدارة المشرفين والمعلمين والصلاحيات
-          </p>
-        </div>
+    <div className='space-y-4'>
+      <Dialog open={vm.isDialogOpen} onOpenChange={vm.setIsDialogOpen}>
+        <PageHeader
+          title='إدارة المستخدمين'
+          description='إدارة المشرفين والمعلمين والصلاحيات'
+          actions={
+            <DialogTrigger asChild>
+              <Button onClick={vm.openCreateDialog} className='gap-2' size='sm'>
+                <UserPlus className='w-4 h-4' />
+                <span>إضافة مستخدم</span>
+              </Button>
+            </DialogTrigger>
+          }
+        />
+        <DialogContent className='w-full sm:max-w-md' dir='rtl'>
+          <DialogHeader>
+            <DialogTitle>{vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}</DialogTitle>
+            <DialogDescription>
+              {vm.editingUser ? 'قم بتعديل بيانات المستخدم' : 'أدخل بيانات المستخدم الجديد'}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={vm.onSubmit}>
+            <div className='space-y-4 py-4'>
+              <FormField
+                control={vm.form.control}
+                name='name'
+                label='الاسم'
+                type='text'
+                placeholder='أدخل الاسم'
+                disabled={vm.isSubmitting}
+                inputClassName='text-right'
+              />
 
-        <Dialog open={vm.isDialogOpen} onOpenChange={vm.setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={vm.openCreateDialog}
-              className='gap-2 bg-emerald-600 hover:bg-emerald-700 text-white'
-              size='sm'
-            >
-              <UserPlus className='w-4 h-4' />
-              <span>إضافة مستخدم</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className='sm:max-w-md' dir='rtl'>
-            <DialogHeader>
-              <DialogTitle>{vm.editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}</DialogTitle>
-              <DialogDescription>
-                {vm.editingUser ? 'قم بتعديل بيانات المستخدم' : 'أدخل بيانات المستخدم الجديد'}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={vm.onSubmit}>
-              <div className='space-y-4 py-4'>
-                <FormField
-                  control={vm.form.control}
-                  name='name'
-                  label='الاسم'
-                  type='text'
-                  placeholder='أدخل الاسم'
-                  disabled={vm.isSubmitting}
-                  inputClassName='text-right'
-                />
+              <FormField
+                control={vm.form.control}
+                name='username'
+                label='اسم الحساب'
+                type='text'
+                placeholder='username'
+                disabled={vm.isSubmitting}
+                inputClassName='text-left'
+              />
 
-                <FormField
-                  control={vm.form.control}
-                  name='username'
-                  label='اسم الحساب'
-                  type='text'
-                  placeholder='username'
-                  disabled={vm.isSubmitting}
-                  inputClassName='text-left'
-                />
-
+              {!vm.editingUser && (
                 <FormField
                   control={vm.form.control}
                   name='password'
-                  label={
-                    vm.editingUser
-                      ? 'كلمة المرور (اتركها فارغة للإبقاء على الحالية)'
-                      : 'كلمة المرور'
-                  }
+                  label='كلمة المرور'
                   type='password'
                   placeholder='••••••••'
                   disabled={vm.isSubmitting}
+                  inputClassName='text-left'
                 />
+              )}
 
-                <FormField
-                  control={vm.form.control}
-                  name='role'
-                  label='الدور'
-                  type='select'
-                  disabled={
-                    vm.isSubmitting ||
-                    Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')
-                  }
-                  options={vm.availableRoles.map((role) => ({
-                    value: role,
-                    label: roleLabels[role],
-                  }))}
-                />
+              <FormField
+                control={vm.form.control}
+                name='role'
+                label='الدور'
+                type='select'
+                disabled={
+                  vm.isSubmitting ||
+                  Boolean(vm.editingUser?.role === 'ADMIN' && vm.user.role === 'MODERATOR')
+                }
+                options={vm.availableRoles.map((role) => ({
+                  value: role,
+                  label: ROLE_CONFIG[role as keyof typeof ROLE_CONFIG]?.label || role,
+                }))}
+              />
 
-                <FormField
-                  control={vm.form.control}
-                  name='timezone'
-                  label='المنطقة الزمنية'
-                  type='select'
-                  disabled={vm.isSubmitting}
-                  options={TIMEZONES.map((tz) => ({
-                    value: tz.value,
-                    label: tz.label,
-                  }))}
-                />
-              </div>
+              <FormField
+                control={vm.form.control}
+                name='timezone'
+                label='المنطقة الزمنية'
+                type='select'
+                disabled={vm.isSubmitting}
+                options={TIMEZONES.map((tz) => ({
+                  value: tz.value,
+                  label: tz.label,
+                }))}
+              />
+            </div>
 
-              <DialogFooter>
-                <Button
-                  type='submit'
-                  className='bg-emerald-600 hover:bg-emerald-700'
-                  disabled={vm.isSubmitting}
-                >
-                  {vm.editingUser ? 'حفظ التعديلات' : 'إضافة'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <DialogFooter>
+              <Button type='submit' disabled={vm.isSubmitting || !vm.canSubmitForm}>
+                {vm.editingUser ? 'حفظ التعديلات' : 'إضافة'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      <Table className='bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700'>
-        <TableHeader className='bg-gray-50 dark:bg-gray-900/50'>
+      <Table className='rounded-lg border bg-card shadow-sm'>
+        <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
-              الاسم
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
-              اسم الحساب
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
-              الدور
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs text-gray-700 dark:text-gray-300'>
-              المنطقة الزمنية
-            </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs text-gray-700 dark:text-gray-300'>
-              الإجراءات
-            </TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الاسم</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>اسم الحساب</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الدور</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>المنطقة الزمنية</TableHead>
+            <TableHead className='px-4 py-3 text-left text-xs'>الإجراءات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -191,39 +158,28 @@ function UsersView() {
             </TableRow>
           ) : vm.users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className='text-center py-10 text-gray-500 dark:text-gray-400'>
+              <TableCell colSpan={5} className='py-10 text-center text-muted-foreground'>
                 لا يوجد مستخدمون
               </TableCell>
             </TableRow>
           ) : (
             vm.users.map((userItem) => {
-              const RoleIcon = roleIcons[userItem.role];
               const userTimezone = userItem.timezone || DEFAULT_TIMEZONE;
               const canManage = vm.canManageUser(userItem);
 
               return (
                 <TableRow key={userItem.id}>
                   <TableCell className='px-4 py-3'>
-                    <div className='text-sm text-gray-900 dark:text-gray-100'>{userItem.name}</div>
+                    <div className='text-sm'>{userItem.name}</div>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
-                    <div className='text-sm text-gray-900 dark:text-gray-100'>
-                      {userItem.username}
-                    </div>
+                    <div className='text-sm'>{userItem.username}</div>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
-                    <Badge variant='soft' color={roleColorMap[userItem.role]}>
-                      <RoleIcon className='w-3 h-3' />
-                      {roleLabels[userItem.role]}
-                    </Badge>
+                    <UserBadge role={userItem.role} size='sm' />
                   </TableCell>
                   <TableCell className='px-4 py-3'>
-                    <TimezoneDisplay
-                      timezone={userTimezone}
-                      variant='soft'
-                      color='muted'
-                      size='sm'
-                    />
+                    <TimezoneDisplay timezone={userTimezone} />
                   </TableCell>
                   <TableCell className='px-4 py-3'>
                     <div className='flex items-center justify-end gap-2'>
@@ -265,8 +221,6 @@ function UsersView() {
         }
         confirmText={vm.editingUser ? 'حفظ' : 'إضافة'}
         cancelText='إلغاء'
-        variant='solid'
-        color='primary'
         onConfirm={vm.confirmSave}
       />
 
@@ -285,8 +239,7 @@ function UsersView() {
         }
         confirmText='حذف'
         cancelText='إلغاء'
-        variant='solid'
-        color='danger'
+        intent='destructive'
         onConfirm={vm.confirmDelete}
       />
     </div>

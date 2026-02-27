@@ -1,5 +1,10 @@
 // @ts-check
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 const tanstackRestriction = {
   paths: [
@@ -11,7 +16,7 @@ const tanstackRestriction = {
   ],
 };
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: ['build/**', 'node_modules/**', 'eslint.config.mjs'],
   },
@@ -24,7 +29,7 @@ export default tseslint.config(
           jsx: true,
         },
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir,
       },
     },
     rules: {
@@ -57,7 +62,7 @@ export default tseslint.config(
           ...tanstackRestriction,
           patterns: [
             {
-              group: ['@/modules/*'],
+              group: ['@/modules/*', '!@/modules/users'],
               message:
                 'Shared layers (components/lib/services/contexts/hoc) must not import module internals directly.',
             },
@@ -76,5 +81,5 @@ export default tseslint.config(
     rules: {
       'no-restricted-imports': 'off',
     },
-  }
+  },
 );

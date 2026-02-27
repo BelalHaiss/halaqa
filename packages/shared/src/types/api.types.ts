@@ -53,7 +53,7 @@ export enum HttpStatus {
   GATEWAY_TIMEOUT = 504,
   HTTP_VERSION_NOT_SUPPORTED = 505,
   INSUFFICIENT_STORAGE = 507,
-  LOOP_DETECTED = 508
+  LOOP_DETECTED = 508,
 }
 
 export type PaginationQueryType = {
@@ -84,6 +84,15 @@ type ApiSuccessResponse<T> = {
 } & Partial<PaginationResponseMeta>;
 
 export type UnifiedApiResponse<T> = ApiSuccessResponse<T>;
+
+export type ApiErrorResponse = {
+  success: false;
+  message: string;
+  timestamp: string;
+  statusCode: HttpStatus;
+  path: string;
+  fields?: { field: string; message: string }[];
+};
 
 export type ViewMode = 'list' | 'grid' | 'calendar';
 

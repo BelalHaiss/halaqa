@@ -11,8 +11,7 @@ export const useAuthViewModel = () => {
   const { setUser } = useApp();
 
   const loginMutation = useApiMutation<LoginCredentialsDto, AuthResponseDto>({
-    mutationFn: (credentials: LoginCredentialsDto) =>
-      authService.login(credentials),
+    mutationFn: (credentials: LoginCredentialsDto) => authService.login(credentials),
     onSuccess: (response) => {
       if (response.success && response.data) {
         const { user, accessToken } = response.data;
@@ -21,7 +20,7 @@ export const useAuthViewModel = () => {
         storageService.saveToken(accessToken);
         const userWithUsername = {
           ...user,
-          username: user.username ?? ''
+          username: user.username ?? '',
         };
 
         storageService.saveUser(userWithUsername);
@@ -36,11 +35,6 @@ export const useAuthViewModel = () => {
         navigate('/');
       }
     },
-    onError: (error) => {
-      // Handle error
-      const errorMessage = error.message || 'حدث خطأ غير متوقع';
-      toast.error(errorMessage);
-    }
   });
 
   const logout = async () => {
@@ -63,13 +57,12 @@ export const useAuthViewModel = () => {
   return {
     // Login mutation state
     login: loginMutation.mutate,
-    loginAsync: loginMutation.mutateAsync,
     isLoading: loginMutation.isPending,
     error: loginMutation.error,
     isError: loginMutation.isError,
     isSuccess: loginMutation.isSuccess,
 
     // Other functions
-    logout
+    logout,
   };
 };

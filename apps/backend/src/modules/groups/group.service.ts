@@ -78,10 +78,12 @@ export class GroupService {
       name: group.name,
       description: group.description ?? undefined,
       tutorId: group.tutorId,
-      tutor: {
-        id: group.tutor.id,
-        name: group.tutor.name,
-      },
+      tutor: group.tutor
+        ? {
+            id: group.tutor.id,
+            name: group.tutor.name,
+          }
+        : null,
       timezone: group.timezone,
       status: group.status,
       scheduleDays: group.scheduleDays.map((day) => ({

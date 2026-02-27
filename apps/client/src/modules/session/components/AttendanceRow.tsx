@@ -1,8 +1,10 @@
 import { AttendanceStatus } from '@halaqa/shared';
-import { Controller, type Control, type FieldErrors } from 'react-hook-form';
+import { Controller, type Control } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
+import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Typography } from '@/components/ui/typography';
+import { cn } from '@/lib/utils';
 import type { AttendanceEditFormData } from '../schema/session.schema';
 import { getAttendanceStatusConfig } from '../utils/session.util';
 
@@ -21,7 +23,6 @@ interface AttendanceRowEditProps extends AttendanceRowBaseProps {
   mode: 'edit';
   index: number;
   control: Control<AttendanceEditFormData>;
-  errors?: FieldErrors<AttendanceEditFormData>;
 }
 
 interface AttendanceRowViewProps extends AttendanceRowBaseProps {
@@ -34,11 +35,13 @@ type AttendanceRowProps = AttendanceRowEditProps | AttendanceRowViewProps;
 const AttendanceStatusButtons = ({
   value,
   onChange,
-  disabled
+  disabled,
+  invalid = false
 }: {
   value?: AttendanceStatus | null;
   onChange?: (value: AttendanceStatus) => void;
   disabled: boolean;
+  invalid?: boolean;
 }) => (
   <div className='flex items-center gap-2 flex-wrap'>
     {ATTENDANCE_STATUSES.map((status) => {
@@ -53,7 +56,12 @@ const AttendanceStatusButtons = ({
           disabled={disabled}
           variant={isSelected ? 'solid' : 'outline'}
           color={config.color}
-          className='h-7 px-2 py-1 text-xs'
+          size='xs'
+          aria-invalid={invalid}
+          className={cn(
+            'h-7 rounded-full px-2.5 text-[11px] font-medium',
+            invalid && 'border-danger'
+          )}
         >
           {config.label}
         </Button>
@@ -67,15 +75,18 @@ export const AttendanceRow = (props: AttendanceRowProps) => {
 
   if (props.mode === 'view') {
     return (
-      <div className='p-3 rounded-lg border border-border space-y-2'>
-        <div className='flex items-center justify-between gap-3'>
-          <Typography as='div' size='sm' weight='medium'>
-            {student.name}
-          </Typography>
-          <AttendanceStatusButtons
-            value={props.attendance?.status}
-            disabled={true}
-          />
+      <div className='flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/20 px-2.5 py-2'>
+        <Typography
+          as='div'
+          size='sm'
+          weight='medium'
+          className='min-w-[150px] flex-1 truncate sm:flex-none sm:w-52'
+        >
+          {student.name}
+        </Typography>
+
+        <div className='min-w-[220px] flex-1 sm:flex-none'>
+          <AttendanceStatusButtons value={props.attendance?.status} disabled={true} />
         </div>
 
         <Input
@@ -83,39 +94,41 @@ export const AttendanceRow = (props: AttendanceRowProps) => {
           placeholder='ملاحظات (اختياري)'
           value={props.attendance?.notes ?? ''}
           disabled={true}
-          className='text-sm'
+          className='h-8 min-w-[200px] flex-1 text-xs'
         />
       </div>
     );
   }
 
-  const statusError =
-    props.errors?.attendance?.[props.index]?.status?.message?.toString() ?? '';
-
   return (
-    <div className='p-3 rounded-lg border border-border space-y-2'>
-      <div className='flex items-center justify-between gap-3'>
-        <Typography as='div' size='sm' weight='medium'>
-          {student.name}
-        </Typography>
-        <Controller
-          control={props.control}
-          name={`attendance.${props.index}.status`}
-          render={({ field }) => (
+    <div className='flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/20 px-2.5 py-2'>
+      <Typography
+        as='div'
+        size='sm'
+        weight='medium'
+        className='min-w-[150px] flex-1 truncate sm:flex-none sm:w-52'
+      >
+        {student.name}
+      </Typography>
+
+      <Controller
+        control={props.control}
+        name={`attendance.${props.index}.status`}
+        render={({ field, fieldState }) => (
+          <div className='min-w-[220px] flex-1 sm:flex-none'>
             <AttendanceStatusButtons
               value={field.value}
-              onChange={field.onChange}
+              onChange={(nextStatus) => {
+                field.onChange(nextStatus);
+                field.onBlur();
+              }}
               disabled={disabled}
+              invalid={fieldState.invalid}
             />
-          )}
-        />
-      </div>
-
-      {statusError && (
-        <Typography as='p' size='sm' color='danger'>
-          {statusError}
-        </Typography>
-      )}
+            <FieldError errors={[fieldState.error]} className='text-xs' />
+          </div>
+        )}
+      />
 
       <Controller
         control={props.control}
@@ -127,7 +140,7 @@ export const AttendanceRow = (props: AttendanceRowProps) => {
             value={field.value ?? ''}
             onChange={field.onChange}
             disabled={disabled}
-            className='text-sm'
+            className='h-8 min-w-[200px] flex-1 text-xs'
           />
         )}
       />

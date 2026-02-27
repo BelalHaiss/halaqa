@@ -25,7 +25,7 @@ export const TodaySessionsView = () => {
 
   if (vm.error) {
     return (
-      <Alert variant='soft' color='danger'>
+      <Alert alertType='ERROR'>
         <AlertDescription>{vm.error}</AlertDescription>
       </Alert>
     );
@@ -41,12 +41,12 @@ export const TodaySessionsView = () => {
       {vm.sessions.length === 0 ? (
         <div className='text-center py-12 rounded-lg border border-dashed border-border'>
           <Calendar className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
-          <Typography as='div' size='sm' variant='ghost' color='muted'>
+          <Typography as='div' size='sm' className='text-muted-foreground'>
             لا توجد جلسات مجدولة اليوم
           </Typography>
         </div>
       ) : (
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {vm.sessions.map((session) => (
             <SessionCard
               key={session.id}
