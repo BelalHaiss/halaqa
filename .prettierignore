@@ -15,3 +15,6 @@ yarn.lock
 .idea
 coverage
 .turbo
+
+# Prisma generated files
+apps/backend/generated/

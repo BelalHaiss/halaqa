@@ -1,5 +1,5 @@
 const lintAndFormat = [
-  'eslint --fix --flag v10_config_lookup_from_file --no-warn-ignored',
+  'eslint --fix --cache --flag v10_config_lookup_from_file --no-warn-ignored',
   'prettier --write',
 ];
 
