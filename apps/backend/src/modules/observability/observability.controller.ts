@@ -5,6 +5,7 @@ import {
   getNowAsUTC,
 } from '@halaqa/shared';
 import type { Request } from 'express';
+import { Throttle } from '@nestjs/throttler';
 import { IsPublic } from 'src/decorators/public.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import { AppLogger } from '../logging/app-logger.service';
@@ -12,6 +13,7 @@ import { clientErrorLogSchema } from './validation/client-error.validation';
 
 @Controller('observability')
 @IsPublic()
+@Throttle({ default: { limit: 20, ttl: 60000 } })
 export class ObservabilityController {
   constructor(private readonly appLogger: AppLogger) {}
 

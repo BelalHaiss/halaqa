@@ -75,8 +75,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "lint": "pnpm exec eslint \"src/**/*.{ts,tsx}\"",
+    "start": "vite preview",
+    "preview": "pnpm start",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   }
 }

@@ -7,12 +7,12 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnMount: 'always',
       retry: 1,
-      staleTime: 5 * 60 * 1000 // 5 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
     mutations: {
-      retry: false
-    }
-  }
+      retry: false,
+    },
+  },
 });
 
 /**
@@ -25,8 +25,7 @@ export const queryKeys = {
   // Auth queries
   auth: {
     all: ['auth'] as const,
-    validateToken: (token: string) =>
-      [...queryKeys.auth.all, 'validate-token', token] as const
+    validateToken: (token: string) => [...queryKeys.auth.all, 'validate-token', token] as const,
   },
 
   // Groups queries
@@ -39,7 +38,7 @@ export const queryKeys = {
       [...queryKeys.groups.all, 'stats', metric] as const,
     tutors: () => [...queryKeys.groups.all, 'tutors'] as const,
     details: () => [...queryKeys.groups.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.groups.details(), id] as const
+    detail: (id: string) => [...queryKeys.groups.details(), id] as const,
   },
 
   // Sessions queries
@@ -47,10 +46,9 @@ export const queryKeys = {
     all: ['sessions'] as const,
     lists: () => [...queryKeys.sessions.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.sessions.lists(), query] as const,
-    today: (userId: string) =>
-      [...queryKeys.sessions.lists(), 'today', userId] as const,
+    today: (userId: string) => [...queryKeys.sessions.lists(), 'today', userId] as const,
     details: () => [...queryKeys.sessions.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.sessions.details(), id] as const
+    detail: (id: string) => [...queryKeys.sessions.details(), id] as const,
   },
 
   // Students queries
@@ -59,7 +57,7 @@ export const queryKeys = {
     lists: () => [...queryKeys.students.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.students.lists(), query] as const,
     details: () => [...queryKeys.students.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.students.details(), id] as const
+    detail: (id: string) => [...queryKeys.students.details(), id] as const,
   },
 
   // Users queries
@@ -68,7 +66,7 @@ export const queryKeys = {
     lists: () => [...queryKeys.users.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.users.lists(), query] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.users.details(), id] as const
+    detail: (id: string) => [...queryKeys.users.details(), id] as const,
   },
 
   // Learners queries
@@ -77,34 +75,33 @@ export const queryKeys = {
     lists: () => [...queryKeys.learners.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.learners.lists(), query] as const,
     details: () => [...queryKeys.learners.all, 'detail'] as const,
-    detail: (id: string) => [...queryKeys.learners.details(), id] as const
+    detail: (id: string) => [...queryKeys.learners.details(), id] as const,
   },
 
   // Attendance queries
   attendance: {
     all: ['attendance'] as const,
     lists: () => [...queryKeys.attendance.all, 'list'] as const,
-    list: (sessionId: string) =>
-      [...queryKeys.attendance.lists(), sessionId] as const
+    list: (sessionId: string) => [...queryKeys.attendance.lists(), sessionId] as const,
   },
 
   // Reports queries
   reports: {
     all: ['reports'] as const,
     lists: () => [...queryKeys.reports.all, 'list'] as const,
-    list: (query?: unknown) => [...queryKeys.reports.lists(), query] as const
+    list: (query?: unknown) => [...queryKeys.reports.lists(), query] as const,
   },
 
   // Dashboard queries
   dashboard: {
     all: ['dashboard'] as const,
     stats: (userId: string, role: string) =>
-      [...queryKeys.dashboard.all, 'stats', userId, role] as const
+      [...queryKeys.dashboard.all, 'stats', userId, role] as const,
   },
 
   // Profile queries
   profile: {
     all: ['profile'] as const,
-    me: () => [...queryKeys.profile.all, 'me'] as const
-  }
+    me: () => [...queryKeys.profile.all, 'me'] as const,
+  },
 } as const;

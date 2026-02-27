@@ -13,9 +13,7 @@ import {
 } from '@/components/ui/table';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { StudentTableItem } from '@/modules/learners/components/student-table-item';
-import {
-  StudentMainInfoModal,
-} from '@/modules/learners/components/student-main-info-modal';
+import { StudentMainInfoModal } from '@/modules/learners/components/student-main-info-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useLearnersViewModel } from '../viewmodels/learners.viewmodel';
 
@@ -55,21 +53,11 @@ export default function LearnersView() {
       <Table className='rounded-lg border bg-card shadow-sm'>
         <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الاسم
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              المنطقة الزمنية
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              ملاحظات
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              عدد الحلقات
-            </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs'>
-              الإجراءات
-            </TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الاسم</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>المنطقة الزمنية</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>ملاحظات</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>عدد الحلقات</TableHead>
+            <TableHead className='px-4 py-3 text-left text-xs'>الإجراءات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -87,9 +75,7 @@ export default function LearnersView() {
               <TableCell colSpan={5}>
                 <div className='flex flex-col items-center justify-center py-10 text-muted-foreground gap-2'>
                   <Users className='w-6 h-6 opacity-70' />
-                  <span>
-                    {vm.searchQuery ? 'لا توجد نتائج مطابقة' : 'لا يوجد متعلمون حالياً'}
-                  </span>
+                  <span>{vm.searchQuery ? 'لا توجد نتائج مطابقة' : 'لا يوجد متعلمون حالياً'}</span>
                 </div>
               </TableCell>
             </TableRow>

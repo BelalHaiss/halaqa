@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { LoginView } from '@/modules/auth';
 import { GroupsView, GroupDetailsView } from '@/modules/groups';
 import { TodaySessionsView, SessionDetailsView, SessionHistoryView } from '@/modules/session';
@@ -58,9 +58,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    lazy: async () => {
-      const { Navigate } = await import('react-router-dom');
-      return { Component: () => <Navigate to='/' replace /> };
-    },
+    element: <Navigate to='/' replace />,
   },
 ]);

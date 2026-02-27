@@ -62,23 +62,40 @@ export class AppLogger extends ConsoleLogger {
       return null;
     }
 
-    const logsDir = path.join(process.cwd(), 'logs');
+    const logsDir =
+      process.env.LOGS_DIR ||
+      path.join(__dirname, '..', '..', '..', '..', 'logs');
     fs.mkdirSync(logsDir, { recursive: true });
+
+    const baseFormat = winston.format.combine(
+      winston.format.timestamp(),
+      winston.format.errors({ stack: true }),
+      winston.format.json(),
+    );
 
     return winston.createLogger({
       level: 'warn',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.errors({ stack: true }),
-        winston.format.json(),
-      ),
+      format: baseFormat,
       transports: [
+        new DailyRotateFile({
+          filename: path.join(logsDir, 'client-%DATE%.log'),
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxFiles: '14d',
+          level: 'warn',
+          format: winston.format((info) =>
+            info.source === 'client' ? info : false,
+          )(),
+        }),
         new DailyRotateFile({
           filename: path.join(logsDir, 'backend-%DATE%.log'),
           datePattern: 'YYYY-MM-DD',
           zippedArchive: true,
           maxFiles: '14d',
           level: 'warn',
+          format: winston.format((info) =>
+            info.source !== 'client' ? info : false,
+          )(),
         }),
       ],
     });
