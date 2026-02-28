@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import type {
   AddLearnersToGroupDto,
   CountDto,
@@ -36,7 +28,7 @@ import { GroupLearnerOrchestrator } from '../orchestrator/group-learner.orchestr
 export class GroupController {
   constructor(
     private readonly groupService: GroupService,
-    private readonly groupLearnerOrchestrator: GroupLearnerOrchestrator,
+    private readonly groupLearnerOrchestrator: GroupLearnerOrchestrator
   ) {}
 
   @Get()
@@ -55,10 +47,7 @@ export class GroupController {
   }
 
   @Get(':id')
-  getGroupById(
-    @Param('id') id: string,
-    @User() user: UserEntity,
-  ): Promise<GroupDetailsDto> {
+  getGroupById(@Param('id') id: string, @User() user: UserEntity): Promise<GroupDetailsDto> {
     return this.groupService.getGroupById(id, user);
   }
 
@@ -66,7 +55,7 @@ export class GroupController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   createGroup(
     @Body(new ZodValidationPipe(createGroupSchema))
-    dto: CreateGroupDto,
+    dto: CreateGroupDto
   ): Promise<GroupDetailsDto> {
     return this.groupService.createGroup(dto);
   }
@@ -76,7 +65,7 @@ export class GroupController {
   updateGroup(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateGroupSchema))
-    dto: UpdateGroupDto,
+    dto: UpdateGroupDto
   ): Promise<GroupDetailsDto> {
     return this.groupService.updateGroup(id, dto);
   }
@@ -87,12 +76,9 @@ export class GroupController {
     @Param('id') groupId: string,
     @Body(new ZodValidationPipe(createLearnerForGroupSchema))
     dto: CreateLearnerDto,
-    @User() user: UserEntity,
+    @User() user: UserEntity
   ): Promise<GroupDetailsDto> {
-    await this.groupLearnerOrchestrator.createLearnerAndAttachToGroup(
-      groupId,
-      dto,
-    );
+    await this.groupLearnerOrchestrator.createLearnerAndAttachToGroup(groupId, dto);
     return this.groupService.getGroupById(groupId, user);
   }
 
@@ -102,12 +88,9 @@ export class GroupController {
     @Param('id') groupId: string,
     @Body(new ZodValidationPipe(addLearnersToGroupSchema))
     dto: AddLearnersToGroupDto,
-    @User() user: UserEntity,
+    @User() user: UserEntity
   ): Promise<GroupDetailsDto> {
-    await this.groupLearnerOrchestrator.addExistingLearnersToGroup(
-      groupId,
-      dto,
-    );
+    await this.groupLearnerOrchestrator.addExistingLearnersToGroup(groupId, dto);
     return this.groupService.getGroupById(groupId, user);
   }
 
@@ -115,7 +98,7 @@ export class GroupController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   removeStudentFromGroup(
     @Param('id') groupId: string,
-    @Param('userId') userId: string,
+    @Param('userId') userId: string
   ): Promise<void> {
     return this.groupService.removeStudentFromGroup(groupId, userId);
   }

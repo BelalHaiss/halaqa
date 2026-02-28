@@ -1,10 +1,7 @@
 import { User } from '@halaqa/shared';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryClient, queryKeys } from '@/lib/query-client';
-import {
-  dashboardService,
-  DashboardStats
-} from '../services/dashboard.service';
+import { dashboardService, DashboardStats } from '../services/dashboard.service';
 
 const resolveSuccessData = <T>(
   response: { success: boolean; data?: T; error?: string; message?: string },
@@ -28,9 +25,9 @@ export const useDashboardViewModel = (user: User) => {
 
       return {
         success: true,
-        data: stats
+        data: stats,
       };
-    }
+    },
   });
 
   return {
@@ -40,7 +37,7 @@ export const useDashboardViewModel = (user: User) => {
     error: statsQuery.error?.message ?? null,
     refreshStats: () =>
       queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard.stats(user.id, user.role)
-      })
+        queryKey: queryKeys.dashboard.stats(user.id, user.role),
+      }),
   };
 };

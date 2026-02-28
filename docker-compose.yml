@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mysql:
@@ -9,22 +9,12 @@ services:
       MYSQL_ROOT_PASSWORD: PASSWORD
       MYSQL_DATABASE: halaqa
     ports:
-      - "3305:3306"
+      - '3305:3306'
     volumes:
       - mysql_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-pPASSWORD",
-        ]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-pPASSWORD']
       interval: 10s
       timeout: 5s
       retries: 5

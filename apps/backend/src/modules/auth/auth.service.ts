@@ -5,18 +5,13 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'generated/prisma/client';
 import { UserService } from '../user/user.service';
 import { JWT_PAYLOAD } from './types/user-auth.type';
-import {
-  DatesAsObjects,
-  LoginCredentialsDto,
-  removeFields,
-  UserAuthType,
-} from '@halaqa/shared';
+import { DatesAsObjects, LoginCredentialsDto, removeFields, UserAuthType } from '@halaqa/shared';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
-    private userService: UserService,
+    private userService: UserService
   ) {}
 
   async login(loginDTO: LoginCredentialsDto) {
@@ -25,10 +20,7 @@ export class AuthService {
     if (!foundUser) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const isPasswordValid = await this.verifyPassword(
-      loginDTO.password,
-      foundUser.password!,
-    );
+    const isPasswordValid = await this.verifyPassword(loginDTO.password, foundUser.password!);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -56,7 +48,7 @@ export class AuthService {
       { sub: userId },
       {
         expiresIn: '30d',
-      },
+      }
     );
   }
 }

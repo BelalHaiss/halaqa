@@ -4,10 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import winston, { type Logger as WinstonLogger } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import {
-  type BackendErrorLogEvent,
-  type ClientErrorLogEvent,
-} from './logger.types';
+import { type BackendErrorLogEvent, type ClientErrorLogEvent } from './logger.types';
 
 type FileLogLevel = 'warn' | 'error';
 
@@ -62,15 +59,13 @@ export class AppLogger extends ConsoleLogger {
       return null;
     }
 
-    const logsDir =
-      process.env.LOGS_DIR ||
-      path.join(__dirname, '..', '..', '..', '..', 'logs');
+    const logsDir = process.env.LOGS_DIR || path.join(__dirname, '..', '..', '..', '..', 'logs');
     fs.mkdirSync(logsDir, { recursive: true });
 
     const baseFormat = winston.format.combine(
       winston.format.timestamp(),
       winston.format.errors({ stack: true }),
-      winston.format.json(),
+      winston.format.json()
     );
 
     return winston.createLogger({
@@ -83,9 +78,7 @@ export class AppLogger extends ConsoleLogger {
           zippedArchive: true,
           maxFiles: '14d',
           level: 'warn',
-          format: winston.format((info) =>
-            info.source === 'client' ? info : false,
-          )(),
+          format: winston.format((info) => (info.source === 'client' ? info : false))(),
         }),
         new DailyRotateFile({
           filename: path.join(logsDir, 'backend-%DATE%.log'),
@@ -93,9 +86,7 @@ export class AppLogger extends ConsoleLogger {
           zippedArchive: true,
           maxFiles: '14d',
           level: 'warn',
-          format: winston.format((info) =>
-            info.source !== 'client' ? info : false,
-          )(),
+          format: winston.format((info) => (info.source !== 'client' ? info : false))(),
         }),
       ],
     });
@@ -108,9 +99,7 @@ export class AppLogger extends ConsoleLogger {
 
     const message = this.sanitizeText(this.toMessage(event.message), 3000);
     const stack =
-      typeof event.stack === 'string'
-        ? this.sanitizeText(event.stack, 8000)
-        : undefined;
+      typeof event.stack === 'string' ? this.sanitizeText(event.stack, 8000) : undefined;
 
     this.fileLogger.log({
       level,
@@ -137,14 +126,13 @@ export class AppLogger extends ConsoleLogger {
   }
 
   private sanitizeText(value: string, maxLength: number): string {
-    const trimmed =
-      value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
+    const trimmed = value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
 
     return trimmed
       .replace(/(Bearer\s+)[\w.-]+/gi, '$1[REDACTED]')
       .replace(
         /(password|token|authorization|cookie|secret)\s*[:=]\s*([^\s,;]+)/gi,
-        '$1=[REDACTED]',
+        '$1=[REDACTED]'
       );
   }
 }

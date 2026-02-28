@@ -9,7 +9,7 @@ type LearnerGroupsReadonlyPanelProps = {
 
 export function LearnerGroupsReadonlyPanel({
   groups,
-  groupCount
+  groupCount,
 }: LearnerGroupsReadonlyPanelProps) {
   const resolvedGroups = groups ?? [];
   const resolvedGroupCount = groupCount ?? resolvedGroups.length;

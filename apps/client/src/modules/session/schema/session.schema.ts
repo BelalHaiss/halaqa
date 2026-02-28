@@ -2,38 +2,37 @@ import { z } from 'zod';
 import type {
   UpdateSessionActionDTO,
   SessionAttendanceUpdateDTO,
-  AttendanceStatus
+  AttendanceStatus,
 } from '@halaqa/shared';
 import {
   isoDateOnlySchema,
   nameSchema,
   nonEmptyIdSchema,
   notesSchema,
-  timeMinutesSchema
+  timeMinutesSchema,
 } from '@/lib/validation/fields.schema';
 
-const attendanceStatusSchema = z.enum([
-  'ATTENDED',
-  'MISSED',
-  'EXCUSED'
-] satisfies [AttendanceStatus, ...AttendanceStatus[]]);
+const attendanceStatusSchema = z.enum(['ATTENDED', 'MISSED', 'EXCUSED'] satisfies [
+  AttendanceStatus,
+  ...AttendanceStatus[],
+]);
 
 const sessionAttendanceSchema = z.object({
   studentId: nonEmptyIdSchema,
   status: attendanceStatusSchema,
-  notes: notesSchema.optional()
+  notes: notesSchema.optional(),
 }) satisfies z.ZodType<SessionAttendanceUpdateDTO>;
 
 const attendanceEditItemSchema = z.object({
   studentId: nonEmptyIdSchema,
   studentName: nameSchema,
   status: attendanceStatusSchema.nullable(),
-  notes: notesSchema.optional()
+  notes: notesSchema.optional(),
 });
 
 export const attendanceEditSchema = z
   .object({
-    attendance: z.array(attendanceEditItemSchema).min(1)
+    attendance: z.array(attendanceEditItemSchema).min(1),
   })
   .superRefine((data, ctx) => {
     data.attendance.forEach((item, index) => {
@@ -41,7 +40,7 @@ export const attendanceEditSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['attendance', index, 'status'],
-          message: 'يرجى تحديد حالة الحضور'
+          message: 'يرجى تحديد حالة الحضور',
         });
       }
     });
@@ -51,7 +50,7 @@ export const updateSessionSchema = z.object({
   action: z.enum(['CANCEL', 'RESCHEDULE', 'ATTENDANCE']),
   date: isoDateOnlySchema.optional(),
   time: timeMinutesSchema.optional(),
-  attendance: z.array(sessionAttendanceSchema).optional()
+  attendance: z.array(sessionAttendanceSchema).optional(),
 }) satisfies z.ZodType<UpdateSessionActionDTO>;
 
 export type UpdateSessionFormData = UpdateSessionActionDTO;

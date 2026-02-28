@@ -1,13 +1,6 @@
-import {
-  formatDate,
-  getNowAsUTC,
-  UpdateSessionActionDTO
-} from '@halaqa/shared';
+import { formatDate, getNowAsUTC, UpdateSessionActionDTO } from '@halaqa/shared';
 import { z } from 'zod';
-import {
-  isoDateOnlySchema,
-  timeMinutesSchema
-} from '@/lib/validation/fields.schema';
+import { isoDateOnlySchema, timeMinutesSchema } from '@/lib/validation/fields.schema';
 
 export type RescheduleFormData = Omit<
   Required<Pick<UpdateSessionActionDTO, 'date' | 'time'>>,
@@ -18,14 +11,14 @@ export type RescheduleFormData = Omit<
 
 const baseRescheduleSchema = z.object({
   date: isoDateOnlySchema,
-  time: timeMinutesSchema
+  time: timeMinutesSchema,
 }) satisfies z.ZodType<RescheduleFormData>;
 
 const getTodayDateInTimezone = (timezone: string): string =>
   formatDate({
     date: getNowAsUTC(),
     token: 'yyyy-LL-dd',
-    timezone
+    timezone,
   });
 
 export const createRescheduleSchema = (timezone: string) =>
@@ -36,7 +29,7 @@ export const createRescheduleSchema = (timezone: string) =>
       ctx.addIssue({
         code: 'custom',
         path: ['date'],
-        message: 'لا يمكن اختيار تاريخ سابق'
+        message: 'لا يمكن اختيار تاريخ سابق',
       });
     }
   });

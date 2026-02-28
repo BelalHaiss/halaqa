@@ -34,7 +34,7 @@ export async function seedUsers(args: {
     seedAppUser('moderator', 'MODERATOR'),
     seedAppUser('tutor', 'TUTOR'),
     ...Array.from({ length: args.totalTutors - 1 }, (_, index) =>
-      seedAppUser(`tutor${index + 2}`, 'TUTOR'),
+      seedAppUser(`tutor${index + 2}`, 'TUTOR')
     ),
   ]);
 

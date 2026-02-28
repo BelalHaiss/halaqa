@@ -12,10 +12,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { User } from 'src/decorators/user.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import { SessionService } from './session.service';
-import {
-  updateSessionActionSchema,
-  sessionQuerySchema,
-} from './validation/session.validation';
+import { updateSessionActionSchema, sessionQuerySchema } from './validation/session.validation';
 
 @Controller('sessions')
 @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
@@ -23,16 +20,14 @@ export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Get('today')
-  async getCurrentDaySessions(
-    @User() user: AuthenticatedUser,
-  ): Promise<SessionSummaryDTO[]> {
+  async getCurrentDaySessions(@User() user: AuthenticatedUser): Promise<SessionSummaryDTO[]> {
     return this.sessionService.getTodaySessions(user);
   }
 
   @Get('history')
   async querySessions(
     @Query(new ZodValidationPipe(sessionQuerySchema)) query: SessionQueryDTO,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<PaginatedResult<SessionSummaryDTO[]>> {
     return this.sessionService.querySessions(query, user);
   }
@@ -40,7 +35,7 @@ export class SessionController {
   @Get(':id')
   async getSessionDetails(
     @Param('id') id: string,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SessionDetailsDTO> {
     return this.sessionService.getSessionDetails(id, user);
   }
@@ -50,7 +45,7 @@ export class SessionController {
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateSessionActionSchema))
     payload: UpdateSessionActionDTO,
-    @User() user: AuthenticatedUser,
+    @User() user: AuthenticatedUser
   ): Promise<SessionDetailsDTO> {
     return this.sessionService.updateSession(id, payload, user);
   }

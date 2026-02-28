@@ -10,7 +10,7 @@ type TimezoneDisplayProps = {
 export function TimezoneDisplay({
   timezone,
 
-  className
+  className,
 }: TimezoneDisplayProps) {
   return (
     <span

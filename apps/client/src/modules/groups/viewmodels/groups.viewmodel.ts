@@ -1,10 +1,4 @@
-import {
-  CountDto,
-  CreateGroupDto,
-  GroupDetailsDto,
-  GroupSummaryDto,
-  User,
-} from '@halaqa/shared';
+import { CountDto, CreateGroupDto, GroupDetailsDto, GroupSummaryDto, User } from '@halaqa/shared';
 import { toast } from 'sonner';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
@@ -15,12 +9,8 @@ type UseGroupsViewModelOptions = {
   shouldLoadTutors: boolean;
 };
 
-export const useGroupsViewModel = (
-  currentUser: User,
-  options: UseGroupsViewModelOptions
-) => {
-  const canManageGroups =
-    currentUser.role === 'ADMIN' || currentUser.role === 'MODERATOR';
+export const useGroupsViewModel = (currentUser: User, options: UseGroupsViewModelOptions) => {
+  const canManageGroups = currentUser.role === 'ADMIN' || currentUser.role === 'MODERATOR';
 
   const groupsQuery = useApiQuery<GroupSummaryDto[]>({
     queryKey: queryKeys.groups.list({

@@ -19,18 +19,17 @@ export function StatsCountCard({
   data,
   isLoading,
   className,
-  iconClassName
+  iconClassName,
 }: StatsCountCardProps) {
   return (
-    <Card
-      className={cn(
-        'relative overflow-hidden border ring-1 shadow-sm',
-        className
-      )}
-    >
+    <Card className={cn('relative overflow-hidden border ring-1 shadow-sm', className)}>
       <CardContent className='p-5 space-y-4'>
         <div className='flex items-center justify-between'>
-          <Typography as='div' size='xs' className='rounded-md bg-muted px-2 py-0.5 text-muted-foreground'>
+          <Typography
+            as='div'
+            size='xs'
+            className='rounded-md bg-muted px-2 py-0.5 text-muted-foreground'
+          >
             مؤشرات سريعة
           </Typography>
           <div

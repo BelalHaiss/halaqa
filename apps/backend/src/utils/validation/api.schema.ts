@@ -9,10 +9,7 @@ import {
 import z, { ZodType } from 'zod';
 
 export const paginationSchema = z.object({
-  page: z.coerce
-    .number()
-    .min(PAGINATION_MIN_PAGE)
-    .default(PAGINATION_DEFAULT_PAGE),
+  page: z.coerce.number().min(PAGINATION_MIN_PAGE).default(PAGINATION_DEFAULT_PAGE),
   limit: z.coerce
     .number()
     .min(PAGINATION_MIN_LIMIT)

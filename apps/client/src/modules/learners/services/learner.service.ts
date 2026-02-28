@@ -4,13 +4,11 @@ import {
   LearnerDto,
   QueryLearnersDto,
   UnifiedApiResponse,
-  UpdateLearnerDto
+  UpdateLearnerDto,
 } from '@halaqa/shared';
 
 export const learnerService = {
-  queryLearners: async (
-    query: QueryLearnersDto
-  ): Promise<UnifiedApiResponse<LearnerDto[]>> => {
+  queryLearners: async (query: QueryLearnersDto): Promise<UnifiedApiResponse<LearnerDto[]>> => {
     const params = new URLSearchParams();
     params.set('page', String(query.page ?? 1));
     params.set('limit', String(query.limit ?? 10));
@@ -21,9 +19,7 @@ export const learnerService = {
     return apiClient.get<LearnerDto[]>(`/user/learner?${params.toString()}`);
   },
 
-  createLearner: async (
-    data: CreateLearnerDto
-  ): Promise<UnifiedApiResponse<LearnerDto>> => {
+  createLearner: async (data: CreateLearnerDto): Promise<UnifiedApiResponse<LearnerDto>> => {
     return apiClient.post<LearnerDto>('/user/learner', data);
   },
 
@@ -38,7 +34,7 @@ export const learnerService = {
     await apiClient.delete<void>(`/user/learner/${id}`);
     return {
       success: true,
-      data: null
+      data: null,
     };
-  }
+  },
 };

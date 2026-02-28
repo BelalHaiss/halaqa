@@ -6,7 +6,7 @@ import {
   DEFAULT_TIMEZONE,
   LearnerDto,
   TIMEZONES,
-  UpdateLearnerDto
+  UpdateLearnerDto,
 } from '@halaqa/shared';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,12 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Typography } from '@/components/ui/typography';
 import {
   studentMainInfoFormSchema,
-  type StudentMainInfoFormValues
+  type StudentMainInfoFormValues,
 } from './student-main-info.schema';
 import { LearnerGroupsReadonlyPanel } from './LearnerGroupsReadonlyPanel';
 
@@ -62,11 +62,12 @@ export function StudentMainInfoModal({
   learner,
   addToGroupId,
   onSubmit,
-  isLoading = false
+  isLoading = false,
 }: StudentMainInfoModalProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [pendingSubmitArgs, setPendingSubmitArgs] =
-    useState<StudentMainInfoSubmitArgs | null>(null);
+  const [pendingSubmitArgs, setPendingSubmitArgs] = useState<StudentMainInfoSubmitArgs | null>(
+    null
+  );
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const isViewMode = mode === 'view';
@@ -75,11 +76,8 @@ export function StudentMainInfoModal({
   const defaultValues = useMemo<StudentMainInfoFormValues>(
     () => ({
       name: learner && !isCreateMode ? learner.name : '',
-      timezone:
-        learner && !isCreateMode
-          ? learner.timezone || DEFAULT_TIMEZONE
-          : DEFAULT_TIMEZONE,
-      notes: learner && !isCreateMode ? learner.contact.notes || '' : ''
+      timezone: learner && !isCreateMode ? learner.timezone || DEFAULT_TIMEZONE : DEFAULT_TIMEZONE,
+      notes: learner && !isCreateMode ? learner.contact.notes || '' : '',
     }),
     [learner, isCreateMode]
   );
@@ -87,7 +85,7 @@ export function StudentMainInfoModal({
   const form = useForm<StudentMainInfoFormValues>({
     resolver: zodResolver(studentMainInfoFormSchema),
     values: defaultValues,
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
 
   const handleFormSubmit = (values: StudentMainInfoFormValues) => {
@@ -103,10 +101,8 @@ export function StudentMainInfoModal({
           data: {
             name: values.name.trim(),
             timezone: values.timezone,
-            contact: values.notes.trim()
-              ? { notes: values.notes.trim() }
-              : undefined
-          }
+            contact: values.notes.trim() ? { notes: values.notes.trim() } : undefined,
+          },
         }
       : {
           mode: 'edit',
@@ -114,8 +110,8 @@ export function StudentMainInfoModal({
           data: {
             name: values.name.trim(),
             timezone: values.timezone,
-            contact: { notes: values.notes.trim() || undefined }
-          }
+            contact: { notes: values.notes.trim() || undefined },
+          },
         };
 
     setPendingSubmitArgs(submitData);
@@ -134,18 +130,12 @@ export function StudentMainInfoModal({
       setConfirmOpen(false);
       onOpenChange(false);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'تعذر حفظ بيانات المتعلم'
-      );
+      setErrorMessage(error instanceof Error ? error.message : 'تعذر حفظ بيانات المتعلم');
     }
   };
 
   const title =
-    mode === 'create'
-      ? 'إضافة متعلم'
-      : mode === 'edit'
-        ? 'تعديل بيانات المتعلم'
-        : 'بيانات المتعلم';
+    mode === 'create' ? 'إضافة متعلم' : mode === 'edit' ? 'تعديل بيانات المتعلم' : 'بيانات المتعلم';
 
   const description =
     mode === 'create'
@@ -171,10 +161,7 @@ export function StudentMainInfoModal({
             <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
 
-          <form
-            onSubmit={form.handleSubmit(handleFormSubmit)}
-            className='space-y-4'
-          >
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className='space-y-4'>
             <FormField
               control={form.control}
               name='name'
@@ -195,7 +182,7 @@ export function StudentMainInfoModal({
               disabled={isViewMode || isLoading}
               options={TIMEZONES.map((tz) => ({
                 value: tz.value,
-                label: tz.label
+                label: tz.label,
               }))}
             />
 
@@ -237,11 +224,7 @@ export function StudentMainInfoModal({
               {!isViewMode ? (
                 <Button
                   type='submit'
-                  disabled={
-                    isLoading ||
-                    !form.formState.isDirty ||
-                    !form.formState.isValid
-                  }
+                  disabled={isLoading || !form.formState.isDirty || !form.formState.isValid}
                 >
                   {isLoading ? 'جاري الحفظ...' : 'حفظ'}
                 </Button>
@@ -256,9 +239,7 @@ export function StudentMainInfoModal({
         onOpenChange={setConfirmOpen}
         title={isCreateMode ? 'تأكيد إضافة متعلم' : 'تأكيد تعديل المتعلم'}
         description={
-          isCreateMode
-            ? 'هل أنت متأكد من إضافة هذا المتعلم؟'
-            : 'هل أنت متأكد من حفظ التعديلات؟'
+          isCreateMode ? 'هل أنت متأكد من إضافة هذا المتعلم؟' : 'هل أنت متأكد من حفظ التعديلات؟'
         }
         confirmText={isCreateMode ? 'إضافة' : 'حفظ'}
         cancelText='إلغاء'

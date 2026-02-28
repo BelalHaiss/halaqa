@@ -22,34 +22,20 @@ import {
 } from '@halaqa/shared';
 import z from 'zod';
 
-export const nameSchema = z
-  .string()
-  .trim()
-  .min(NAME_MIN_LENGTH)
-  .max(NAME_MAX_LENGTH);
+export const nameSchema = z.string().trim().min(NAME_MIN_LENGTH).max(NAME_MAX_LENGTH);
 
-export const usernameSchema = z
-  .string()
-  .trim()
-  .min(USERNAME_MIN_LENGTH)
-  .max(USERNAME_MAX_LENGTH);
+export const usernameSchema = z.string().trim().min(USERNAME_MIN_LENGTH).max(USERNAME_MAX_LENGTH);
 
 export const usernameAccountSchema = usernameSchema.regex(
   USERNAME_ACCOUNT_REGEX,
-  'Username can only contain letters, numbers, and _',
+  'Username can only contain letters, numbers, and _'
 );
 
-export const passwordSchema = z
-  .string()
-  .min(PASSWORD_MIN_LENGTH)
-  .max(PASSWORD_MAX_LENGTH);
+export const passwordSchema = z.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH);
 
 export const notesSchema = z.string().trim().max(NOTES_MAX_LENGTH);
 
-export const attendanceNotesSchema = z
-  .string()
-  .trim()
-  .max(ATTENDANCE_NOTES_MAX_LENGTH);
+export const attendanceNotesSchema = z.string().trim().max(ATTENDANCE_NOTES_MAX_LENGTH);
 
 export const descriptionSchema = z.string().trim().max(DESCRIPTION_MAX_LENGTH);
 
@@ -57,11 +43,7 @@ export const nonEmptyIdSchema = z.string().trim().min(NON_EMPTY_MIN_LENGTH);
 
 export const tutorIdSchema = nonEmptyIdSchema;
 
-export const dayOfWeekSchema = z
-  .number()
-  .int()
-  .min(DAY_OF_WEEK_MIN)
-  .max(DAY_OF_WEEK_MAX);
+export const dayOfWeekSchema = z.number().int().min(DAY_OF_WEEK_MIN).max(DAY_OF_WEEK_MAX);
 
 export const durationMinutesSchema = z
   .number()

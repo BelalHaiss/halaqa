@@ -16,17 +16,13 @@ export function UserBadge({
   size = 'default',
   variant = 'soft',
   showIcon = true,
-  showLabel = true
+  showLabel = true,
 }: UserBadgeProps) {
   const config = ROLE_CONFIG[role];
   const Icon = config.icon;
 
   return (
-    <Badge
-      variant={variant}
-      color={config.color}
-      className={size === 'sm' ? 'text-xs' : ''}
-    >
+    <Badge variant={variant} color={config.color} className={size === 'sm' ? 'text-xs' : ''}>
       {showIcon && <Icon className={size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'} />}
       {showLabel && config.label}
     </Badge>

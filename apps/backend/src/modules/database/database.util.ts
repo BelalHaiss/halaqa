@@ -4,12 +4,8 @@ import { EnvVariables } from 'src/types/declartion-merging';
 export function createMariaDbAdapter(
   env: Pick<
     EnvVariables,
-    | 'DATABASE_HOST'
-    | 'DATABASE_USER'
-    | 'DATABASE_PASSWORD'
-    | 'DATABASE_NAME'
-    | 'DATABASE_PORT'
-  >,
+    'DATABASE_HOST' | 'DATABASE_USER' | 'DATABASE_PASSWORD' | 'DATABASE_NAME' | 'DATABASE_PORT'
+  >
 ) {
   return new PrismaMariaDb({
     host: env.DATABASE_HOST,

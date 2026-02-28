@@ -81,24 +81,12 @@ export function SessionHistoryView() {
       <Table className='rounded-lg border bg-card shadow-sm'>
         <TableHeader className='bg-muted/40'>
           <TableRow>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الحلقة
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              المعلم
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              التاريخ
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الوقت
-            </TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>
-              الحالة
-            </TableHead>
-            <TableHead className='px-4 py-3 text-left text-xs'>
-              الإجراءات
-            </TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الحلقة</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>المعلم</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>التاريخ</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الوقت</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>الحالة</TableHead>
+            <TableHead className='px-4 py-3 text-left text-xs'>الإجراءات</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -123,18 +111,13 @@ export function SessionHistoryView() {
             vm.sessions.map((session) => {
               const statusConfig = getSessionStatusConfig(session.sessionStatus);
               const startedDateTime = formatDateShort(session.startedAt, user.timezone);
-              const { time } = formatISODateToUserTimezone(
-                session.startedAt,
-                user.timezone,
-              );
+              const { time } = formatISODateToUserTimezone(session.startedAt, user.timezone);
               const formattedTime = minutesToTimeString(time as TimeMinutes);
 
               return (
                 <TableRow key={session.id}>
                   <TableCell className='px-4 py-3'>{session.groupName}</TableCell>
-                  <TableCell className='px-4 py-3'>
-                    {session.tutorName ?? 'غير محدد'}
-                  </TableCell>
+                  <TableCell className='px-4 py-3'>{session.tutorName ?? 'غير محدد'}</TableCell>
                   <TableCell className='px-4 py-3'>
                     <div className='space-y-1'>
                       <Typography as='div' size='sm' weight='medium'>
@@ -142,8 +125,7 @@ export function SessionHistoryView() {
                       </Typography>
                       {session.originalStartedAt && (
                         <Typography as='div' size='xs' className='text-muted-foreground'>
-                          الموعد الأصلي:{' '}
-                          {formatDateShort(session.originalStartedAt, user.timezone)}
+                          الموعد الأصلي: {formatDateShort(session.originalStartedAt, user.timezone)}
                         </Typography>
                       )}
                     </div>

@@ -16,15 +16,15 @@ export default defineConfig({
       '@/contexts': path.resolve(__dirname, './src/contexts'),
       '@/hoc': path.resolve(__dirname, './src/hoc'),
       '@/styles': path.resolve(__dirname, './src/styles'),
-      '@halaqa/shared': path.resolve(__dirname, '../../packages/shared/src')
-    }
+      '@halaqa/shared': path.resolve(__dirname, '../../packages/shared/src'),
+    },
   },
   build: {
     target: 'esnext',
-    outDir: 'build'
+    outDir: 'build',
   },
   server: {
     port: 3000,
-    open: true
-  }
+    open: true,
+  },
 });

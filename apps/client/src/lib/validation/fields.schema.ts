@@ -18,7 +18,7 @@ import {
   TimeMinutes,
   USERNAME_ACCOUNT_REGEX,
   USERNAME_MAX_LENGTH,
-  USERNAME_MIN_LENGTH
+  USERNAME_MIN_LENGTH,
 } from '@halaqa/shared';
 import { z } from 'zod';
 
@@ -44,10 +44,7 @@ export const passwordSchema = z
   .min(PASSWORD_MIN_LENGTH, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
   .max(PASSWORD_MAX_LENGTH, 'كلمة المرور طويلة جدًا');
 
-export const notesSchema = z
-  .string()
-  .trim()
-  .max(NOTES_MAX_LENGTH, 'الملاحظات طويلة جدًا');
+export const notesSchema = z.string().trim().max(NOTES_MAX_LENGTH, 'الملاحظات طويلة جدًا');
 
 export const descriptionSchema = z.string().trim().max(DESCRIPTION_MAX_LENGTH);
 
@@ -70,11 +67,7 @@ export const durationMinutesStringSchema = z
     );
   }, 'المدة يجب أن تكون بين 15 و 720 دقيقة');
 
-export const dayOfWeekSchema = z
-  .number()
-  .int()
-  .min(DAY_OF_WEEK_MIN)
-  .max(DAY_OF_WEEK_MAX);
+export const dayOfWeekSchema = z.number().int().min(DAY_OF_WEEK_MIN).max(DAY_OF_WEEK_MAX);
 
 export const timeMinutesSchema = z.custom<TimeMinutes>(
   (value) =>
@@ -90,7 +83,4 @@ export const isoDateOnlySchema = z
   .regex(DATE_ONLY_FORMAT_REGEX, 'تنسيق التاريخ غير صحيح')
   .transform((value) => value as ISODateOnlyString);
 
-export const nonEmptyIdSchema = z
-  .string()
-  .trim()
-  .min(NON_EMPTY_MIN_LENGTH, 'المعرّف مطلوب');
+export const nonEmptyIdSchema = z.string().trim().min(NON_EMPTY_MIN_LENGTH, 'المعرّف مطلوب');

@@ -3,25 +3,15 @@ import {
   type Control,
   type FieldValues,
   type Path,
-  type FieldError
+  type FieldError,
 } from 'react-hook-form';
 import type { ReactNode } from 'react';
 import { Checkbox } from '../ui/checkbox';
-import {
-  Field,
-  FieldLabel,
-  FieldError as FieldErrorComponent
-} from '../ui/field';
+import { Field, FieldLabel, FieldError as FieldErrorComponent } from '../ui/field';
 import { PasswordInput } from '../ui/password-input';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export interface SelectOption {
   value: string;
@@ -56,7 +46,7 @@ function FormFieldComponent<T extends FieldValues>({
   inputClassName,
   showError = true,
   rows,
-  options
+  options,
 }: FormFieldProps<T>) {
   const fieldId = id || name;
 
@@ -142,7 +132,7 @@ function FormFieldComponent<T extends FieldValues>({
       onChange,
       onBlur,
       'aria-invalid': invalid,
-      className: inputClassName
+      className: inputClassName,
     };
 
     if (type === 'password') {
@@ -156,16 +146,9 @@ function FormFieldComponent<T extends FieldValues>({
     <Controller
       name={name as Path<T>}
       control={control}
-      render={({
-        field: { value, onChange, onBlur },
-        fieldState: { error, invalid }
-      }) => {
+      render={({ field: { value, onChange, onBlur }, fieldState: { error, invalid } }) => {
         return (
-          <Field
-            data-invalid={invalid}
-            className='text-sm'
-            data-disabled={disabled}
-          >
+          <Field data-invalid={invalid} className='text-sm' data-disabled={disabled}>
             {type === 'checkbox' ? (
               <div className='flex items-center gap-3'>
                 {renderInput(value, onChange, onBlur, invalid)}
@@ -177,9 +160,7 @@ function FormFieldComponent<T extends FieldValues>({
                 {renderInput(value || '', onChange, onBlur, invalid)}
               </>
             )}
-            {showError && error && (
-              <FieldErrorComponent errors={[error as FieldError]} />
-            )}
+            {showError && error && <FieldErrorComponent errors={[error as FieldError]} />}
           </Field>
         );
       }}

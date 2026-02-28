@@ -21,7 +21,7 @@ const groupsByStatus = (groups: GroupSummaryDto[]) => {
   return STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_LABELS[status],
-    groups: groups.filter((g) => g.status === status)
+    groups: groups.filter((g) => g.status === status),
   }));
 };
 
@@ -34,7 +34,7 @@ export const GroupsView = () => {
   }
 
   const vm = useGroupsViewModel(user, {
-    shouldLoadTutors: isCreateModalOpen
+    shouldLoadTutors: isCreateModalOpen,
   });
 
   if (vm.isLoadingGroups) {

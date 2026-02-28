@@ -42,17 +42,14 @@ const createGroupBaseSchema = z.object({
   description: descriptionSchema.optional(),
   tutorId: tutorIdSchema,
   status: groupStatusSchema.optional(),
-  scheduleDays: z
-    .array(groupScheduleDaySchema)
-    .min(1)
-    .refine(uniqueScheduleDays, {
-      message: 'Schedule days must be unique',
-    }),
+  scheduleDays: z.array(groupScheduleDaySchema).min(1).refine(uniqueScheduleDays, {
+    message: 'Schedule days must be unique',
+  }),
 });
 
 export const createGroupSchema = z.intersection(
   createGroupBaseSchema,
-  timezoneFieldSchema,
+  timezoneFieldSchema
 ) satisfies ZodType<CreateGroupDto>;
 
 const updateGroupBaseSchema = z
@@ -78,7 +75,7 @@ export const updateGroupSchema = z
     updateGroupBaseSchema,
     z.object({
       timezone: z.string().trim().min(1).optional(),
-    }),
+    })
   )
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field is required',
@@ -110,7 +107,7 @@ const createLearnerBaseSchema = z.object({
 
 export const createLearnerForGroupSchema = z.intersection(
   createLearnerBaseSchema,
-  timezoneFieldSchema,
+  timezoneFieldSchema
 ) satisfies ZodType<CreateLearnerDto>;
 
 export const addLearnersToGroupSchema = z.object({

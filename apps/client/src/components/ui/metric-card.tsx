@@ -12,23 +12,12 @@ type MetricCardProps = {
   iconClassName?: string;
 };
 
-function MetricCard({
-  icon,
-  value,
-  label,
-  className,
-  iconClassName
-}: MetricCardProps) {
+function MetricCard({ icon, value, label, className, iconClassName }: MetricCardProps) {
   return (
     <Card className={className}>
       <CardContent className='p-3 lg:p-4'>
         <div className='flex items-center justify-between mb-2'>
-          <div
-            className={cn(
-              'rounded-lg bg-muted p-2 text-muted-foreground',
-              iconClassName
-            )}
-          >
+          <div className={cn('rounded-lg bg-muted p-2 text-muted-foreground', iconClassName)}>
             {icon}
           </div>
         </div>

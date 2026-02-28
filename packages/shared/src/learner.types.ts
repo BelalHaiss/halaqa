@@ -1,8 +1,4 @@
-import {
-  ISODateString,
-  PaginationQueryType,
-  PaginationResponseMeta
-} from './types/api.types';
+import { ISODateString, PaginationQueryType, PaginationResponseMeta } from './types/api.types';
 
 export interface LearnerContactDto {
   notes?: string;

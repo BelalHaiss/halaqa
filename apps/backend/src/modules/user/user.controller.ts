@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import type {
   ChangeOwnPasswordDto,
   CountDto,
@@ -33,14 +24,8 @@ import {
   queryLearnersSchema,
   updateLearnerSchema,
 } from './validation/learner.validation';
-import {
-  createStaffSchema,
-  updateStaffSchema,
-} from './validation/staff.validation';
-import {
-  changeOwnPasswordSchema,
-  updateOwnProfileSchema,
-} from './validation/profile.validation';
+import { createStaffSchema, updateStaffSchema } from './validation/staff.validation';
+import { changeOwnPasswordSchema, updateOwnProfileSchema } from './validation/profile.validation';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -51,7 +36,7 @@ export class UserController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   createLearner(
     @Body(new ZodValidationPipe(createLearnerSchema))
-    dto: CreateLearnerDto,
+    dto: CreateLearnerDto
   ): Promise<LearnerDto> {
     return this.userService.createLearner(dto);
   }
@@ -61,7 +46,7 @@ export class UserController {
   queryLearners(
     @User() actor: UserEntity,
     @Query(new ZodValidationPipe(queryLearnersSchema))
-    query: QueryLearnersDto,
+    query: QueryLearnersDto
   ): Promise<QueryLearnersResponseDto> {
     return this.userService.queryLearners(actor, query);
   }
@@ -71,7 +56,7 @@ export class UserController {
   updateLearner(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateLearnerSchema))
-    dto: UpdateLearnerDto,
+    dto: UpdateLearnerDto
   ): Promise<LearnerDto> {
     return this.userService.updateLearner(id, dto);
   }
@@ -93,7 +78,7 @@ export class UserController {
   createStaffUser(
     @User() actor: UserEntity,
     @Body(new ZodValidationPipe(createStaffSchema))
-    dto: CreateStaffUserDto,
+    dto: CreateStaffUserDto
   ): Promise<StaffUserDto> {
     return this.userService.createStaffUser(actor, dto);
   }
@@ -104,17 +89,14 @@ export class UserController {
     @Param('id') id: string,
     @User() actor: UserEntity,
     @Body(new ZodValidationPipe(updateStaffSchema))
-    dto: UpdateStaffUserDto,
+    dto: UpdateStaffUserDto
   ): Promise<StaffUserDto> {
     return this.userService.updateStaffUser(id, actor, dto);
   }
 
   @Delete('staff/:id')
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
-  async deleteStaffUser(
-    @Param('id') id: string,
-    @User() actor: UserEntity,
-  ): Promise<void> {
+  async deleteStaffUser(@Param('id') id: string, @User() actor: UserEntity): Promise<void> {
     await this.userService.deleteStaffUser(id, actor);
   }
 
@@ -127,7 +109,7 @@ export class UserController {
   updateOwnProfile(
     @User() user: UserEntity,
     @Body(new ZodValidationPipe(updateOwnProfileSchema))
-    dto: UpdateOwnProfileDto,
+    dto: UpdateOwnProfileDto
   ): Promise<UserAuthType> {
     return this.userService.updateOwnProfile(user.id, dto);
   }
@@ -136,7 +118,7 @@ export class UserController {
   async changeOwnPassword(
     @User() user: UserEntity,
     @Body(new ZodValidationPipe(changeOwnPasswordSchema))
-    dto: ChangeOwnPasswordDto,
+    dto: ChangeOwnPasswordDto
   ): Promise<void> {
     await this.userService.changeOwnPassword(user.id, dto);
   }

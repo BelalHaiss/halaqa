@@ -1,10 +1,6 @@
 import { combineDateTime, fromUTC, ISODateOnlyString } from '@halaqa/shared';
 import { faker, fakerAR } from '@faker-js/faker';
-import {
-  AttendanceStatus,
-  PrismaClient,
-  SessionStatus,
-} from 'generated/prisma/client';
+import { AttendanceStatus, PrismaClient, SessionStatus } from 'generated/prisma/client';
 import { SeededGroupWithStudents } from './group.seed';
 
 export type SeededSessionScheduleDay = {
@@ -55,14 +51,11 @@ function getScheduledSessionStarts(args: {
       const startedAtIso = combineDateTime(
         localDate,
         scheduleDay.startMinutes as Parameters<typeof combineDateTime>[1],
-        args.timezone,
+        args.timezone
       );
       const startedAt = new Date(startedAtIso);
 
-      if (
-        Number.isNaN(startedAt.getTime()) ||
-        startedAt.getTime() >= now.getTime()
-      ) {
+      if (Number.isNaN(startedAt.getTime()) || startedAt.getTime() >= now.getTime()) {
         continue;
       }
 
@@ -89,7 +82,7 @@ export async function seedSessionsAndAttendance(args: {
     const selectedSessionStarts = faker.helpers
       .arrayElements(
         plannedSessions,
-        Math.min(faker.number.int({ min: 4, max: 8 }), plannedSessions.length),
+        Math.min(faker.number.int({ min: 4, max: 8 }), plannedSessions.length)
       )
       .sort((a, b) => a.getTime() - b.getTime());
 
@@ -113,9 +106,7 @@ export async function seedSessionsAndAttendance(args: {
       }
 
       const attendanceRecords = group.studentIds.map((studentId) => {
-        const attendanceStatus = faker.helpers.arrayElement(
-          args.attendanceStatusWeights,
-        );
+        const attendanceStatus = faker.helpers.arrayElement(args.attendanceStatusWeights);
 
         return {
           sessionId: session.id,

@@ -10,15 +10,12 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Typography } from '@/components/ui/typography';
 import { Field, FieldError } from '@/components/ui/field';
-import {
-  createRescheduleSchema,
-  type RescheduleFormData
-} from '../schema/reschedule.schema';
+import { createRescheduleSchema, type RescheduleFormData } from '../schema/reschedule.schema';
 
 interface RescheduleDialogProps {
   open: boolean;
@@ -33,25 +30,22 @@ export const RescheduleDialog = ({
   onOpenChange,
   onReschedule,
   isLoading = false,
-  timezone
+  timezone,
 }: RescheduleDialogProps) => {
-  const rescheduleSchema = useMemo(
-    () => createRescheduleSchema(timezone),
-    [timezone]
-  );
+  const rescheduleSchema = useMemo(() => createRescheduleSchema(timezone), [timezone]);
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isDirty, isValid }
+    formState: { errors, isDirty, isValid },
   } = useForm<RescheduleFormData>({
     resolver: zodResolver(rescheduleSchema),
     defaultValues: {
       date: '',
-      time: 0 as TimeMinutes
+      time: 0 as TimeMinutes,
     },
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
 
   const onSubmit = async (data: RescheduleFormData) => {
@@ -81,15 +75,8 @@ export const RescheduleDialog = ({
                 <Controller
                   control={control}
                   name='time'
-                  render={({
-                    field: timeField,
-                    fieldState: timeFieldState
-                  }) => (
-                    <Field
-                      data-invalid={
-                        dateFieldState.invalid || timeFieldState.invalid
-                      }
-                    >
+                  render={({ field: timeField, fieldState: timeFieldState }) => (
+                    <Field data-invalid={dateFieldState.invalid || timeFieldState.invalid}>
                       <DateTimePicker
                         date={dateField.value}
                         time={timeField.value}
@@ -97,9 +84,7 @@ export const RescheduleDialog = ({
                         onDateBlur={dateField.onBlur}
                         onTimeChange={timeField.onChange}
                         onTimeBlur={timeField.onBlur}
-                        invalid={
-                          dateFieldState.invalid || timeFieldState.invalid
-                        }
+                        invalid={dateFieldState.invalid || timeFieldState.invalid}
                         disablePastDates
                         disabled={isLoading}
                       />
@@ -125,11 +110,7 @@ export const RescheduleDialog = ({
               إلغاء
             </Button>
             <Button type='submit' disabled={isLoading || !isDirty || !isValid}>
-              {isLoading ? (
-                <Loader2 className='w-4 h-4 animate-spin' />
-              ) : (
-                'إعادة جدولة'
-              )}
+              {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : 'إعادة جدولة'}
             </Button>
           </DialogFooter>
         </form>

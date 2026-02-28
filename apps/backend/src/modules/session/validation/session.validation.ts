@@ -37,11 +37,7 @@ export const updateSessionActionSchema = z.discriminatedUnion('action', [
 
 export const sessionQuerySchema = z.object({
   page: z.coerce.number().min(PAGINATION_MIN_PAGE).optional(),
-  limit: z.coerce
-    .number()
-    .min(PAGINATION_MIN_LIMIT)
-    .max(PAGINATION_MAX_LIMIT)
-    .optional(),
+  limit: z.coerce.number().min(PAGINATION_MIN_LIMIT).max(PAGINATION_MAX_LIMIT).optional(),
   fromDate: optionalIsoDateOnlySchema,
   toDate: optionalIsoDateOnlySchema,
   status: z.enum(['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED']).optional(),

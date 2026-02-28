@@ -17,7 +17,7 @@ export function StudentTableItem({
   showActions = true,
   onClick,
   onEdit,
-  onDelete
+  onDelete,
 }: StudentTableItemProps) {
   const learnerInitial = learner.name.trim().charAt(0) || '؟';
 

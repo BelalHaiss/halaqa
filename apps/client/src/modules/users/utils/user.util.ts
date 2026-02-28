@@ -1,11 +1,5 @@
 import { UserRole } from '@halaqa/shared';
-import {
-  Shield,
-  UserCog,
-  GraduationCap,
-  BookOpen,
-  type LucideIcon
-} from 'lucide-react';
+import { Shield, UserCog, GraduationCap, BookOpen, type LucideIcon } from 'lucide-react';
 import type { InteractiveColor } from '@/components/ui/interactive-variants';
 
 export interface RoleConfig {
@@ -18,30 +12,30 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   ADMIN: 'مدير',
   MODERATOR: 'مشرف',
   TUTOR: 'معلم',
-  STUDENT: 'طالب'
+  STUDENT: 'طالب',
 };
 
 export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   ADMIN: {
     label: ROLE_LABELS.ADMIN,
     icon: Shield,
-    color: 'purple'
+    color: 'purple',
   },
   MODERATOR: {
     label: ROLE_LABELS.MODERATOR,
     icon: UserCog,
-    color: 'blue'
+    color: 'blue',
   },
   TUTOR: {
     label: ROLE_LABELS.TUTOR,
     icon: GraduationCap,
-    color: 'emerald'
+    color: 'emerald',
   },
   STUDENT: {
     label: ROLE_LABELS.STUDENT,
     icon: BookOpen,
-    color: 'teal'
-  }
+    color: 'teal',
+  },
 };
 
 export function getRoleLabel(role: UserRole): string {

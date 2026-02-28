@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   CountDto,
   CreateGroupDto,
@@ -30,10 +26,7 @@ export class GroupService {
     return {};
   }
 
-  private async findGroupDetailsOrThrow(
-    groupId: string,
-    user?: User,
-  ): Promise<GroupDetailsDto> {
+  private async findGroupDetailsOrThrow(groupId: string, user?: User): Promise<GroupDetailsDto> {
     const whereClause: Prisma.GroupWhereUniqueInput = {
       id: groupId,
     };
@@ -217,10 +210,7 @@ export class GroupService {
     return this.findGroupDetailsOrThrow(group.id);
   }
 
-  async updateGroup(
-    groupId: string,
-    dto: UpdateGroupDto,
-  ): Promise<GroupDetailsDto> {
+  async updateGroup(groupId: string, dto: UpdateGroupDto): Promise<GroupDetailsDto> {
     // Validate tutor if tutorId is being updated
     if (dto.tutorId) {
       const tutor = await this.prismaService.user.findUnique({
@@ -271,7 +261,7 @@ export class GroupService {
 
   async updateGroupSettings(
     groupId: string,
-    dto: UpdateGroupSettingsDto,
+    dto: UpdateGroupSettingsDto
   ): Promise<GroupDetailsDto> {
     await this.prismaService.$transaction(async (tx) => {
       await tx.group.update({

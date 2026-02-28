@@ -14,17 +14,9 @@ import { sessionService } from '../services/session.service';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
-const VALID_STATUSES: SessionRecordStatus[] = [
-  'RESCHEDULED',
-  'COMPLETED',
-  'CANCELED',
-  'MISSED',
-];
+const VALID_STATUSES: SessionRecordStatus[] = ['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED'];
 
-const normalizePositiveInteger = (
-  value: string | null,
-  fallback: number,
-): number => {
+const normalizePositiveInteger = (value: string | null, fallback: number): number => {
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed <= 0) {
     return fallback;
@@ -58,10 +50,7 @@ export const useSessionHistoryViewModel = () => {
   const groupId = searchParams.get('groupId')?.trim() ?? '';
   const status = normalizeStatus(searchParams.get('status'));
   const page = normalizePositiveInteger(searchParams.get('page'), DEFAULT_PAGE);
-  const limit = normalizePositiveInteger(
-    searchParams.get('limit'),
-    DEFAULT_LIMIT,
-  );
+  const limit = normalizePositiveInteger(searchParams.get('limit'), DEFAULT_LIMIT);
 
   const query: SessionQueryDTO = {
     page,
@@ -86,7 +75,7 @@ export const useSessionHistoryViewModel = () => {
 
   const updateParams = (
     updates: Record<string, string | undefined>,
-    options?: { resetPage?: boolean },
+    options?: { resetPage?: boolean }
   ) => {
     const nextParams = new URLSearchParams(searchParams);
 
@@ -144,12 +133,10 @@ export const useSessionHistoryViewModel = () => {
 
     setFromDate: (value: string) =>
       updateParams({ fromDate: value || undefined }, { resetPage: true }),
-    setToDate: (value: string) =>
-      updateParams({ toDate: value || undefined }, { resetPage: true }),
+    setToDate: (value: string) => updateParams({ toDate: value || undefined }, { resetPage: true }),
     setGroupId: (value: string) =>
       updateParams({ groupId: value || undefined }, { resetPage: true }),
-    setStatus: (value: string) =>
-      updateParams({ status: value || undefined }, { resetPage: true }),
+    setStatus: (value: string) => updateParams({ status: value || undefined }, { resetPage: true }),
     setPage: (nextPage: number) =>
       updateParams({
         page: nextPage > DEFAULT_PAGE ? String(nextPage) : undefined,

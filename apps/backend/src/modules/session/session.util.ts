@@ -101,10 +101,7 @@ type VirtualSessionGroupLike = {
  * - The returned datetime is ALWAYS in UTC format via `Date.toISOString()`
  * - Use `parseVirtualSessionId()` to extract groupId and startedAt back
  */
-export function buildVirtualSessionId(
-  groupId: string,
-  startedAt: Date,
-): VirtualSessionId {
+export function buildVirtualSessionId(groupId: string, startedAt: Date): VirtualSessionId {
   return `${VIRTUAL_SESSION_PREFIX}:${groupId}:${startedAt.toISOString()}` as VirtualSessionId;
 }
 
@@ -181,16 +178,10 @@ export function canSessionBeRescheduled(args: {
 
   if (args.sessionRecord.status === SessionStatus.MISSED) {
     const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
-    const startedAtUtc = fromUTC(
-      args.sessionRecord.startedAt.toISOString(),
-      'UTC',
-    );
+    const startedAtUtc = fromUTC(args.sessionRecord.startedAt.toISOString(), 'UTC');
     const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
 
-    return (
-      diffMillis >= 0 &&
-      diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000
-    );
+    return diffMillis >= 0 && diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000;
   }
 
   return false;
@@ -211,9 +202,7 @@ export function mapSessionSummary(args: {
   nowUtcIso?: string;
 }): SessionSummaryDTO {
   return {
-    id:
-      args.sessionRecord?.id ??
-      buildVirtualSessionId(args.groupId, args.startedAt),
+    id: args.sessionRecord?.id ?? buildVirtualSessionId(args.groupId, args.startedAt),
     groupName: args.groupName,
     tutorName: args.tutorName,
     startedAt: args.startedAt.toISOString() as SessionSummaryDTO['startedAt'],
@@ -254,8 +243,7 @@ export function mapSessionDetails(args: {
       sessionRecord: args.sessionRecord,
       nowUtcIso: args.nowUtcIso,
     }),
-    startedAt:
-      args.sessionRecord.startedAt.toISOString() as SessionDetailsDTO['startedAt'],
+    startedAt: args.sessionRecord.startedAt.toISOString() as SessionDetailsDTO['startedAt'],
     originalStartedAt: args.sessionRecord.originalStartedAt
       ? (args.sessionRecord.originalStartedAt.toISOString() as SessionDetailsDTO['originalStartedAt'])
       : null,
@@ -314,7 +302,7 @@ export function mapVirtualSessionDetails(args: {
 export function buildPlannedStartedAtForDay(
   dayStartUtcIso: string,
   groupTimezone: string,
-  startMinutes: number,
+  startMinutes: number
 ): Date {
   return fromUTC(dayStartUtcIso, groupTimezone)
     .startOf('day')
@@ -325,7 +313,7 @@ export function buildPlannedStartedAtForDay(
 
 /** Group session records by groupId for efficient lookups */
 export function groupSessionRecordsByGroup<T extends { groupId: string }>(
-  sessionRecords: T[],
+  sessionRecords: T[]
 ): Map<string, T[]> {
   const grouped = new Map<string, T[]>();
 
@@ -351,7 +339,7 @@ export function collectOccurrenceKeys(
     groupId: string;
     startedAt: Date;
     originalStartedAt?: Date | null;
-  }[],
+  }[]
 ): Set<string> {
   const keys = new Set<string>();
 
@@ -369,9 +357,10 @@ export function collectOccurrenceKeys(
 }
 
 /** Filter out occurrences that already have session records */
-export function filterMissingOccurrences<
-  T extends { groupId: string; startedAt: Date },
->(plannedOccurrences: T[], existingKeys: Set<string>): T[] {
+export function filterMissingOccurrences<T extends { groupId: string; startedAt: Date }>(
+  plannedOccurrences: T[],
+  existingKeys: Set<string>
+): T[] {
   return plannedOccurrences.filter((occurrence) => {
     const key = `${occurrence.groupId}|${occurrence.startedAt.toISOString()}`;
     return !existingKeys.has(key);
@@ -383,9 +372,7 @@ export function filterMissingOccurrences<
 // ============================================================================
 
 /** Build Prisma where clause for group scope based on user role and day */
-export function buildGroupScopeWhere(
-  user: Pick<User, 'id' | 'role'>,
-): Prisma.GroupWhereInput {
+export function buildGroupScopeWhere(user: Pick<User, 'id' | 'role'>): Prisma.GroupWhereInput {
   const where: Prisma.GroupWhereInput = {
     status: 'ACTIVE',
   };
@@ -404,7 +391,7 @@ export function buildGroupScopeWhere(
  */
 export function buildWeekdayCandidatesForUtcRange(
   rangeStartUtcIso: string,
-  rangeEndUtcIso: string,
+  rangeEndUtcIso: string
 ): number[] {
   const rangeStart = fromUTC(rangeStartUtcIso, 'UTC').startOf('day');
   const rangeEnd = fromUTC(rangeEndUtcIso, 'UTC').endOf('day');
@@ -431,7 +418,7 @@ export function buildWeekdayCandidatesForUtcRange(
 /** Find first student ID in attendance that doesn't belong to group */
 export function findInvalidAttendanceStudentId(
   attendance: UpdateSessionActionDTO['attendance'],
-  groupStudentIds: Set<string>,
+  groupStudentIds: Set<string>
 ): string | null {
   for (const attendanceRecord of attendance ?? []) {
     if (!groupStudentIds.has(attendanceRecord.studentId)) {
@@ -448,9 +435,7 @@ export function shouldSetOriginalStartedAtForAttendance(args: {
   startedAt: Date;
   originalStartedAt?: Date | null;
 }): boolean {
-  return (
-    args.nowUtcMillis < args.startedAt.getTime() && !args.originalStartedAt
-  );
+  return args.nowUtcMillis < args.startedAt.getTime() && !args.originalStartedAt;
 }
 
 // ============================================================================
@@ -461,16 +446,12 @@ export function shouldSetOriginalStartedAtForAttendance(args: {
 export function generatePlannedOccurrencesForRange(
   group: GroupScheduleLike,
   rangeStartUtcIso: string,
-  rangeEndUtcIso: string,
+  rangeEndUtcIso: string
 ): Date[] {
   const rangeStartUtc = fromUTC(rangeStartUtcIso, 'UTC');
   const rangeEndUtc = fromUTC(rangeEndUtcIso, 'UTC');
-  const localStart = fromUTC(rangeStartUtcIso, group.timezone)
-    .startOf('day')
-    .minus({ days: 1 });
-  const localEnd = fromUTC(rangeEndUtcIso, group.timezone)
-    .startOf('day')
-    .plus({ days: 1 });
+  const localStart = fromUTC(rangeStartUtcIso, group.timezone).startOf('day').minus({ days: 1 });
+  const localEnd = fromUTC(rangeEndUtcIso, group.timezone).startOf('day').plus({ days: 1 });
 
   const planned: Date[] = [];
 
@@ -480,18 +461,13 @@ export function generatePlannedOccurrencesForRange(
     cursor = cursor.plus({ days: 1 })
   ) {
     const dayOfWeek = cursor.weekday === 7 ? 0 : cursor.weekday;
-    const scheduleDay = group.scheduleDays.find(
-      (item) => item.dayOfWeek === dayOfWeek,
-    );
+    const scheduleDay = group.scheduleDays.find((item) => item.dayOfWeek === dayOfWeek);
 
     if (!scheduleDay) {
       continue;
     }
 
-    const startedAtUtc = cursor
-      .startOf('day')
-      .plus({ minutes: scheduleDay.startMinutes })
-      .toUTC();
+    const startedAtUtc = cursor.startOf('day').plus({ minutes: scheduleDay.startMinutes }).toUTC();
 
     if (
       startedAtUtc.toMillis() >= rangeStartUtc.toMillis() &&

@@ -1,8 +1,4 @@
-import {
-  CreateLearnerDto,
-  QueryLearnersDto,
-  UpdateLearnerDto,
-} from '@halaqa/shared';
+import { CreateLearnerDto, QueryLearnersDto, UpdateLearnerDto } from '@halaqa/shared';
 import { paginationSchema } from 'src/utils/validation/api.schema';
 import { nameSchema, notesSchema } from 'src/utils/validation/fields.schema';
 import {
@@ -22,7 +18,7 @@ const createLearnerBaseSchema = z.object({
 
 export const createLearnerSchema = z.intersection(
   createLearnerBaseSchema,
-  timezoneFieldSchema,
+  timezoneFieldSchema
 ) satisfies ZodType<CreateLearnerDto>;
 
 const updateLearnerBaseSchema = z.object({

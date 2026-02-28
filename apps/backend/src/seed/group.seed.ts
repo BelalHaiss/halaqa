@@ -17,10 +17,7 @@ export type SeededGroupData = {
 
 const seededGroupScheduleDays = (): SeededGroupScheduleDay[] => {
   const totalDays = faker.number.int({ min: 1, max: 3 });
-  const selectedDays = faker.helpers.arrayElements(
-    [0, 1, 2, 3, 4, 5, 6],
-    totalDays,
-  );
+  const selectedDays = faker.helpers.arrayElements([0, 1, 2, 3, 4, 5, 6], totalDays);
 
   return selectedDays.map((dayOfWeek) => ({
     dayOfWeek,
@@ -84,7 +81,7 @@ export async function seedGroups(args: {
       faker.number.int({
         min: 6,
         max: Math.min(14, args.students.length),
-      }),
+      })
     );
 
     await args.prisma.groupStudent.createMany({
