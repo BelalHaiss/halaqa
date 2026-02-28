@@ -10,12 +10,7 @@ type PageHeaderProps = {
   className?: string;
 };
 
-function PageHeader({
-  title,
-  description,
-  actions,
-  className
-}: PageHeaderProps) {
+function PageHeader({ title, description, actions, className }: PageHeaderProps) {
   return (
     <div
       className={cn(

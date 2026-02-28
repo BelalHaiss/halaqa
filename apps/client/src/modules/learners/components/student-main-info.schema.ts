@@ -5,13 +5,10 @@ import { nameSchema, notesSchema } from '@/lib/validation/fields.schema';
 
 const studentMainInfoBaseSchema = z.object({
   name: nameSchema,
-  notes: notesSchema
+  notes: notesSchema,
 });
 
-export type StudentMainInfoFormValues = Pick<
-  CreateLearnerDto,
-  'name' | 'timezone'
-> & {
+export type StudentMainInfoFormValues = Pick<CreateLearnerDto, 'name' | 'timezone'> & {
   notes: string;
 };
 

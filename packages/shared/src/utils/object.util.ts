@@ -3,10 +3,7 @@ export declare type Nullable<T = unknown> = T | null | undefined;
 export const nonNullableArray = <T>(arr: Nullable<T>[]): T[] =>
   arr.filter((item) => item !== null && item !== undefined) as T[];
 
-export function extractFields<T extends object, K extends keyof T>(
-  obj: T,
-  keys: K[],
-): Pick<T, K> {
+export function extractFields<T extends object, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
   const pickedObj: Pick<T, K> = {} as Pick<T, K>;
   for (const key of keys) {
     // eslint-disable-next-line no-prototype-builtins
@@ -19,16 +16,11 @@ export function extractFields<T extends object, K extends keyof T>(
 
 export function cleanObject<T extends object>(obj: T): Partial<T> {
   return Object.fromEntries(
-    Object.entries(obj).filter(
-      ([, value]) => value !== undefined && value !== null,
-    ),
+    Object.entries(obj).filter(([, value]) => value !== undefined && value !== null)
   ) as Partial<T>;
 }
 
-export function removeFields<T extends object, K extends keyof T>(
-  obj: T,
-  keys: K[],
-): Omit<T, K> {
+export function removeFields<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
   const filteredObj: Partial<T> = structuredClone(obj);
   for (const key of keys) {
     delete filteredObj[key];
@@ -39,7 +31,7 @@ export function removeFields<T extends object, K extends keyof T>(
 export function addArrayItemIfNotIncluded<T>(
   array: T[],
   newItem: T,
-  optionalFindFunction?: (_: T) => boolean,
+  optionalFindFunction?: (_: T) => boolean
 ): T[] {
   // Check if the new item is already included in the array
   const itemExists = optionalFindFunction

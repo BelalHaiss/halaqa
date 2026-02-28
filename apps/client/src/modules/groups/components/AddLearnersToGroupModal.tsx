@@ -6,7 +6,7 @@ import {
   CreateLearnerDto,
   DEFAULT_TIMEZONE,
   LearnerDto,
-  TIMEZONES
+  TIMEZONES,
 } from '@halaqa/shared';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import {
   ComboboxEmpty,
   ComboboxItem,
   ComboboxList,
-  ComboboxValue
+  ComboboxValue,
 } from '@/components/ui/combobox';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
@@ -28,7 +28,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
@@ -53,8 +53,8 @@ const createLearnerDefaultValues: CreateLearnerDto = {
   name: '',
   timezone: DEFAULT_TIMEZONE,
   contact: {
-    notes: ''
-  }
+    notes: '',
+  },
 };
 
 export function AddLearnersToGroupModal({
@@ -65,11 +65,9 @@ export function AddLearnersToGroupModal({
   onCreateAndAttach,
   isLoadingLearners = false,
   isAttachingExisting = false,
-  isCreatingLearner = false
+  isCreatingLearner = false,
 }: AddLearnersToGroupModalProps) {
-  const [comboboxAnchor, setComboboxAnchor] = useState<HTMLDivElement | null>(
-    null
-  );
+  const [comboboxAnchor, setComboboxAnchor] = useState<HTMLDivElement | null>(null);
   const [activeTab, setActiveTab] = useState<AddLearnersModalTab>('existing');
   const [selectedLearnerIds, setSelectedLearnerIds] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<PendingActionType>(null);
@@ -79,7 +77,7 @@ export function AddLearnersToGroupModal({
   const createLearnerForm = useForm<CreateLearnerDto>({
     resolver: zodResolver(createLearnerSchema),
     mode: 'onTouched',
-    defaultValues: createLearnerDefaultValues
+    defaultValues: createLearnerDefaultValues,
   });
 
   const learnerNameById = useMemo(
@@ -92,13 +90,9 @@ export function AddLearnersToGroupModal({
     [learners]
   );
 
-  const learnerIds = useMemo(
-    () => learners.map((learner) => learner.id),
-    [learners]
-  );
+  const learnerIds = useMemo(() => learners.map((learner) => learner.id), [learners]);
   const comboboxContainer =
-    (comboboxAnchor?.closest('[data-slot="dialog-content"]') as HTMLElement | null) ??
-    null;
+    (comboboxAnchor?.closest('[data-slot="dialog-content"]') as HTMLElement | null) ?? null;
 
   const resetModalState = () => {
     setActiveTab('existing');
@@ -133,7 +127,7 @@ export function AddLearnersToGroupModal({
     try {
       if (pendingAction === 'attach-existing') {
         await onAttachExisting({
-          learnerIds: selectedLearnerIds
+          learnerIds: selectedLearnerIds,
         });
       } else if (pendingAction === 'create-new') {
         const values = createLearnerForm.getValues();
@@ -142,23 +136,19 @@ export function AddLearnersToGroupModal({
         await onCreateAndAttach({
           name: values.name.trim(),
           timezone: values.timezone,
-          contact: notes ? { notes } : undefined
+          contact: notes ? { notes } : undefined,
         });
       }
 
       resetModalState();
       onOpenChange(false);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'تعذر إكمال العملية'
-      );
+      setErrorMessage(error instanceof Error ? error.message : 'تعذر إكمال العملية');
     }
   };
 
   const confirmTitle =
-    pendingAction === 'attach-existing'
-      ? 'تأكيد إضافة المتعلمين'
-      : 'تأكيد إنشاء متعلم جديد';
+    pendingAction === 'attach-existing' ? 'تأكيد إضافة المتعلمين' : 'تأكيد إنشاء متعلم جديد';
 
   const confirmDescription =
     pendingAction === 'attach-existing'
@@ -180,16 +170,13 @@ export function AddLearnersToGroupModal({
           <DialogHeader>
             <DialogTitle>إضافة متعلمين</DialogTitle>
             <DialogDescription>
-              يمكنك اختيار متعلمين موجودين أو إنشاء متعلم جديد وإضافته إلى
-              الحلقة
+              يمكنك اختيار متعلمين موجودين أو إنشاء متعلم جديد وإضافته إلى الحلقة
             </DialogDescription>
           </DialogHeader>
 
           <Tabs
             value={activeTab}
-            onValueChange={(value) =>
-              setActiveTab(value as AddLearnersModalTab)
-            }
+            onValueChange={(value) => setActiveTab(value as AddLearnersModalTab)}
           >
             <TabsList className='grid w-full grid-cols-2'>
               <TabsTrigger value='existing'>من المتعلمين الحاليين</TabsTrigger>
@@ -206,9 +193,7 @@ export function AddLearnersToGroupModal({
                 items={learnerIds}
                 value={selectedLearnerIds}
                 onValueChange={(value) => setSelectedLearnerIds(value)}
-                itemToStringLabel={(learnerId) =>
-                  learnerNameById.get(learnerId) ?? learnerId
-                }
+                itemToStringLabel={(learnerId) => learnerNameById.get(learnerId) ?? learnerId}
               >
                 <ComboboxChips ref={setComboboxAnchor} className='w-full'>
                   <ComboboxValue>
@@ -263,9 +248,7 @@ export function AddLearnersToGroupModal({
             <TabsContent value='create' className='space-y-4'>
               <form
                 id='create-learner-form'
-                onSubmit={createLearnerForm.handleSubmit(
-                  openCreateLearnerConfirmation
-                )}
+                onSubmit={createLearnerForm.handleSubmit(openCreateLearnerConfirmation)}
                 className='space-y-4'
               >
                 <FormField
@@ -288,7 +271,7 @@ export function AddLearnersToGroupModal({
                   disabled={isCreatingLearner}
                   options={TIMEZONES.map((timezone) => ({
                     value: timezone.value,
-                    label: timezone.label
+                    label: timezone.label,
                   }))}
                 />
 
@@ -328,9 +311,7 @@ export function AddLearnersToGroupModal({
                 type='button'
                 onClick={openAttachExistingConfirmation}
                 disabled={
-                  isLoadingLearners ||
-                  isAttachingExisting ||
-                  selectedLearnerIds.length === 0
+                  isLoadingLearners || isAttachingExisting || selectedLearnerIds.length === 0
                 }
               >
                 إضافة المتعلمين المحددين

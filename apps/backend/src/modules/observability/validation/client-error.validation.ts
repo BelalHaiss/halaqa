@@ -14,11 +14,7 @@ export const clientErrorLogSchema = z.object({
   stack: z.string().trim().min(1).max(8000).optional(),
   path: z.string().trim().min(1).max(1000),
   url: z.string().trim().min(1).max(2000),
-  captureChannel: z.enum([
-    'router_error_element',
-    'window_error',
-    'unhandled_rejection',
-  ]),
+  captureChannel: z.enum(['router_error_element', 'window_error', 'unhandled_rejection']),
   userAgent: z.string().trim().min(1).max(1000),
   timestamp: z.string().datetime(),
   metadata: z.record(z.string(), clientErrorMetadataValueSchema).optional(),

@@ -3,11 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Calendar, Clock, Loader2, Save, Users } from 'lucide-react';
-import {
-  AttendanceStatus,
-  formatISODateToUserTimezone,
-  minutesToTimeString
-} from '@halaqa/shared';
+import { AttendanceStatus, formatISODateToUserTimezone, minutesToTimeString } from '@halaqa/shared';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -17,10 +13,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { BackButton } from '@/components/ui/back-button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
-import {
-  attendanceEditSchema,
-  type AttendanceEditFormData
-} from '../schema/session.schema';
+import { attendanceEditSchema, type AttendanceEditFormData } from '../schema/session.schema';
 import { getSessionStatusConfig } from '../utils/session.util';
 import { useSessionDetailsViewModel } from '../viewmodels/session-details.viewmodel';
 import { AttendanceRow } from '../components/AttendanceRow';
@@ -32,8 +25,7 @@ export const SessionDetailsView = () => {
   const { id } = useParams<{ id: string }>();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isRescheduleDialogOpen, setIsRescheduleDialogOpen] = useState(false);
-  const [isAttendanceConfirmDialogOpen, setIsAttendanceConfirmDialogOpen] =
-    useState(false);
+  const [isAttendanceConfirmDialogOpen, setIsAttendanceConfirmDialogOpen] = useState(false);
 
   if (!user || !id) {
     return null;
@@ -73,8 +65,8 @@ export const SessionDetailsView = () => {
         notes:
           session.status === 'COMPLETED'
             ? (existingAttendanceByStudentId[student.id]?.notes ?? '')
-            : ''
-      }))
+            : '',
+      })),
     };
   }, [vm.session]);
 
@@ -82,14 +74,14 @@ export const SessionDetailsView = () => {
     resolver: zodResolver(attendanceEditSchema),
     mode: 'onTouched',
     defaultValues: { attendance: [] },
-    values: attendanceFormValues
+    values: attendanceFormValues,
   });
 
   const attendanceViewMap = vm.session?.attendance.reduce(
     (acc, item) => {
       acc[item.studentId] = {
         status: item.status,
-        notes: item.notes
+        notes: item.notes,
       };
       return acc;
     },
@@ -105,7 +97,7 @@ export const SessionDetailsView = () => {
       values.attendance.map((item) => ({
         studentId: item.studentId,
         status: item.status as AttendanceStatus,
-        notes: item.notes?.trim() ? item.notes.trim() : undefined
+        notes: item.notes?.trim() ? item.notes.trim() : undefined,
       }))
     );
   });
@@ -126,10 +118,7 @@ export const SessionDetailsView = () => {
     );
   }
 
-  const { date, time } = formatISODateToUserTimezone(
-    vm.session.startedAt,
-    user.timezone
-  );
+  const { date, time } = formatISODateToUserTimezone(vm.session.startedAt, user.timezone);
   const formattedTime = minutesToTimeString(time as any);
   const statusConfig = getSessionStatusConfig(vm.session.status);
 
@@ -282,8 +271,7 @@ export const SessionDetailsView = () => {
                 {canStoreAttendance && vm.session.status !== 'COMPLETED' ? (
                   <Alert alertType='WARN'>
                     <AlertDescription>
-                      لا توجد قيم افتراضية للحضور. يجب تحديد حالة كل طالب قبل
-                      حفظ الحضور.
+                      لا توجد قيم افتراضية للحضور. يجب تحديد حالة كل طالب قبل حفظ الحضور.
                     </AlertDescription>
                   </Alert>
                 ) : null}

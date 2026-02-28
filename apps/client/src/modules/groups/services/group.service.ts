@@ -12,7 +12,7 @@ import {
   QueryLearnersDto,
   UnifiedApiResponse,
   UpdateGroupDto,
-  UpdateGroupSettingsDto
+  UpdateGroupSettingsDto,
 } from '@halaqa/shared';
 
 export class GroupService {
@@ -32,9 +32,7 @@ export class GroupService {
     return apiClient.get<GroupDetailsDto>(`/groups/${id}`);
   }
 
-  async createGroup(
-    group: CreateGroupDto
-  ): Promise<UnifiedApiResponse<GroupDetailsDto>> {
+  async createGroup(group: CreateGroupDto): Promise<UnifiedApiResponse<GroupDetailsDto>> {
     return apiClient.post<GroupDetailsDto>('/groups', group);
   }
 
@@ -56,10 +54,7 @@ export class GroupService {
     groupId: string,
     dto: CreateLearnerDto
   ): Promise<UnifiedApiResponse<GroupDetailsDto>> {
-    return apiClient.post<GroupDetailsDto>(
-      `/groups/${groupId}/students/create`,
-      dto
-    );
+    return apiClient.post<GroupDetailsDto>(`/groups/${groupId}/students/create`, dto);
   }
 
   async addExistingLearnersToGroup(
@@ -69,14 +64,11 @@ export class GroupService {
     return apiClient.post<GroupDetailsDto>(`/groups/${groupId}/students/attach`, dto);
   }
 
-  async removeStudentFromGroup(
-    groupId: string,
-    userId: string
-  ): Promise<UnifiedApiResponse<null>> {
+  async removeStudentFromGroup(groupId: string, userId: string): Promise<UnifiedApiResponse<null>> {
     await apiClient.delete<void>(`/groups/${groupId}/students/${userId}`);
     return {
       success: true,
-      data: null
+      data: null,
     };
   }
 
@@ -92,9 +84,7 @@ export class GroupService {
     return apiClient.get<CountDto>('/groups/stats/groups-count');
   }
 
-  async queryLearners(
-    query: QueryLearnersDto
-  ): Promise<UnifiedApiResponse<LearnerDto[]>> {
+  async queryLearners(query: QueryLearnersDto): Promise<UnifiedApiResponse<LearnerDto[]>> {
     const params = new URLSearchParams();
     params.set('page', String(query.page ?? 1));
     params.set('limit', String(query.limit ?? 10));

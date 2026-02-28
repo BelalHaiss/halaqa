@@ -10,7 +10,7 @@ import {
   type TimeMinutes,
   UpdateGroupDto,
   minutesToInputTimeString,
-  timeToStartMinutes
+  timeToStartMinutes,
 } from '@halaqa/shared';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Typography } from '@/components/ui/typography';
@@ -30,10 +30,7 @@ import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Field, FieldError } from '@/components/ui/field';
 import { dayNames } from '../constants';
 import { createGroupSchema, updateGroupSchema } from '../schema/group.schema';
-import {
-  groupFormSchema,
-  type GroupFormValues
-} from '../schema/group-form.schema';
+import { groupFormSchema, type GroupFormValues } from '../schema/group-form.schema';
 
 type BaseGroupFormModalProps = {
   open: boolean;
@@ -58,13 +55,12 @@ type GroupFormModalProps = CreateGroupFormModalProps | EditGroupFormModalProps;
 const groupStatusOptions = [
   { value: 'ACTIVE', label: 'نشط' },
   { value: 'INACTIVE', label: 'غير نشط' },
-  { value: 'COMPLETED', label: 'مكتمل' }
+  { value: 'COMPLETED', label: 'مكتمل' },
 ];
 
 const DEFAULT_GROUP_TIME = '17:00';
 
-const buildUniformDayTimes = (time: string) =>
-  Array.from({ length: dayNames.length }, () => time);
+const buildUniformDayTimes = (time: string) => Array.from({ length: dayNames.length }, () => time);
 
 export function GroupFormModal({
   open,
@@ -73,7 +69,7 @@ export function GroupFormModal({
   tutors,
   group,
   isLoading = false,
-  onSubmit
+  onSubmit,
 }: GroupFormModalProps) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -93,8 +89,7 @@ export function GroupFormModal({
     }
 
     const hasSameTimeForAllDays =
-      new Set((group?.scheduleDays ?? []).map((day) => day.startMinutes))
-        .size <= 1;
+      new Set((group?.scheduleDays ?? []).map((day) => day.startMinutes)).size <= 1;
 
     return {
       name: group?.name ?? '',
@@ -106,21 +101,20 @@ export function GroupFormModal({
       time: defaultTime,
       dayTimes,
       durationMinutes: String(firstSchedule?.durationMinutes ?? 60),
-      selectedDays: group?.scheduleDays.map((day) => day.dayOfWeek) ?? []
+      selectedDays: group?.scheduleDays.map((day) => day.dayOfWeek) ?? [],
     };
   }, [group]);
 
   const form = useForm<GroupFormValues>({
     values: defaultValues,
     resolver: zodResolver(groupFormSchema),
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
   const selectedDays = form.watch('selectedDays');
   const sameTimeForAllDays = form.watch('sameTimeForAllDays');
   const dayTimes = form.watch('dayTimes');
 
-  const canSubmit =
-    !isLoading && form.formState.isDirty && form.formState.isValid;
+  const canSubmit = !isLoading && form.formState.isDirty && form.formState.isValid;
 
   const handleSave = async () => {
     const values = form.getValues();
@@ -132,11 +126,9 @@ export function GroupFormModal({
       .map((dayOfWeek) => ({
         dayOfWeek,
         startMinutes: timeToStartMinutes(
-          values.sameTimeForAllDays
-            ? values.time
-            : (values.dayTimes[dayOfWeek] ?? values.time)
+          values.sameTimeForAllDays ? values.time : (values.dayTimes[dayOfWeek] ?? values.time)
         ),
-        durationMinutes
+        durationMinutes,
       }));
 
     try {
@@ -149,14 +141,12 @@ export function GroupFormModal({
           tutorId: values.tutorId,
           timezone: values.timezone,
           status: values.status,
-          scheduleDays
+          scheduleDays,
         };
 
         const parsed = createGroupSchema.safeParse(payload);
         if (!parsed.success) {
-          setErrorMessage(
-            parsed.error.issues[0]?.message ?? 'تعذر التحقق من البيانات'
-          );
+          setErrorMessage(parsed.error.issues[0]?.message ?? 'تعذر التحقق من البيانات');
           return;
         }
 
@@ -168,14 +158,12 @@ export function GroupFormModal({
           tutorId: values.tutorId || undefined,
           timezone: values.timezone,
           status: values.status,
-          scheduleDays
+          scheduleDays,
         };
 
         const parsed = updateGroupSchema.safeParse(payload);
         if (!parsed.success) {
-          setErrorMessage(
-            parsed.error.issues[0]?.message ?? 'تعذر التحقق من البيانات'
-          );
+          setErrorMessage(parsed.error.issues[0]?.message ?? 'تعذر التحقق من البيانات');
           return;
         }
 
@@ -185,9 +173,7 @@ export function GroupFormModal({
       setConfirmOpen(false);
       onOpenChange(false);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'تعذر حفظ بيانات الحلقة'
-      );
+      setErrorMessage(error instanceof Error ? error.message : 'تعذر حفظ بيانات الحلقة');
     }
   };
 
@@ -205,9 +191,7 @@ export function GroupFormModal({
       >
         <DialogContent dir='rtl' className='w-full sm:max-w-xl'>
           <DialogHeader>
-            <DialogTitle>
-              {mode === 'create' ? 'إضافة حلقة' : 'تعديل الحلقة'}
-            </DialogTitle>
+            <DialogTitle>{mode === 'create' ? 'إضافة حلقة' : 'تعديل الحلقة'}</DialogTitle>
             <DialogDescription>
               {mode === 'create'
                 ? 'أدخل بيانات الحلقة ثم أكد الإضافة'
@@ -215,10 +199,7 @@ export function GroupFormModal({
             </DialogDescription>
           </DialogHeader>
 
-          <form
-            onSubmit={form.handleSubmit(() => setConfirmOpen(true))}
-            className='space-y-4'
-          >
+          <form onSubmit={form.handleSubmit(() => setConfirmOpen(true))} className='space-y-4'>
             <FormField
               control={form.control}
               name='name'
@@ -250,7 +231,7 @@ export function GroupFormModal({
               disabled={isLoading}
               options={tutors.map((tutor) => ({
                 value: tutor.id,
-                label: tutor.name
+                label: tutor.name,
               }))}
             />
 
@@ -283,10 +264,7 @@ export function GroupFormModal({
                 control={form.control}
                 name='selectedDays'
                 render={({ field, fieldState }) => (
-                  <Field
-                    data-invalid={fieldState.invalid}
-                    className='space-y-2'
-                  >
+                  <Field data-invalid={fieldState.invalid} className='space-y-2'>
                     <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
                       {dayNames.map((day, dayIndex) => {
                         const isSelected = field.value.includes(dayIndex);
@@ -297,22 +275,14 @@ export function GroupFormModal({
                             variant={isSelected ? 'solid' : 'outline'}
                             color={isSelected ? 'primary' : 'muted'}
                             aria-invalid={fieldState.invalid}
-                            className={
-                              fieldState.invalid ? 'border-danger' : undefined
-                            }
+                            className={fieldState.invalid ? 'border-danger' : undefined}
                             onClick={() => {
                               if (isSelected) {
-                                field.onChange(
-                                  field.value.filter(
-                                    (value) => value !== dayIndex
-                                  )
-                                );
+                                field.onChange(field.value.filter((value) => value !== dayIndex));
                                 field.onBlur();
                                 return;
                               }
-                              const nextValue = [...field.value, dayIndex].sort(
-                                (a, b) => a - b
-                              );
+                              const nextValue = [...field.value, dayIndex].sort((a, b) => a - b);
                               field.onChange(nextValue);
                               field.onBlur();
                             }}
@@ -352,16 +322,12 @@ export function GroupFormModal({
                           form.getValues('time');
                         form.setValue('time', nextTime, {
                           shouldDirty: true,
-                          shouldValidate: true
+                          shouldValidate: true,
                         });
-                        form.setValue(
-                          'dayTimes',
-                          buildUniformDayTimes(nextTime),
-                          {
-                            shouldDirty: true,
-                            shouldValidate: true
-                          }
-                        );
+                        form.setValue('dayTimes', buildUniformDayTimes(nextTime), {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
                       }}
                       disabled={isLoading}
                     />
@@ -377,10 +343,7 @@ export function GroupFormModal({
                   control={form.control}
                   name='time'
                   render={({ field, fieldState }) => (
-                    <Field
-                      data-invalid={fieldState.invalid}
-                      className='space-y-2'
-                    >
+                    <Field data-invalid={fieldState.invalid} className='space-y-2'>
                       <Typography as='div' size='sm'>
                         الوقت
                       </Typography>
@@ -388,15 +351,12 @@ export function GroupFormModal({
                         mode='timeOnly'
                         time={timeToStartMinutes(field.value)}
                         onTimeChange={(nextTime) => {
-                          const nextTimeString = minutesToInputTimeString(
-                            nextTime as TimeMinutes
-                          );
+                          const nextTimeString = minutesToInputTimeString(nextTime as TimeMinutes);
                           field.onChange(nextTimeString);
-                          form.setValue(
-                            'dayTimes',
-                            buildUniformDayTimes(nextTimeString),
-                            { shouldDirty: true, shouldValidate: true }
-                          );
+                          form.setValue('dayTimes', buildUniformDayTimes(nextTimeString), {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          });
                         }}
                         onTimeBlur={field.onBlur}
                         invalid={fieldState.invalid}
@@ -418,9 +378,7 @@ export function GroupFormModal({
                       </Typography>
                       <DateTimePicker
                         mode='timeOnly'
-                        time={timeToStartMinutes(
-                          dayTimes[dayIndex] ?? form.getValues('time')
-                        )}
+                        time={timeToStartMinutes(dayTimes[dayIndex] ?? form.getValues('time'))}
                         onTimeChange={(nextTime) => {
                           const nextDayTimes = [...form.getValues('dayTimes')];
                           nextDayTimes[dayIndex] = minutesToInputTimeString(
@@ -428,7 +386,7 @@ export function GroupFormModal({
                           );
                           form.setValue('dayTimes', nextDayTimes, {
                             shouldDirty: true,
-                            shouldValidate: true
+                            shouldValidate: true,
                           });
                         }}
                         disabled={isLoading}

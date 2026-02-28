@@ -33,10 +33,7 @@ export const TodaySessionsView = () => {
 
   return (
     <div className='space-y-6'>
-      <PageHeader
-        title='جلسات اليوم'
-        description='الجلسات المجدولة لهذا اليوم'
-      />
+      <PageHeader title='جلسات اليوم' description='الجلسات المجدولة لهذا اليوم' />
 
       {vm.sessions.length === 0 ? (
         <div className='text-center py-12 rounded-lg border border-dashed border-border'>

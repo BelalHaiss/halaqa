@@ -14,7 +14,7 @@ const updateOwnProfileBaseSchema = z.object({
 
 export const updateOwnProfileSchema = z.intersection(
   updateOwnProfileBaseSchema,
-  timezoneFieldSchema,
+  timezoneFieldSchema
 ) satisfies ZodType<UpdateOwnProfileDto>;
 
 export const changeOwnPasswordSchema = z

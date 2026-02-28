@@ -6,7 +6,7 @@ import {
   durationMinutesStringSchema,
   groupTimeSchema,
   nameSchema,
-  tutorIdSchema
+  tutorIdSchema,
 } from '@/lib/validation/fields.schema';
 
 export type GroupFormValues = {
@@ -25,7 +25,7 @@ export type GroupFormValues = {
 const groupStatusSchema = z.enum([
   'ACTIVE',
   'INACTIVE',
-  'COMPLETED'
+  'COMPLETED',
 ]) satisfies ZodType<GroupStatus>;
 
 export const groupFormSchema = z.object({
@@ -41,5 +41,5 @@ export const groupFormSchema = z.object({
   selectedDays: z
     .array(dayOfWeekSchema)
     .min(1, 'يجب اختيار يوم واحد على الأقل')
-    .refine((days) => new Set(days).size === days.length, 'لا يمكن تكرار نفس اليوم')
+    .refine((days) => new Set(days).size === days.length, 'لا يمكن تكرار نفس اليوم'),
 }) satisfies ZodType<GroupFormValues>;

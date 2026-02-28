@@ -5,12 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import {
-  combineDateTime,
-  fromUTC,
-  getNowAsUTC,
-  getStartAndEndOfDay,
-} from '@halaqa/shared';
+import { combineDateTime, fromUTC, getNowAsUTC, getStartAndEndOfDay } from '@halaqa/shared';
 import type {
   SessionDetailsDTO,
   SessionSummaryDTO,
@@ -135,10 +130,7 @@ export class SessionService {
     } = getStartAndEndOfDay(user.timezone);
     const dayStartUtcIso = dayStart.toUTC().toISO()!;
     const dayEndUtcIso = dayEnd.toUTC().toISO()!;
-    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(
-      dayStartUtcIso,
-      dayEndUtcIso,
-    );
+    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(dayStartUtcIso, dayEndUtcIso);
 
     const groups = await this.prismaService.group.findMany({
       where: {
@@ -177,14 +169,10 @@ export class SessionService {
     }
 
     const plannedOccurrences = groups.flatMap((group) =>
-      generatePlannedOccurrencesForRange(
-        group,
-        dayStartUtcIso,
-        dayEndUtcIso,
-      ).map((startedAt) => ({
+      generatePlannedOccurrencesForRange(group, dayStartUtcIso, dayEndUtcIso).map((startedAt) => ({
         groupId: group.id,
         startedAt,
-      })),
+      }))
     );
 
     if (plannedOccurrences.length === 0) {
@@ -194,9 +182,7 @@ export class SessionService {
     const sessionRecords = await this.prismaService.session.findMany({
       where: {
         groupId: {
-          in: Array.from(
-            new Set(plannedOccurrences.map((occurrence) => occurrence.groupId)),
-          ),
+          in: Array.from(new Set(plannedOccurrences.map((occurrence) => occurrence.groupId))),
         },
         OR: [
           {
@@ -254,9 +240,7 @@ export class SessionService {
           }),
         };
       })
-      .filter((session): session is NonNullable<typeof session> =>
-        Boolean(session),
-      );
+      .filter((session): session is NonNullable<typeof session> => Boolean(session));
 
     sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
 
@@ -277,7 +261,7 @@ export class SessionService {
     // Apply date range filter
     const dateFilter = this.prismaService.handleDateRangeFilter(
       { fromDate: query.fromDate, toDate: query.toDate },
-      user.timezone,
+      user.timezone
     );
     if (dateFilter) {
       where.startedAt = dateFilter;
@@ -334,7 +318,7 @@ export class SessionService {
         tutorName: sessionRecord.group.tutor?.name ?? null,
         startedAt: sessionRecord.startedAt,
         sessionRecord,
-      }),
+      })
     );
 
     // Return with pagination metadata
@@ -349,10 +333,7 @@ export class SessionService {
   }
 
   /** Get detailed session info for a specific session */
-  async getSessionDetails(
-    sessionId: string,
-    user: User,
-  ): Promise<SessionDetailsDTO> {
+  async getSessionDetails(sessionId: string, user: User): Promise<SessionDetailsDTO> {
     // Reuse the update-target resolver so read/write paths share the same
     // access control and occurrence-validation behavior.
     const target = await this.resolveSessionTarget(sessionId, user);
@@ -374,7 +355,7 @@ export class SessionService {
   async updateSession(
     sessionId: string,
     payload: UpdateSessionActionDTO,
-    user: User,
+    user: User
   ): Promise<SessionDetailsDTO> {
     const target = await this.resolveSessionTarget(sessionId, user);
 
@@ -398,7 +379,7 @@ export class SessionService {
     const lookbackUtc = nowUtc.minus({ hours: 36 }); // Fixed lookback window
     const weekdayCandidates = buildWeekdayCandidatesForUtcRange(
       lookbackUtc.toISO()!,
-      cutoffUtc.toISO()!,
+      cutoffUtc.toISO()!
     );
 
     const groups = await this.prismaService.group.findMany({
@@ -439,9 +420,7 @@ export class SessionService {
     const lookbackUtcMillis = lookbackUtc.toMillis();
     const cutoffUtcMillis = cutoffUtc.toMillis();
     const plannedOccurrences = groups.flatMap((group) => {
-      const groupRangeStartUtc = new Date(
-        Math.max(lookbackUtcMillis, group.createdAt.getTime()),
-      );
+      const groupRangeStartUtc = new Date(Math.max(lookbackUtcMillis, group.createdAt.getTime()));
 
       if (groupRangeStartUtc.getTime() > cutoffUtcMillis) {
         return [];
@@ -450,7 +429,7 @@ export class SessionService {
       return generatePlannedOccurrencesForRange(
         group,
         groupRangeStartUtc.toISOString(),
-        cutoffUtcIso,
+        cutoffUtcIso
       ).map((startedAt) => ({
         groupId: group.id,
         startedAt,
@@ -490,10 +469,7 @@ export class SessionService {
     // Create a set of "groupId:timestamp" keys for fast lookup
     const existingKeys = collectOccurrenceKeys(existingSessions);
     // Filter out planned occurrences that already have records
-    const missedOccurrences = filterMissingOccurrences(
-      plannedOccurrences,
-      existingKeys,
-    );
+    const missedOccurrences = filterMissingOccurrences(plannedOccurrences, existingKeys);
 
     if (missedOccurrences.length === 0) return;
 
@@ -514,8 +490,8 @@ export class SessionService {
             startedAt: occurrence.startedAt,
             status: SessionStatus.MISSED,
           },
-        }),
-      ),
+        })
+      )
     );
   }
 
@@ -523,9 +499,7 @@ export class SessionService {
   // Private Methods - Session Actions
   // ==========================================================================
 
-  private async cancelSession(
-    target: ResolvedSessionTarget,
-  ): Promise<SessionDetailsDTO> {
+  private async cancelSession(target: ResolvedSessionTarget): Promise<SessionDetailsDTO> {
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
           where: {
@@ -553,11 +527,9 @@ export class SessionService {
   private async rescheduleSession(
     target: ResolvedSessionTarget,
     payload: UpdateSessionActionDTO,
-    userTimezone: string,
+    userTimezone: string
   ): Promise<SessionDetailsDTO> {
-    const newStartedAt = new Date(
-      combineDateTime(payload.date!, payload.time!, userTimezone),
-    );
+    const newStartedAt = new Date(combineDateTime(payload.date!, payload.time!, userTimezone));
 
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
@@ -567,8 +539,7 @@ export class SessionService {
           data: {
             status: SessionStatus.RESCHEDULED,
             originalStartedAt:
-              target.sessionRecord.originalStartedAt ??
-              target.sessionRecord.startedAt,
+              target.sessionRecord.originalStartedAt ?? target.sessionRecord.startedAt,
             startedAt: newStartedAt,
           },
           include: sessionDetailsInclude,
@@ -590,29 +561,23 @@ export class SessionService {
 
   private async recordAttendance(
     target: ResolvedSessionTarget,
-    payload: UpdateSessionActionDTO,
+    payload: UpdateSessionActionDTO
   ): Promise<SessionDetailsDTO> {
     const attendance = payload.attendance;
     if (!attendance || attendance.length === 0) {
-      throw new BadRequestException(
-        'Attendance records are required for ATTENDANCE action',
-      );
+      throw new BadRequestException('Attendance records are required for ATTENDANCE action');
     }
 
     this.assertAttendanceStudentsBelongToGroup(
       attendance,
-      new Set(target.group.students.map((item) => item.user.id)),
+      new Set(target.group.students.map((item) => item.user.id))
     );
 
     const updatedSession = await this.prismaService.$transaction(async (tx) => {
       const nowUtcMillis = fromUTC(getNowAsUTC(), 'UTC').toMillis();
 
       const sessionRecord = target.sessionRecord
-        ? await this.applyAttendanceActionOnExistingSession(
-            tx,
-            target.sessionRecord,
-            nowUtcMillis,
-          )
+        ? await this.applyAttendanceActionOnExistingSession(tx, target.sessionRecord, nowUtcMillis)
         : await tx.session.create({
             data: {
               groupId: target.group.id,
@@ -648,8 +613,8 @@ export class SessionService {
               status: attendanceItem.status as AttendanceStatus,
               notes: attendanceItem.notes,
             },
-          }),
-        ),
+          })
+        )
       );
 
       return tx.session.findUniqueOrThrow({
@@ -672,7 +637,7 @@ export class SessionService {
   private async applyAttendanceActionOnExistingSession(
     tx: Prisma.TransactionClient,
     sessionRecord: SessionWithDetails,
-    nowUtcMillis: number,
+    nowUtcMillis: number
   ) {
     const shouldUpdateOriginalStart = shouldSetOriginalStartedAtForAttendance({
       nowUtcMillis,
@@ -680,10 +645,7 @@ export class SessionService {
       originalStartedAt: sessionRecord.originalStartedAt,
     });
 
-    if (
-      shouldUpdateOriginalStart ||
-      sessionRecord.status !== SessionStatus.COMPLETED
-    ) {
+    if (shouldUpdateOriginalStart || sessionRecord.status !== SessionStatus.COMPLETED) {
       return tx.session.update({
         where: {
           id: sessionRecord.id,
@@ -706,7 +668,7 @@ export class SessionService {
   /** Resolve session target from ID (handles both real and virtual sessions) */
   private async resolveSessionTarget(
     sessionId: string,
-    user: User,
+    user: User
   ): Promise<ResolvedSessionTarget> {
     // Try finding real session record first
     const foundSession = await this.prismaService.session.findUnique({
@@ -738,7 +700,7 @@ export class SessionService {
     // Check if a session record was created for this virtual occurrence
     const linkedSession = await this.findLinkedSessionByOccurrence(
       parsedVirtualId.groupId,
-      parsedVirtualId.startedAt,
+      parsedVirtualId.startedAt
     );
 
     return {
@@ -748,9 +710,7 @@ export class SessionService {
     };
   }
 
-  private async findGroupWithDetails(
-    groupId: string,
-  ): Promise<GroupWithTutorStudentsAndSchedule> {
+  private async findGroupWithDetails(groupId: string): Promise<GroupWithTutorStudentsAndSchedule> {
     const group = await this.prismaService.group.findUnique({
       where: {
         id: groupId,
@@ -790,7 +750,7 @@ export class SessionService {
 
   private async findLinkedSessionByOccurrence(
     groupId: string,
-    startedAt: Date,
+    startedAt: Date
   ): Promise<SessionWithDetails | null> {
     return this.prismaService.session.findFirst({
       where: {
@@ -816,19 +776,14 @@ export class SessionService {
 
   private assertAttendanceStudentsBelongToGroup(
     attendance: UpdateSessionActionDTO['attendance'],
-    groupStudentIds: Set<string>,
+    groupStudentIds: Set<string>
   ) {
-    const invalidStudentId = findInvalidAttendanceStudentId(
-      attendance,
-      groupStudentIds,
-    );
+    const invalidStudentId = findInvalidAttendanceStudentId(attendance, groupStudentIds);
 
     if (!invalidStudentId) {
       return;
     }
 
-    throw new BadRequestException(
-      `Student ${invalidStudentId} does not belong to this group`,
-    );
+    throw new BadRequestException(`Student ${invalidStudentId} does not belong to this group`);
   }
 }

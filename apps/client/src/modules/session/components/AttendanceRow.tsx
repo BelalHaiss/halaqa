@@ -8,11 +8,7 @@ import { cn } from '@/lib/utils';
 import type { AttendanceEditFormData } from '../schema/session.schema';
 import { getAttendanceStatusConfig } from '../utils/session.util';
 
-const ATTENDANCE_STATUSES: AttendanceStatus[] = [
-  'ATTENDED',
-  'MISSED',
-  'EXCUSED'
-];
+const ATTENDANCE_STATUSES: AttendanceStatus[] = ['ATTENDED', 'MISSED', 'EXCUSED'];
 
 interface AttendanceRowBaseProps {
   student: { id: string; name: string };
@@ -36,7 +32,7 @@ const AttendanceStatusButtons = ({
   value,
   onChange,
   disabled,
-  invalid = false
+  invalid = false,
 }: {
   value?: AttendanceStatus | null;
   onChange?: (value: AttendanceStatus) => void;

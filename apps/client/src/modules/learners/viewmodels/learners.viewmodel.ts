@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import type {
-  CreateLearnerDto,
-  LearnerDto,
-  UpdateLearnerDto
-} from '@halaqa/shared';
+import type { CreateLearnerDto, LearnerDto, UpdateLearnerDto } from '@halaqa/shared';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
@@ -23,33 +19,28 @@ const PAGE_SIZE = 10;
 
 export function useLearnersViewModel() {
   const { user } = useApp();
-  const canManageLearners =
-    user?.role === 'ADMIN' || user?.role === 'MODERATOR';
+  const canManageLearners = user?.role === 'ADMIN' || user?.role === 'MODERATOR';
 
   const [searchQuery, setSearchQueryState] = useState('');
   const [page, setPage] = useState(1);
-  const [selectedLearner, setSelectedLearner] = useState<LearnerDto | null>(
-    null
-  );
+  const [selectedLearner, setSelectedLearner] = useState<LearnerDto | null>(null);
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
-  const [studentModalMode, setStudentModalMode] =
-    useState<LearnerModalMode>('view');
-  const [learnerPendingDelete, setLearnerPendingDelete] =
-    useState<LearnerDto | null>(null);
+  const [studentModalMode, setStudentModalMode] = useState<LearnerModalMode>('view');
+  const [learnerPendingDelete, setLearnerPendingDelete] = useState<LearnerDto | null>(null);
 
   const learnersQuery = useApiQuery<LearnerDto[]>({
     queryKey: queryKeys.learners.list({
       page,
       limit: PAGE_SIZE,
-      search: searchQuery || undefined
+      search: searchQuery || undefined,
     }),
     queryFn: () =>
       learnerService.queryLearners({
         page,
         limit: PAGE_SIZE,
-        search: searchQuery || undefined
+        search: searchQuery || undefined,
       }),
-    placeholderData: (previousData) => previousData
+    placeholderData: (previousData) => previousData,
   });
 
   const createLearnerMutation = useApiMutation<CreateLearnerDto, LearnerDto>({
@@ -57,18 +48,15 @@ export function useLearnersViewModel() {
     onSuccess: async () => {
       toast.success('تمت إضافة المتعلم بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.learners.all });
-    }
+    },
   });
 
-  const updateLearnerMutation = useApiMutation<
-    { id: string; data: UpdateLearnerDto },
-    LearnerDto
-  >({
+  const updateLearnerMutation = useApiMutation<{ id: string; data: UpdateLearnerDto }, LearnerDto>({
     mutationFn: ({ id, data }) => learnerService.updateLearner(id, data),
     onSuccess: async () => {
       toast.success('تم تعديل بيانات المتعلم بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.learners.all });
-    }
+    },
   });
 
   const deleteLearnerMutation = useApiMutation<string, null>({
@@ -76,7 +64,7 @@ export function useLearnersViewModel() {
     onSuccess: async () => {
       toast.success('تم حذف المتعلم بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.learners.all });
-    }
+    },
   });
 
   const handleSearchQueryChange = (value: string) => {
@@ -122,7 +110,7 @@ export function useLearnersViewModel() {
 
     await updateLearnerMutation.mutateAsync({
       id: args.learnerId,
-      data: args.data as UpdateLearnerDto
+      data: args.data as UpdateLearnerDto,
     });
   };
 
@@ -162,8 +150,7 @@ export function useLearnersViewModel() {
     setLearnerPendingDelete,
     confirmDeleteLearner,
 
-    isSubmittingLearner:
-      createLearnerMutation.isPending || updateLearnerMutation.isPending,
-    isDeletingLearner: deleteLearnerMutation.isPending
+    isSubmittingLearner: createLearnerMutation.isPending || updateLearnerMutation.isPending,
+    isDeletingLearner: deleteLearnerMutation.isPending,
   };
 }

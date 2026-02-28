@@ -11,11 +11,7 @@ type StudentSummaryCardProps = {
   onDelete?: (studentId: string) => void;
 };
 
-export function StudentSummaryCard({
-  student,
-  onClick,
-  onDelete
-}: StudentSummaryCardProps) {
+export function StudentSummaryCard({ student, onClick, onDelete }: StudentSummaryCardProps) {
   const learnerInitial = student.name.trim().charAt(0) || '؟';
 
   return (
@@ -47,12 +43,7 @@ export function StudentSummaryCard({
             </div>
 
             <div className='flex flex-col min-w-0'>
-              <Typography
-                as='div'
-                size='md'
-                weight='medium'
-                className='truncate'
-              >
+              <Typography as='div' size='md' weight='medium' className='truncate'>
                 {student.name}
               </Typography>
               <div className='flex flex-row items-center gap-1 text-muted-foreground'>
@@ -64,9 +55,7 @@ export function StudentSummaryCard({
             </div>
 
             <div className='flex flex-row items-center gap-3 shrink-0'>
-              <TimezoneDisplay
-                timezone={student.timezone}
-              />
+              <TimezoneDisplay timezone={student.timezone} />
             </div>
 
             <div className='flex flex-col min-w-0 flex-1'>

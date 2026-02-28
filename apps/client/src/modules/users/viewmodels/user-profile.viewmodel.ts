@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import {
-  ChangeOwnPasswordDto,
-  UpdateOwnProfileDto,
-  User,
-  UserAuthType
-} from '@halaqa/shared';
+import { ChangeOwnPasswordDto, UpdateOwnProfileDto, User, UserAuthType } from '@halaqa/shared';
 import { toast } from 'sonner';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { userProfileService } from '../services/user-profile.service';
@@ -18,19 +13,14 @@ type UseUserProfileViewModelArgs = {
 export const useUserProfileViewModel = ({
   user,
   setUser,
-  resetPasswordForm
+  resetPasswordForm,
 }: UseUserProfileViewModelArgs) => {
-  const [pendingProfileData, setPendingProfileData] =
-    useState<UpdateOwnProfileDto | null>(null);
-  const [pendingPasswordData, setPendingPasswordData] =
-    useState<ChangeOwnPasswordDto | null>(null);
+  const [pendingProfileData, setPendingProfileData] = useState<UpdateOwnProfileDto | null>(null);
+  const [pendingPasswordData, setPendingPasswordData] = useState<ChangeOwnPasswordDto | null>(null);
   const [confirmProfileOpen, setConfirmProfileOpen] = useState(false);
   const [confirmPasswordOpen, setConfirmPasswordOpen] = useState(false);
 
-  const updateProfileMutation = useApiMutation<
-    UpdateOwnProfileDto,
-    UserAuthType
-  >({
+  const updateProfileMutation = useApiMutation<UpdateOwnProfileDto, UserAuthType>({
     mutationFn: async (data) => {
       if (!user) {
         throw new Error('المستخدم غير متوفر');
@@ -47,7 +37,7 @@ export const useUserProfileViewModel = ({
         setUser({
           ...user,
           ...response.data,
-          username: response.data.username ?? ''
+          username: response.data.username ?? '',
         });
       }
       toast.success('تم تحديث الملف الشخصي بنجاح');
@@ -56,7 +46,7 @@ export const useUserProfileViewModel = ({
     },
     onError: (error) => {
       toast.error(error.message || 'حدث خطأ أثناء تحديث الملف الشخصي');
-    }
+    },
   });
 
   const changePasswordMutation = useApiMutation<ChangeOwnPasswordDto, void>({
@@ -75,7 +65,7 @@ export const useUserProfileViewModel = ({
     },
     onError: (error) => {
       toast.error(error.message || 'حدث خطأ أثناء تغيير كلمة المرور');
-    }
+    },
   });
 
   const requestProfileUpdate = (data: UpdateOwnProfileDto) => {
@@ -114,6 +104,6 @@ export const useUserProfileViewModel = ({
     confirmProfileUpdate,
     confirmPasswordChange,
     isUpdatingProfile: updateProfileMutation.isPending,
-    isChangingPassword: changePasswordMutation.isPending
+    isChangingPassword: changePasswordMutation.isPending,
   };
 };

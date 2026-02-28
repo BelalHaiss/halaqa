@@ -4,7 +4,7 @@ import {
   ISODateString,
   MinutesFromMidnight,
   TimeMinutes,
-  TimeHHMMString
+  TimeHHMMString,
 } from '../types/api.types';
 
 export type DateInput = string | Date;
@@ -20,16 +20,9 @@ export function getNowAsUTC(): string {
   return DateTime.utc().toISO() || '';
 }
 
-export function formatDate({
-  date,
-  token,
-  timezone,
-  locale
-}: FormatDateParams): string {
+export function formatDate({ date, token, timezone, locale }: FormatDateParams): string {
   const parsedDate =
-    date instanceof Date
-      ? DateTime.fromJSDate(date)
-      : DateTime.fromISO(date, { setZone: true });
+    date instanceof Date ? DateTime.fromJSDate(date) : DateTime.fromISO(date, { setZone: true });
   const zonedDate = timezone ? parsedDate.setZone(timezone) : parsedDate.toUTC();
   const localizedDate = locale ? zonedDate.setLocale(locale) : zonedDate;
 
@@ -57,18 +50,14 @@ export function fromUTC(utcString: string, timezone: string): DateTime {
  * @param timezone - IANA timezone
  * @returns Object with date (YYYY-MM-DD) and time as minutes from midnight
  */
-export function formatSessionDateAndTime(
-  startedAt: Date | string,
-  timezone: string
-) {
-  const utcString =
-    startedAt instanceof Date ? startedAt.toISOString() : startedAt;
+export function formatSessionDateAndTime(startedAt: Date | string, timezone: string) {
+  const utcString = startedAt instanceof Date ? startedAt.toISOString() : startedAt;
   const dateTime = fromUTC(utcString, timezone);
   const timeMinutes = dateTime.hour * 60 + dateTime.minute;
 
   return {
     date: dateTime.toFormat('yyyy-LL-dd') as ISODateOnlyString,
-    time: timeMinutes as TimeMinutes
+    time: timeMinutes as TimeMinutes,
   };
 }
 
@@ -116,7 +105,7 @@ export function getStartAndEndOfDay(
     startAsDatetime: startOfDay,
     endAsDatetime: endOfDay,
     startAsJSDate: startOfDay.toUTC().toJSDate(),
-    endAsJSDate: endOfDay.toUTC().toJSDate()
+    endAsJSDate: endOfDay.toUTC().toJSDate(),
   };
 }
 
@@ -178,9 +167,7 @@ export function minutesToInputTimeString(timeMinutes: TimeMinutes): string {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-export function startMinutesToTime(
-  startMinutes: MinutesFromMidnight
-): TimeHHMMString {
+export function startMinutesToTime(startMinutes: MinutesFromMidnight): TimeHHMMString {
   return minutesToTimeString(startMinutes as TimeMinutes);
 }
 
@@ -222,7 +209,7 @@ export function formatMonthYear(date: Date): string {
 export function parseDateString(dateStr: string): Date | undefined {
   const [year, month, day] = dateStr.split('-').map(Number);
   if (!year || !month || !day) return undefined;
-  // eslint-disable-next-line no-restricted-syntax -- Calendar component requires Date object
+
   return new Date(year, month - 1, day);
 }
 
@@ -251,7 +238,7 @@ export function formatDateLongArabic(dateStr: string): string {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   });
 }
 
@@ -261,10 +248,7 @@ export function formatDateLongArabic(dateStr: string): string {
  * @param timezone - IANA timezone
  * @returns Short date format (e.g., "21/02/2026")
  */
-export function formatDateShort(
-  isoDate: ISODateString,
-  timezone: string
-): string {
+export function formatDateShort(isoDate: ISODateString, timezone: string): string {
   const dt = DateTime.fromISO(isoDate).setZone(timezone);
   return dt.toFormat('dd/MM/yyyy');
 }

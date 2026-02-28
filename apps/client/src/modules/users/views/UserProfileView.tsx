@@ -5,27 +5,14 @@ import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/back-button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Lock, AlertCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import {
-  ChangeOwnPasswordDto,
-  TIMEZONES,
-  UpdateOwnProfileDto
-} from '@halaqa/shared';
-import {
-  changeOwnPasswordSchema,
-  updateOwnProfileSchema
-} from '../schema/user-profile.schema';
+import { ChangeOwnPasswordDto, TIMEZONES, UpdateOwnProfileDto } from '@halaqa/shared';
+import { changeOwnPasswordSchema, updateOwnProfileSchema } from '../schema/user-profile.schema';
 import { FormField } from '@/components/forms/form-field';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { UserBadge } from '../components/UserBadge';
@@ -41,9 +28,9 @@ export function UserProfileView() {
     defaultValues: {
       name: user?.name || '',
       username: user?.username || '',
-      timezone: user?.timezone || 'Africa/Cairo'
+      timezone: user?.timezone || 'Africa/Cairo',
     },
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
 
   // Password form
@@ -52,15 +39,15 @@ export function UserProfileView() {
     defaultValues: {
       currentPassword: '',
       newPassword: '',
-      confirmPassword: ''
+      confirmPassword: '',
     },
-    mode: 'onTouched'
+    mode: 'onTouched',
   });
 
   const vm = useUserProfileViewModel({
     user,
     setUser,
-    resetPasswordForm: () => passwordForm.reset()
+    resetPasswordForm: () => passwordForm.reset(),
   });
 
   if (!user) return null;
@@ -87,9 +74,7 @@ export function UserProfileView() {
               </h2>
               <div className='flex items-center gap-2 mt-1'>
                 <UserBadge role={user.role} />
-                <span className='text-sm text-gray-600 dark:text-gray-400'>
-                  •
-                </span>
+                <span className='text-sm text-gray-600 dark:text-gray-400'>•</span>
                 <TimezoneDisplay timezone={user.timezone} />
               </div>
             </div>
@@ -115,9 +100,7 @@ export function UserProfileView() {
           <Card>
             <CardHeader>
               <CardTitle>معلومات الحساب</CardTitle>
-              <CardDescription>
-                قم بتحديث بيانات الحساب الخاصة بك
-              </CardDescription>
+              <CardDescription>قم بتحديث بيانات الحساب الخاصة بك</CardDescription>
             </CardHeader>
             <CardContent>
               <form
@@ -182,8 +165,7 @@ export function UserProfileView() {
               <Alert alertType='WARN' className='mb-4'>
                 <AlertCircle className='h-4 w-4' />
                 <AlertDescription>
-                  تأكد من استخدام كلمة مرور قوية تحتوي على حروف كبيرة وصغيرة
-                  وأرقام.
+                  تأكد من استخدام كلمة مرور قوية تحتوي على حروف كبيرة وصغيرة وأرقام.
                 </AlertDescription>
               </Alert>
 
@@ -231,9 +213,7 @@ export function UserProfileView() {
                       !passwordForm.formState.isValid
                     }
                   >
-                    {vm.isChangingPassword
-                      ? 'جاري التحديث...'
-                      : 'تحديث كلمة المرور'}
+                    {vm.isChangingPassword ? 'جاري التحديث...' : 'تحديث كلمة المرور'}
                   </Button>
                 </div>
               </form>

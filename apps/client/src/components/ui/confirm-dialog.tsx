@@ -7,7 +7,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
+  AlertDialogTitle,
 } from './alert-dialog';
 
 type ConfirmDialogProps = {
@@ -29,7 +29,7 @@ export function ConfirmDialog({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   onConfirm,
-  intent = 'default'
+  intent = 'default',
 }: ConfirmDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,14 +54,8 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
-            {cancelText}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            disabled={isLoading}
-            intent={intent}
-          >
+          <AlertDialogCancel disabled={isLoading}>{cancelText}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm} disabled={isLoading} intent={intent}>
             {isLoading ? 'Processing...' : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>

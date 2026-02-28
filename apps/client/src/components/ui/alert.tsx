@@ -16,7 +16,7 @@ const alertVariants = cva(
     defaultVariants: {
       alertType: 'WARN',
     },
-  },
+  }
 );
 
 function Alert({
@@ -35,10 +35,7 @@ function Alert({
   );
 }
 
-function AlertTitle({
-  className,
-  ...props
-}: Omit<React.ComponentProps<typeof Typography>, 'as'>) {
+function AlertTitle({ className, ...props }: Omit<React.ComponentProps<typeof Typography>, 'as'>) {
   return (
     <Typography
       data-slot='alert-title'
@@ -60,10 +57,7 @@ function AlertDescription({
       data-slot='alert-description'
       as='div'
       size='sm'
-      className={cn(
-        'col-start-2 grid justify-items-start gap-1',
-        className
-      )}
+      className={cn('col-start-2 grid justify-items-start gap-1', className)}
       {...props}
     />
   );

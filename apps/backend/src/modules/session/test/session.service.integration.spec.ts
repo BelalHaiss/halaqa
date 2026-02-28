@@ -75,12 +75,8 @@ describe('SessionService (integration)', () => {
       throw new Error('Failed to build plannedUtcIso for timezone test.');
     }
 
-    const tutorDayOfWeek = toScheduleDayOfWeek(
-      fromUTC(plannedUtcIso, tutorTimezone).weekday,
-    );
-    const groupDayOfWeek = toScheduleDayOfWeek(
-      fromUTC(plannedUtcIso, groupTimezone).weekday,
-    );
+    const tutorDayOfWeek = toScheduleDayOfWeek(fromUTC(plannedUtcIso, tutorTimezone).weekday);
+    const groupDayOfWeek = toScheduleDayOfWeek(fromUTC(plannedUtcIso, groupTimezone).weekday);
     expect(tutorDayOfWeek).not.toBe(groupDayOfWeek);
 
     const group = await createSessionTestGroupWithScheduleFromUtc({
@@ -107,14 +103,10 @@ describe('SessionService (integration)', () => {
       timezone: 'UTC',
     });
 
-    const scheduledUtc = fromUTC(getNowAsUTC(), 'UTC')
-      .minus({ hours: 13 })
-      .startOf('hour');
+    const scheduledUtc = fromUTC(getNowAsUTC(), 'UTC').minus({ hours: 13 }).startOf('hour');
     const scheduledUtcIso = scheduledUtc.toISO();
     if (!scheduledUtcIso) {
-      throw new Error(
-        'Failed to build scheduledUtcIso for missed session test.',
-      );
+      throw new Error('Failed to build scheduledUtcIso for missed session test.');
     }
 
     const group = await createSessionTestGroupWithScheduleFromUtc({

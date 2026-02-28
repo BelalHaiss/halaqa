@@ -8,7 +8,7 @@ type GroupScheduleTimeTextProps = {
 
 export const GroupScheduleTimeText = ({
   scheduleDays,
-  emptyLabel = 'غير محدد'
+  emptyLabel = 'غير محدد',
 }: GroupScheduleTimeTextProps) => {
   const scheduleTimeText = useMemo(() => {
     if (scheduleDays.length === 0) {

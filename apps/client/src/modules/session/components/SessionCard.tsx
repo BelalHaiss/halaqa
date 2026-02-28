@@ -4,7 +4,7 @@ import {
   formatISODateToUserTimezone,
   minutesToTimeString,
   type SessionComputedStatus,
-  type ISODateString
+  type ISODateString,
 } from '@halaqa/shared';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,7 +29,7 @@ export const SessionCard = ({
   startedAt,
   originalStartedAt,
   sessionStatus,
-  timezone
+  timezone,
 }: SessionCardProps) => {
   const { time } = formatISODateToUserTimezone(startedAt, timezone);
   const formattedTime = minutesToTimeString(time as any);

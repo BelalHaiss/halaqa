@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode
-} from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { type User } from '@halaqa/shared';
 import { storageService } from '@/services';
 
@@ -43,9 +37,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AppContext.Provider
-      value={{ user, isAuthenticated: !!user, setUser, logout }}
-    >
+    <AppContext.Provider value={{ user, isAuthenticated: !!user, setUser, logout }}>
       {children}
     </AppContext.Provider>
   );

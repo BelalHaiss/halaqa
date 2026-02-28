@@ -9,12 +9,12 @@ import {
   UpdateGroupDto,
   UpdateGroupSettingsDto,
   UpdateLearnerDto,
-  User
+  User,
 } from '@halaqa/shared';
 import { toast } from 'sonner';
 import {
   StudentMainInfoMode,
-  StudentMainInfoSubmitArgs
+  StudentMainInfoSubmitArgs,
 } from '@/modules/learners/components/student-main-info-modal';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
@@ -36,122 +36,104 @@ export const useGroupDetailsViewModel = (
     user.role === 'ADMIN' || user.role === 'MODERATOR' || user.role === 'TUTOR';
   const [isLearnerModalOpen, setIsLearnerModalOpen] = useState(false);
   const [isAddLearnersModalOpen, setIsAddLearnersModalOpen] = useState(false);
-  const [learnerModalMode, setLearnerModalMode] =
-    useState<StudentMainInfoMode>('view');
-  const [selectedLearner, setSelectedLearner] =
-    useState<GroupStudentSummaryDto | null>(null);
+  const [learnerModalMode, setLearnerModalMode] = useState<StudentMainInfoMode>('view');
+  const [selectedLearner, setSelectedLearner] = useState<GroupStudentSummaryDto | null>(null);
 
   const groupQuery = useApiQuery<GroupDetailsDto>({
     queryKey: queryKeys.groups.detail(groupId),
     enabled: Boolean(groupId),
-    queryFn: async () => groupService.getGroupById(groupId)
+    queryFn: async () => groupService.getGroupById(groupId),
   });
 
   const tutorsQuery = useApiQuery<GroupTutorSummaryDto[]>({
     queryKey: queryKeys.groups.tutors(),
     queryFn: async () => groupService.getTutors(),
-    enabled: canManageGroup && options.shouldLoadTutors
+    enabled: canManageGroup && options.shouldLoadTutors,
   });
 
   const learnersQuery = useApiQuery<LearnerDto[]>({
     queryKey: queryKeys.learners.list({
       scope: 'group-details-attach',
       groupId,
-      limit: 100
+      limit: 100,
     }),
     queryFn: async () => groupService.queryLearners({ page: 1, limit: 100 }),
-    enabled: canManageGroup && isAddLearnersModalOpen
+    enabled: canManageGroup && isAddLearnersModalOpen,
   });
 
-  const updateGroupMutation = useApiMutation<
-    UpdateGroupSettingsDto,
-    GroupDetailsDto
-  >({
-    mutationFn: async (payload) =>
-      groupService.updateGroupSettings(groupId, payload),
+  const updateGroupMutation = useApiMutation<UpdateGroupSettingsDto, GroupDetailsDto>({
+    mutationFn: async (payload) => groupService.updateGroupSettings(groupId, payload),
     onSuccess: async () => {
       toast.success('تم تحديث الحلقة بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
     },
     onError: (error) => {
       toast.error(error.message || 'فشل تحديث الحلقة');
-    }
+    },
   });
 
-  const createLearnerAndAttachMutation = useApiMutation<
-    CreateLearnerDto,
-    GroupDetailsDto
-  >({
-    mutationFn: async (payload) =>
-      groupService.createLearnerAndAddToGroup(groupId, payload),
+  const createLearnerAndAttachMutation = useApiMutation<CreateLearnerDto, GroupDetailsDto>({
+    mutationFn: async (payload) => groupService.createLearnerAndAddToGroup(groupId, payload),
     onSuccess: async () => {
       toast.success('تمت إضافة المتعلم للحلقة بنجاح');
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: queryKeys.groups.detail(groupId)
+          queryKey: queryKeys.groups.detail(groupId),
         }),
         queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all }),
       ]);
     },
     onError: (error) => {
       toast.error(error.message || 'فشل إضافة المتعلم');
-    }
+    },
   });
 
-  const addExistingLearnersMutation = useApiMutation<
-    AddLearnersToGroupDto,
-    GroupDetailsDto
-  >({
-    mutationFn: async (payload) =>
-      groupService.addExistingLearnersToGroup(groupId, payload),
+  const addExistingLearnersMutation = useApiMutation<AddLearnersToGroupDto, GroupDetailsDto>({
+    mutationFn: async (payload) => groupService.addExistingLearnersToGroup(groupId, payload),
     onSuccess: async () => {
       toast.success('تمت إضافة المتعلمين للحلقة بنجاح');
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: queryKeys.groups.detail(groupId)
+          queryKey: queryKeys.groups.detail(groupId),
         }),
         queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all }),
       ]);
     },
     onError: (error) => {
       toast.error(error.message || 'فشل إضافة المتعلمين');
-    }
+    },
   });
 
   const removeStudentMutation = useApiMutation<{ userId: string }, null>({
-    mutationFn: async ({ userId }) =>
-      groupService.removeStudentFromGroup(groupId, userId),
+    mutationFn: async ({ userId }) => groupService.removeStudentFromGroup(groupId, userId),
     onSuccess: async () => {
       toast.success('تم حذف المتعلم من الحلقة');
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.groups.detail(groupId)
+        queryKey: queryKeys.groups.detail(groupId),
       });
     },
     onError: (error) => {
       toast.error(error.message || 'فشل حذف المتعلم');
-    }
+    },
   });
 
-  const updateLearnerMutation = useApiMutation<
-    { id: string; data: UpdateLearnerDto },
-    LearnerDto
-  >({
+  const updateLearnerMutation = useApiMutation<{ id: string; data: UpdateLearnerDto }, LearnerDto>({
     mutationFn: ({ id, data }) => learnerService.updateLearner(id, data),
     onSuccess: async () => {
       toast.success('تم تحديث المتعلم بنجاح');
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: queryKeys.groups.detail(groupId)
+          queryKey: queryKeys.groups.detail(groupId),
         }),
         queryClient.invalidateQueries({ queryKey: queryKeys.groups.all }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all })
+        queryClient.invalidateQueries({ queryKey: queryKeys.learners.all }),
       ]);
     },
     onError: (error) => {
       toast.error(error.message || 'فشل تحديث المتعلم');
-    }
+    },
   });
 
   const updateGroupSettings = async (payload: UpdateGroupDto) => {
@@ -209,7 +191,7 @@ export const useGroupDetailsViewModel = (
 
     await updateLearnerMutation.mutateAsync({
       id: args.learnerId,
-      data: args.data as UpdateLearnerDto
+      data: args.data as UpdateLearnerDto,
     });
   };
 
@@ -268,6 +250,6 @@ export const useGroupDetailsViewModel = (
     isAddingStudent: createLearnerAndAttachMutation.isPending,
     isAddingExistingStudents: addExistingLearnersMutation.isPending,
     isRemovingStudent: removeStudentMutation.isPending,
-    isUpdatingLearner: updateLearnerMutation.isPending
+    isUpdatingLearner: updateLearnerMutation.isPending,
   };
 };

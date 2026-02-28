@@ -45,9 +45,7 @@ export async function createSessionTestGroupWithScheduleFromUtc(args: {
   });
 }
 
-export async function cleanupSessionTestData(
-  prisma: DatabaseService,
-): Promise<void> {
+export async function cleanupSessionTestData(prisma: DatabaseService): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await tx.attendanceRecord.deleteMany({
       where: {

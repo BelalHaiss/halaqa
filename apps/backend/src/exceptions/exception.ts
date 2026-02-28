@@ -88,7 +88,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 @Catch(
   Prisma.PrismaClientKnownRequestError,
   Prisma.PrismaClientUnknownRequestError,
-  Prisma.PrismaClientValidationError,
+  Prisma.PrismaClientValidationError
 )
 export class PrismaExceptionFilter implements ExceptionFilter {
   constructor(private readonly appLogger: AppLogger) {}

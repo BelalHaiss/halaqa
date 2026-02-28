@@ -1,12 +1,6 @@
 import { useDashboardViewModel } from '../viewmodels/dashboard.viewmodel';
 import { useApp } from '@/contexts/AppContext';
-import {
-  Users as UsersIcon,
-  Calendar,
-  AlertCircle,
-  BookOpen,
-  Loader2
-} from 'lucide-react';
+import { Users as UsersIcon, Calendar, AlertCircle, BookOpen, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { MetricCard } from '@/components/ui/metric-card';
 import { PageHeader } from '@/components/ui/page-header';

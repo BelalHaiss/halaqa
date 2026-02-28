@@ -12,14 +12,14 @@ const typographySizeClasses: Record<TypographySize, string> = {
   md: 'text-base leading-7',
   lg: 'text-lg leading-7',
   xl: 'text-xl leading-8',
-  '2xl': 'text-2xl leading-9'
+  '2xl': 'text-2xl leading-9',
 };
 
 const typographyWeightClasses: Record<TypographyWeight, string> = {
   regular: 'font-normal',
   medium: 'font-medium',
   semibold: 'font-semibold',
-  bold: 'font-bold'
+  bold: 'font-bold',
 };
 
 type TypographyProps = React.ComponentPropsWithoutRef<'p'> & {

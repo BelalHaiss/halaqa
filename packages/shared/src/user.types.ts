@@ -144,9 +144,7 @@ export type NonLearnerUserWithCredentials = UserWithOptionalCredentials & {
   password: string;
 };
 
-export const isLearnerUser = (
-  user: UserWithOptionalCredentials
-): user is LearnerUser => {
+export const isLearnerUser = (user: UserWithOptionalCredentials): user is LearnerUser => {
   return (
     user.role === 'STUDENT' &&
     (user.username === null || user.username === undefined) &&

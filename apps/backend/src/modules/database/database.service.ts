@@ -26,7 +26,7 @@ export class DatabaseService extends PrismaClient {
 
   handleDateRangeFilter(
     query: DateRangeQueryType,
-    timezone: string,
+    timezone: string
   ): Prisma.DateTimeFilter | undefined {
     if (!query.fromDate && !query.toDate) {
       return undefined;

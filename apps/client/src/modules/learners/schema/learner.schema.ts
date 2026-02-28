@@ -7,7 +7,7 @@ import { nameSchema, notesSchema } from '@/lib/validation/fields.schema';
  * Base schema for learner contact information
  */
 const learnerContactSchema = z.object({
-  notes: notesSchema.optional()
+  notes: notesSchema.optional(),
 });
 
 /**
@@ -15,7 +15,7 @@ const learnerContactSchema = z.object({
  */
 const createLearnerBaseSchema = z.object({
   name: nameSchema,
-  contact: learnerContactSchema.optional()
+  contact: learnerContactSchema.optional(),
 });
 
 /**

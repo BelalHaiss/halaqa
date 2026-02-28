@@ -127,13 +127,7 @@ export function HistoryFilterContainer({
         </div>
 
         <div className='flex justify-end'>
-          <Button
-            variant='outline'
-            color='muted'
-            size='sm'
-            onClick={onClear}
-            disabled={disabled}
-          >
+          <Button variant='outline' color='muted' size='sm' onClick={onClear} disabled={disabled}>
             مسح الفلاتر
           </Button>
         </div>

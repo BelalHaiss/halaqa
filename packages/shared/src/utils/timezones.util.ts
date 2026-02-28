@@ -15,287 +15,287 @@ export const TIMEZONES: TimezoneOption[] = [
   {
     value: 'Africa/Cairo',
     label: 'مصر',
-    country: 'EG'
+    country: 'EG',
   },
 
   // Saudi Arabia
   {
     value: 'Asia/Riyadh',
     label: 'السعودية',
-    country: 'SA'
+    country: 'SA',
   },
   {
     value: 'Asia/Makkah',
     label: 'السعودية',
-    country: 'SA'
+    country: 'SA',
   },
 
   // UAE
   {
     value: 'Asia/Dubai',
     label: 'الإمارات',
-    country: 'AE'
+    country: 'AE',
   },
 
   // Kuwait
   {
     value: 'Asia/Kuwait',
     label: 'الكويت',
-    country: 'KW'
+    country: 'KW',
   },
 
   // Qatar
   {
     value: 'Asia/Qatar',
     label: 'قطر',
-    country: 'QA'
+    country: 'QA',
   },
 
   // Bahrain
   {
     value: 'Asia/Bahrain',
     label: 'البحرين',
-    country: 'BH'
+    country: 'BH',
   },
 
   // Oman
   {
     value: 'Asia/Muscat',
     label: 'عمان',
-    country: 'OM'
+    country: 'OM',
   },
 
   // Jordan
   {
     value: 'Asia/Amman',
     label: 'الأردن',
-    country: 'JO'
+    country: 'JO',
   },
 
   // Lebanon
   {
     value: 'Asia/Beirut',
     label: 'لبنان',
-    country: 'LB'
+    country: 'LB',
   },
 
   // Syria
   {
     value: 'Asia/Damascus',
     label: 'سوريا',
-    country: 'SY'
+    country: 'SY',
   },
 
   // Iraq
   {
     value: 'Asia/Baghdad',
     label: 'العراق',
-    country: 'IQ'
+    country: 'IQ',
   },
 
   // Palestine
   {
     value: 'Asia/Gaza',
     label: 'فلسطين',
-    country: 'PS'
+    country: 'PS',
   },
   {
     value: 'Asia/Hebron',
     label: 'فلسطين',
-    country: 'PS'
+    country: 'PS',
   },
 
   // Yemen
   {
     value: 'Asia/Aden',
     label: 'اليمن',
-    country: 'YE'
+    country: 'YE',
   },
 
   // Libya
   {
     value: 'Africa/Tripoli',
     label: 'ليبيا',
-    country: 'LY'
+    country: 'LY',
   },
 
   // Tunisia
   {
     value: 'Africa/Tunis',
     label: 'تونس',
-    country: 'TN'
+    country: 'TN',
   },
 
   // Algeria
   {
     value: 'Africa/Algiers',
     label: 'الجزائر',
-    country: 'DZ'
+    country: 'DZ',
   },
 
   // Morocco
   {
     value: 'Africa/Casablanca',
     label: 'المغرب',
-    country: 'MA'
+    country: 'MA',
   },
 
   // Sudan
   {
     value: 'Africa/Khartoum',
     label: 'السودان',
-    country: 'SD'
+    country: 'SD',
   },
 
   // Somalia
   {
     value: 'Africa/Mogadishu',
     label: 'الصومال',
-    country: 'SO'
+    country: 'SO',
   },
 
   // Turkey
   {
     value: 'Europe/Istanbul',
     label: 'تركيا',
-    country: 'TR'
+    country: 'TR',
   },
 
   // Iran
   {
     value: 'Asia/Tehran',
     label: 'إيران',
-    country: 'IR'
+    country: 'IR',
   },
 
   // Pakistan
   {
     value: 'Asia/Karachi',
     label: 'باكستان',
-    country: 'PK'
+    country: 'PK',
   },
 
   // Afghanistan
   {
     value: 'Asia/Kabul',
     label: 'أفغانستان',
-    country: 'AF'
+    country: 'AF',
   },
 
   // Bangladesh
   {
     value: 'Asia/Dhaka',
     label: 'بنغلاديش',
-    country: 'BD'
+    country: 'BD',
   },
 
   // Indonesia
   {
     value: 'Asia/Jakarta',
     label: 'إندونيسيا',
-    country: 'ID'
+    country: 'ID',
   },
 
   // Malaysia
   {
     value: 'Asia/Kuala_Lumpur',
     label: 'ماليزيا',
-    country: 'MY'
+    country: 'MY',
   },
 
   // Azerbaijan
   {
     value: 'Asia/Baku',
     label: 'أذربيجان',
-    country: 'AZ'
+    country: 'AZ',
   },
 
   // USA
   {
     value: 'America/New_York',
     label: 'الولايات المتحدة (نيويورك)',
-    country: 'US'
+    country: 'US',
   },
   {
     value: 'America/Chicago',
     label: 'الولايات المتحدة (شيكاغو)',
-    country: 'US'
+    country: 'US',
   },
   {
     value: 'America/Los_Angeles',
     label: 'الولايات المتحدة (لوس أنجلوس)',
-    country: 'US'
+    country: 'US',
   },
 
   // UK
   {
     value: 'Europe/London',
     label: 'المملكة المتحدة',
-    country: 'GB'
+    country: 'GB',
   },
 
   // Germany
   {
     value: 'Europe/Berlin',
     label: 'ألمانيا',
-    country: 'DE'
+    country: 'DE',
   },
 
   // France
   {
     value: 'Europe/Paris',
     label: 'فرنسا',
-    country: 'FR'
+    country: 'FR',
   },
 
   // China
   {
     value: 'Asia/Shanghai',
     label: 'الصين',
-    country: 'CN'
+    country: 'CN',
   },
 
   // Japan
   {
     value: 'Asia/Tokyo',
     label: 'اليابان',
-    country: 'JP'
+    country: 'JP',
   },
 
   // India
   {
     value: 'Asia/Kolkata',
     label: 'الهند',
-    country: 'IN'
+    country: 'IN',
   },
 
   // Australia
   {
     value: 'Australia/Sydney',
     label: 'أستراليا',
-    country: 'AU'
+    country: 'AU',
   },
 
   // Brazil
   {
     value: 'America/Sao_Paulo',
     label: 'البرازيل',
-    country: 'BR'
+    country: 'BR',
   },
 
   // Canada
   {
     value: 'America/Toronto',
     label: 'كندا',
-    country: 'CA'
+    country: 'CA',
   },
 
   // Russia
   {
     value: 'Europe/Moscow',
     label: 'روسيا',
-    country: 'RU'
-  }
+    country: 'RU',
+  },
 ];
 
 export const TIMEZONE_VALUES = TIMEZONES.map((timezone) => timezone.value);

@@ -4,7 +4,7 @@ import {
   SessionSummaryDTO,
   SessionDetailsDTO,
   UpdateSessionActionDTO,
-  UnifiedApiResponse
+  UnifiedApiResponse,
 } from '@halaqa/shared';
 
 export class SessionService {
@@ -12,9 +12,7 @@ export class SessionService {
     return apiClient.get<SessionSummaryDTO[]>('/sessions/today');
   }
 
-  async getSessionDetails(
-    id: string
-  ): Promise<UnifiedApiResponse<SessionDetailsDTO>> {
+  async getSessionDetails(id: string): Promise<UnifiedApiResponse<SessionDetailsDTO>> {
     return apiClient.get<SessionDetailsDTO>(`/sessions/${id}`);
   }
 
@@ -38,9 +36,7 @@ export class SessionService {
       params.set('status', query.status);
     }
 
-    return apiClient.get<SessionSummaryDTO[]>(
-      `/sessions/history?${params.toString()}`
-    );
+    return apiClient.get<SessionSummaryDTO[]>(`/sessions/history?${params.toString()}`);
   }
 
   async updateSession(

@@ -5,7 +5,7 @@ import {
   timeStringToMinutes,
   parseDateString,
   formatDateToISOString,
-  formatDateLongArabic
+  formatDateLongArabic,
 } from '@halaqa/shared';
 import { Calendar } from './calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
@@ -42,7 +42,7 @@ export function DateTimePicker({
   dateLabel = 'اختر التاريخ',
   timeStep = 15,
   invalid = false,
-  disablePastDates = false
+  disablePastDates = false,
 }: DateTimePickerProps) {
   const selectedDate = date ? parseDateString(date) : undefined;
   const showDate = mode !== 'timeOnly';
@@ -104,11 +104,7 @@ export function DateTimePicker({
           </div>
           <Input
             type='time'
-            value={
-              time !== undefined
-                ? minutesToInputTimeString(time as TimeMinutes)
-                : ''
-            }
+            value={time !== undefined ? minutesToInputTimeString(time as TimeMinutes) : ''}
             onChange={handleTimeChange}
             onBlur={onTimeBlur}
             aria-invalid={invalid}

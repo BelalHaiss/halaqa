@@ -14,7 +14,7 @@ export const SearchInput = ({
   value,
   onChange,
   placeholder = 'بحث...',
-  className
+  className,
 }: SearchInputProps) => {
   return (
     <div className={cn('relative', className)}>

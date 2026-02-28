@@ -4,7 +4,7 @@ import {
   ISODateOnlyString,
   PaginationQueryType,
   DateRangeQueryType,
-  TimeMinutes
+  TimeMinutes,
 } from './types/api.types';
 
 // ============================================================================
@@ -12,11 +12,7 @@ import {
 // ============================================================================
 
 /** Status stored in database for session records */
-export type SessionRecordStatus =
-  | 'RESCHEDULED'
-  | 'COMPLETED'
-  | 'CANCELED'
-  | 'MISSED';
+export type SessionRecordStatus = 'RESCHEDULED' | 'COMPLETED' | 'CANCELED' | 'MISSED';
 
 /** Computed status including virtual 'SCHEDULED' for planned sessions */
 export type SessionComputedStatus = SessionRecordStatus | 'SCHEDULED';

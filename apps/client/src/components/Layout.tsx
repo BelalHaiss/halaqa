@@ -12,7 +12,7 @@ import {
   Moon,
   Sun,
   UserCog,
-  Settings
+  Settings,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -40,37 +40,35 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       name: 'الحلقات',
       href: '/',
       icon: Users,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR'],
     },
     {
       name: 'جلسات اليوم',
       href: '/sessions',
       icon: Calendar,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR'],
     },
     {
       name: 'السجل',
       href: '/sessions/history',
       icon: History,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR'],
     },
     {
       name: 'المستخدمون',
       href: '/users',
       icon: UserCog,
-      roles: ['ADMIN', 'MODERATOR']
+      roles: ['ADMIN', 'MODERATOR'],
     },
     {
       name: 'المتعلمون',
       href: '/learners',
       icon: GraduationCap,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR']
-    }
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR'],
+    },
   ];
 
-  const filteredNavigation = navigation.filter((item) =>
-    item.roles.includes(user.role)
-  );
+  const filteredNavigation = navigation.filter((item) => item.roles.includes(user.role));
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -111,11 +109,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
         aria-expanded={isMobileMenuOpen}
         aria-controls={sidebarId}
       >
-        {isMobileMenuOpen ? (
-          <X className='w-5 h-5' />
-        ) : (
-          <Menu className='w-5 h-5' />
-        )}
+        {isMobileMenuOpen ? <X className='w-5 h-5' /> : <Menu className='w-5 h-5' />}
       </Button>
 
       {/* Sidebar */}
@@ -136,27 +130,17 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
           <div className='p-3 border-b border-border flex items-center justify-between gap-2'>
             <div className='flex items-center gap-2 min-w-0'>
               <Avatar size='sm'>
-                <AvatarFallback>
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className='min-w-0'>
-                <Typography
-                  as='div'
-                  size='sm'
-                  weight='medium'
-                  className='truncate'
-                >
+                <Typography as='div' size='sm' weight='medium' className='truncate'>
                   {user.name}
                 </Typography>
                 <UserBadge role={user.role} size='sm' />
               </div>
             </div>
 
-            <Link
-              to='/profile'
-              className='p-1 rounded-md hover:bg-muted transition'
-            >
+            <Link to='/profile' className='p-1 rounded-md hover:bg-muted transition'>
               <Settings className='w-4 h-4 text-muted-foreground' />
             </Link>
           </div>
@@ -195,11 +179,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
               size='sm'
               className='w-full justify-start gap-2'
             >
-              {isDark ? (
-                <Sun className='w-4 h-4' />
-              ) : (
-                <Moon className='w-4 h-4' />
-              )}
+              {isDark ? <Sun className='w-4 h-4' /> : <Moon className='w-4 h-4' />}
               <Typography as='span' size='sm'>
                 {isDark ? 'الوضع النهاري' : 'الوضع الليلي'}
               </Typography>
@@ -235,9 +215,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
 
       {/* Main Content */}
       <div className='h-full lg:pr-56'>
-        <main className='h-full overflow-y-auto p-4 pt-14 lg:p-6 lg:pt-6'>
-          {children}
-        </main>
+        <main className='h-full overflow-y-auto p-4 pt-14 lg:p-6 lg:pt-6'>{children}</main>
       </div>
     </div>
   );

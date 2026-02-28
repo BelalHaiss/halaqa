@@ -53,10 +53,7 @@ export class UserService {
     return users.map((staffUser) => this.toStaffDto(staffUser));
   }
 
-  async createStaffUser(
-    actor: User,
-    dto: CreateStaffUserDto,
-  ): Promise<StaffUserDto> {
+  async createStaffUser(actor: User, dto: CreateStaffUserDto): Promise<StaffUserDto> {
     this.assertActorCanManageStaff(actor);
     this.assertActorCanManageTargetRole(actor, dto.role);
 
@@ -83,11 +80,7 @@ export class UserService {
     return this.toStaffDto(createdStaffUser);
   }
 
-  async updateStaffUser(
-    id: string,
-    actor: User,
-    dto: UpdateStaffUserDto,
-  ): Promise<StaffUserDto> {
+  async updateStaffUser(id: string, actor: User, dto: UpdateStaffUserDto): Promise<StaffUserDto> {
     this.assertActorCanManageStaff(actor);
 
     const targetUser = await this.prismaService.user.findUnique({
@@ -162,10 +155,7 @@ export class UserService {
     return this.toAuthUserDto(user);
   }
 
-  async updateOwnProfile(
-    userId: string,
-    dto: UpdateOwnProfileDto,
-  ): Promise<UserAuthType> {
+  async updateOwnProfile(userId: string, dto: UpdateOwnProfileDto): Promise<UserAuthType> {
     const existingUser = await this.prismaService.user.findUnique({
       where: { id: userId },
     });
@@ -197,10 +187,7 @@ export class UserService {
     return this.toAuthUserDto(updatedUser);
   }
 
-  async changeOwnPassword(
-    userId: string,
-    dto: ChangeOwnPasswordDto,
-  ): Promise<void> {
+  async changeOwnPassword(userId: string, dto: ChangeOwnPasswordDto): Promise<void> {
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
       select: { id: true, password: true },
@@ -212,10 +199,7 @@ export class UserService {
       throw new BadRequestException('Password is not set for this account');
     }
 
-    const isCurrentPasswordValid = await argon.verify(
-      user.password,
-      dto.currentPassword,
-    );
+    const isCurrentPasswordValid = await argon.verify(user.password, dto.currentPassword);
     if (!isCurrentPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
@@ -247,12 +231,8 @@ export class UserService {
     return this.toLearnerDto(createdLearner);
   }
 
-  async queryLearners(
-    actor: User,
-    query: QueryLearnersDto,
-  ): Promise<QueryLearnersResponseDto> {
-    const { skip, take, page } =
-      this.prismaService.handleQueryPagination(query);
+  async queryLearners(actor: User, query: QueryLearnersDto): Promise<QueryLearnersResponseDto> {
+    const { skip, take, page } = this.prismaService.handleQueryPagination(query);
     const searchQuery = query.search?.trim();
 
     const where: Prisma.UserWhereInput = {
@@ -424,10 +404,7 @@ export class UserService {
     }
   }
 
-  private assertActorCanManageTargetRole(
-    actor: User,
-    role: UserAuthRole,
-  ): void {
+  private assertActorCanManageTargetRole(actor: User, role: UserAuthRole): void {
     if (actor.role === UserRole.ADMIN) {
       return;
     }
@@ -439,17 +416,11 @@ export class UserService {
       return;
     }
 
-    throw new ForbiddenException(
-      'You are not allowed to manage users with this role',
-    );
+    throw new ForbiddenException('You are not allowed to manage users with this role');
   }
 
   private isStaffRole(role: UserRole): role is UserAuthRole {
-    return (
-      role === UserRole.ADMIN ||
-      role === UserRole.MODERATOR ||
-      role === UserRole.TUTOR
-    );
+    return role === UserRole.ADMIN || role === UserRole.MODERATOR || role === UserRole.TUTOR;
   }
 
   private toStaffDto(user: {

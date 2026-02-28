@@ -21,7 +21,7 @@ const createStaffBaseSchema = z.object({
 
 export const createStaffSchema = z.intersection(
   createStaffBaseSchema,
-  timezoneFieldSchema,
+  timezoneFieldSchema
 ) satisfies ZodType<CreateStaffUserDto>;
 
 const updateStaffBaseSchema = z.object({

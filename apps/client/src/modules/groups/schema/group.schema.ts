@@ -4,26 +4,26 @@ import {
   GroupScheduleDay,
   GroupStatus,
   UpdateGroupDto,
-  UpdateGroupSettingsDto
+  UpdateGroupSettingsDto,
 } from '@halaqa/shared';
 import { timezoneFieldSchema } from '@/lib/validation/timezone.schema';
 import {
   dayOfWeekSchema,
   descriptionSchema,
   nameSchema,
-  tutorIdSchema
+  tutorIdSchema,
 } from '@/lib/validation/fields.schema';
 
 const groupStatusSchema = z.enum([
   'ACTIVE',
   'INACTIVE',
-  'COMPLETED'
+  'COMPLETED',
 ]) satisfies ZodType<GroupStatus>;
 
 const groupScheduleDaySchema = z.object({
   dayOfWeek: dayOfWeekSchema,
   startMinutes: z.number().int().min(0).max(1439),
-  durationMinutes: z.number().int().min(15).max(720)
+  durationMinutes: z.number().int().min(15).max(720),
 }) satisfies ZodType<GroupScheduleDay>;
 
 const uniqueScheduleDays = (value: GroupScheduleDay[]) => {
@@ -39,7 +39,7 @@ const createGroupBaseSchema = z.object({
   scheduleDays: z
     .array(groupScheduleDaySchema)
     .min(1, 'يجب اختيار يوم واحد على الأقل')
-    .refine(uniqueScheduleDays, { message: 'لا يمكن تكرار نفس اليوم' })
+    .refine(uniqueScheduleDays, { message: 'لا يمكن تكرار نفس اليوم' }),
 });
 
 export const createGroupSchema = z.intersection(
@@ -57,21 +57,21 @@ const updateGroupBaseSchema = z
       .array(groupScheduleDaySchema)
       .min(1, 'يجب اختيار يوم واحد على الأقل')
       .refine(uniqueScheduleDays, { message: 'لا يمكن تكرار نفس اليوم' })
-      .optional()
+      .optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'قم بتعديل حقل واحد على الأقل'
+    message: 'قم بتعديل حقل واحد على الأقل',
   });
 
 export const updateGroupSchema = z
   .intersection(
     updateGroupBaseSchema,
     z.object({
-      timezone: z.string().trim().min(1).optional()
+      timezone: z.string().trim().min(1).optional(),
     })
   )
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'قم بتعديل حقل واحد على الأقل'
+    message: 'قم بتعديل حقل واحد على الأقل',
   }) satisfies ZodType<UpdateGroupDto>;
 
 export const updateGroupSettingsSchema = z
@@ -81,8 +81,8 @@ export const updateGroupSettingsSchema = z
       .array(groupScheduleDaySchema)
       .min(1, 'يجب اختيار يوم واحد على الأقل')
       .refine(uniqueScheduleDays, { message: 'لا يمكن تكرار نفس اليوم' })
-      .optional()
+      .optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: 'قم بتعديل حقل واحد على الأقل'
+    message: 'قم بتعديل حقل واحد على الأقل',
   }) satisfies ZodType<UpdateGroupSettingsDto>;

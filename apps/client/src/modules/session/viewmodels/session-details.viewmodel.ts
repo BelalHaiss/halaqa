@@ -3,7 +3,7 @@ import {
   UpdateSessionActionDTO,
   SessionAttendanceUpdateDTO,
   TimeMinutes,
-  ISODateOnlyString
+  ISODateOnlyString,
 } from '@halaqa/shared';
 import { toast } from 'sonner';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
@@ -14,32 +14,28 @@ import { sessionService } from '../services/session.service';
 export const useSessionDetailsViewModel = (sessionId: string) => {
   const sessionQuery = useApiQuery<SessionDetailsDTO>({
     queryKey: queryKeys.sessions.detail(sessionId),
-    queryFn: async () => sessionService.getSessionDetails(sessionId)
+    queryFn: async () => sessionService.getSessionDetails(sessionId),
   });
 
-  const updateSessionMutation = useApiMutation<
-    UpdateSessionActionDTO,
-    SessionDetailsDTO
-  >({
-    mutationFn: async (payload) =>
-      sessionService.updateSession(sessionId, payload),
+  const updateSessionMutation = useApiMutation<UpdateSessionActionDTO, SessionDetailsDTO>({
+    mutationFn: async (payload) => sessionService.updateSession(sessionId, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.sessions.all
+        queryKey: queryKeys.sessions.all,
       });
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.groups.all
+        queryKey: queryKeys.groups.all,
       });
     },
     onError: (error) => {
       toast.error(error.message || 'فشل تحديث الجلسة');
-    }
+    },
   });
 
   const saveAttendance = async (attendance: SessionAttendanceUpdateDTO[]) => {
     await updateSessionMutation.mutateAsync({
       action: 'ATTENDANCE',
-      attendance
+      attendance,
     });
 
     toast.success('تم حفظ الحضور بنجاح');
@@ -47,7 +43,7 @@ export const useSessionDetailsViewModel = (sessionId: string) => {
 
   const cancelSession = async () => {
     await updateSessionMutation.mutateAsync({
-      action: 'CANCEL'
+      action: 'CANCEL',
     });
 
     toast.success('تم إلغاء الجلسة بنجاح');
@@ -57,7 +53,7 @@ export const useSessionDetailsViewModel = (sessionId: string) => {
     await updateSessionMutation.mutateAsync({
       action: 'RESCHEDULE',
       date: date as ISODateOnlyString,
-      time
+      time,
     });
 
     toast.success('تم إعادة جدولة الجلسة بنجاح');
@@ -70,6 +66,6 @@ export const useSessionDetailsViewModel = (sessionId: string) => {
     saveAttendance,
     cancelSession,
     rescheduleSession,
-    isUpdating: updateSessionMutation.isPending
+    isUpdating: updateSessionMutation.isPending,
   };
 };

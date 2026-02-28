@@ -35,7 +35,7 @@ export const GroupDetailsView = () => {
   }
 
   const vm = useGroupDetailsViewModel(id, user, {
-    shouldLoadTutors: isEditModalOpen
+    shouldLoadTutors: isEditModalOpen,
   });
 
   if (vm.isLoading) {
@@ -115,10 +115,7 @@ export const GroupDetailsView = () => {
               الوقت
             </Typography>
             <Typography as='div' size='sm' weight='medium'>
-              <GroupScheduleTimeText
-                scheduleDays={vm.group.scheduleDays}
-                emptyLabel='غير محدد'
-              />
+              <GroupScheduleTimeText scheduleDays={vm.group.scheduleDays} emptyLabel='غير محدد' />
             </Typography>
           </div>
 
@@ -177,7 +174,7 @@ export const GroupDetailsView = () => {
                       ? () =>
                           setStudentPendingDelete({
                             id: student.id,
-                            name: student.name
+                            name: student.name,
                           })
                       : undefined
                   }
@@ -209,8 +206,8 @@ export const GroupDetailsView = () => {
                 name: vm.selectedLearner.name,
                 timezone: vm.selectedLearner.timezone,
                 contact: {
-                  notes: vm.selectedLearner.notes
-                }
+                  notes: vm.selectedLearner.notes,
+                },
               }
             : null
         }

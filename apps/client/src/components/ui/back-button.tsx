@@ -11,12 +11,7 @@ type BackButtonProps = {
   className?: string;
 };
 
-function BackButton({
-  to,
-  fallbackTo = '/',
-  label = 'العودة',
-  className
-}: BackButtonProps) {
+function BackButton({ to, fallbackTo = '/', label = 'العودة', className }: BackButtonProps) {
   const navigate = useNavigate();
 
   const handleBack = () => {

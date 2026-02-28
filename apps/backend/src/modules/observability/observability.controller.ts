@@ -21,7 +21,7 @@ export class ObservabilityController {
   reportClientError(
     @Body(new ZodValidationPipe(clientErrorLogSchema))
     payload: ClientErrorLogDto,
-    @Req() req: Request,
+    @Req() req: Request
   ): ClientErrorLogResponseDto {
     this.appLogger.logClientError({
       source: 'client',

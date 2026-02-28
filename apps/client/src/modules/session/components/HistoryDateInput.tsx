@@ -1,9 +1,5 @@
 import { Calendar as CalendarIcon } from 'lucide-react';
-import {
-  formatDateLongArabic,
-  formatDateToISOString,
-  parseDateString,
-} from '@halaqa/shared';
+import { formatDateLongArabic, formatDateToISOString, parseDateString } from '@halaqa/shared';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,7 +28,7 @@ export function HistoryDateInput({
           color='muted'
           className={cn(
             'w-full justify-start text-right font-normal',
-            !value && 'text-muted-foreground',
+            !value && 'text-muted-foreground'
           )}
           disabled={disabled}
         >
@@ -52,4 +48,3 @@ export function HistoryDateInput({
     </Popover>
   );
 }
-

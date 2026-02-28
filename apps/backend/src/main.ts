@@ -27,7 +27,7 @@ async function bootstrap() {
     new UncaughtExceptionFilter(appLogger),
     new PrismaExceptionFilter(appLogger),
     new ZodExceptionFilter(appLogger),
-    new HttpExceptionFilter(appLogger),
+    new HttpExceptionFilter(appLogger)
   );
   await app.listen(process.env.PORT ?? 5000);
 }

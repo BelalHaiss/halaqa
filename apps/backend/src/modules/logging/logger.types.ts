@@ -15,14 +15,7 @@ export type BackendErrorLogEvent = {
 
 type ClientLogPayload = Pick<
   ClientErrorLogDto,
-  | 'message'
-  | 'name'
-  | 'stack'
-  | 'path'
-  | 'url'
-  | 'captureChannel'
-  | 'userAgent'
-  | 'metadata'
+  'message' | 'name' | 'stack' | 'path' | 'url' | 'captureChannel' | 'userAgent' | 'metadata'
 >;
 
 export type ClientErrorLogEvent = ClientLogPayload & {

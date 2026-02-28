@@ -16,11 +16,7 @@ describe('GroupService (integration)', () => {
 
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
-        DatabaseModule,
-        GroupModule,
-      ],
+      imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, GroupModule],
     }).compile();
 
     groupService = moduleRef.get(GroupService);
@@ -31,11 +27,7 @@ describe('GroupService (integration)', () => {
     await moduleRef.close();
   });
 
-  const createUser = async (args: {
-    runId: string;
-    role: UserRole;
-    name: string;
-  }) => {
+  const createUser = async (args: { runId: string; role: UserRole; name: string }) => {
     return prisma.user.create({
       data: {
         username: `${args.role.toLowerCase()}-group-options-${args.runId}`,
@@ -89,9 +81,7 @@ describe('GroupService (integration)', () => {
         { name: secondOwnedGroup.name, value: secondOwnedGroup.id },
         { name: firstOwnedGroup.name, value: firstOwnedGroup.id },
       ]);
-      expect(options.every((item) => Object.keys(item).length === 2)).toBe(
-        true,
-      );
+      expect(options.every((item) => Object.keys(item).length === 2)).toBe(true);
     } finally {
       await prisma.user.deleteMany({
         where: {
@@ -144,13 +134,13 @@ describe('GroupService (integration)', () => {
         expect.arrayContaining([
           { name: groupA.name, value: groupA.id },
           { name: groupB.name, value: groupB.id },
-        ]),
+        ])
       );
       expect(moderatorOptions).toEqual(
         expect.arrayContaining([
           { name: groupA.name, value: groupA.id },
           { name: groupB.name, value: groupB.id },
-        ]),
+        ])
       );
     } finally {
       await prisma.user.deleteMany({
