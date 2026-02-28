@@ -5,7 +5,7 @@ import { normalizeError } from '@/lib/errors/normalize-error';
 class ApiClient {
   private client: AxiosInstance;
 
-  constructor(baseURL: string = import.meta.env.VITE_API_URL || 'http://localhost:5000/api') {
+  constructor(baseURL: string = ApiClient.resolveBaseUrl()) {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
@@ -15,6 +15,12 @@ class ApiClient {
     });
 
     this.setupInterceptors();
+  }
+
+  private static resolveBaseUrl(): string {
+    return (
+      import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
+    );
   }
 
   private setupInterceptors(): void {

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import {
   type ClientErrorLogDto,
   type ClientErrorLogResponseDto,
@@ -16,6 +16,14 @@ import { clientErrorLogSchema } from './validation/client-error.validation';
 @Throttle({ default: { limit: 20, ttl: 60000 } })
 export class ObservabilityController {
   constructor(private readonly appLogger: AppLogger) {}
+
+  @Get('health')
+  getHealth() {
+    return {
+      status: 'ok',
+      timestamp: getNowAsUTC(),
+    };
+  }
 
   @Post('client-errors')
   reportClientError(

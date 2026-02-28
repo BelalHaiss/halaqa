@@ -13,12 +13,19 @@ import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 import { LoggingModule } from './modules/logging/logging.module';
 import { ObservabilityModule } from './modules/observability/observability.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { resolve } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: resolve(__dirname, '../../../client/build'),
+      exclude: ['/api{/*path}'],
     }),
     ThrottlerModule.forRoot([
       {
