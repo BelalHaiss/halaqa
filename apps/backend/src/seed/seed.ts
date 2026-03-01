@@ -15,7 +15,7 @@ import {
 import { seedSessionsAndAttendance } from './session.seed';
 import { seedUsers } from './user.seed';
 
-const prisma = new PrismaClient({
+export const prismaSeedClient = new PrismaClient({
   adapter: createMariaDbAdapter({
     DATABASE_HOST: process.env.DATABASE_HOST,
     DATABASE_USER: process.env.DATABASE_USER,
@@ -30,23 +30,23 @@ export const seedData = async () => {
     faker.seed(SEED_NUMBER);
     fakerAR.seed(SEED_NUMBER);
 
-    await cleanUpDatabase(prisma);
+    await cleanUpDatabase(prismaSeedClient);
 
     const { tutors, students } = await seedUsers({
-      prisma,
+      prisma: prismaSeedClient,
       totalTutors: TOTAL_TUTORS,
       totalLearners: TOTAL_LEARNERS,
     });
 
     const groups = await seedGroups({
-      prisma,
+      prisma: prismaSeedClient,
       tutors,
       students,
       totalGroups: TOTAL_GROUPS,
     });
 
     await seedSessionsAndAttendance({
-      prisma,
+      prisma: prismaSeedClient,
       groups,
       lookbackDays: MAX_SESSION_DAYS_LOOKBACK,
       sessionStatusWeights: SESSION_STATUS_WEIGHTS,
@@ -61,10 +61,10 @@ export const seedData = async () => {
 
 seedData()
   .then(async () => {
-    await prisma.$disconnect();
+    await prismaSeedClient.$disconnect();
   })
   .catch(async (e) => {
     console.error(e);
-    await prisma.$disconnect();
+    await prismaSeedClient.$disconnect();
     process.exit(1);
   });
