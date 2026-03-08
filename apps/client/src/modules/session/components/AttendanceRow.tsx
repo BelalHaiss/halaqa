@@ -5,7 +5,7 @@ import { FieldError } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Typography } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
-import type { AttendanceEditFormData } from '../schema/session.schema';
+import type { AttendanceEditFormData } from '../utils/session.validation';
 import { getAttendanceStatusConfig } from '../utils/session.util';
 
 const ATTENDANCE_STATUSES: AttendanceStatus[] = ['ATTENDED', 'MISSED', 'EXCUSED'];

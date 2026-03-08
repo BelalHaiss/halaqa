@@ -1,13 +1,11 @@
 import { GroupStatus } from '@halaqa/shared';
 import { z, type ZodType } from 'zod';
 import {
-  dayOfWeekSchema,
-  descriptionSchema,
-  durationMinutesStringSchema,
-  groupTimeSchema,
-  nameSchema,
-  tutorIdSchema,
-} from '@/lib/validation/fields.schema';
+  GROUP_DURATION_MINUTES_MAX,
+  GROUP_DURATION_MINUTES_MIN,
+  TIME_HHMM_FORMAT_REGEX,
+} from '@halaqa/shared';
+import { dayOfWeekSchema, descriptionSchema, nameSchema, tutorIdSchema } from '@halaqa/shared';
 
 export type GroupFormValues = {
   name: string;
@@ -28,10 +26,24 @@ const groupStatusSchema = z.enum([
   'COMPLETED',
 ]) satisfies ZodType<GroupStatus>;
 
+const groupTimeSchema = z.string().trim().regex(TIME_HHMM_FORMAT_REGEX, 'تنسيق الوقت غير صحيح');
+
+const durationMinutesStringSchema = z
+  .string()
+  .trim()
+  .refine((value) => {
+    const minutes = Number(value);
+    return (
+      Number.isFinite(minutes) &&
+      minutes >= GROUP_DURATION_MINUTES_MIN &&
+      minutes <= GROUP_DURATION_MINUTES_MAX
+    );
+  }, 'المدة يجب أن تكون بين 15 و 720 دقيقة');
+
 export const groupFormSchema = z.object({
-  name: nameSchema,
-  description: descriptionSchema,
-  tutorId: tutorIdSchema,
+  name: nameSchema(),
+  description: descriptionSchema(),
+  tutorId: tutorIdSchema(),
   timezone: z.string().trim().min(1, 'المنطقة الزمنية مطلوبة'),
   status: groupStatusSchema,
   sameTimeForAllDays: z.boolean(),
@@ -39,7 +51,7 @@ export const groupFormSchema = z.object({
   dayTimes: z.array(groupTimeSchema).length(7),
   durationMinutes: durationMinutesStringSchema,
   selectedDays: z
-    .array(dayOfWeekSchema)
+    .array(dayOfWeekSchema())
     .min(1, 'يجب اختيار يوم واحد على الأقل')
     .refine((days) => new Set(days).size === days.length, 'لا يمكن تكرار نفس اليوم'),
 }) satisfies ZodType<GroupFormValues>;

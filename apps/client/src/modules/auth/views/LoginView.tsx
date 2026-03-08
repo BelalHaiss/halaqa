@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Typography } from '@/components/ui/typography';
-import { loginSchema } from '../schema/login.schema';
+import { loginSchema } from '@halaqa/shared';
 import { useAuthViewModel } from '../viewmodels/auth.viewmodel';
 
 export const LoginView = () => {
@@ -45,7 +45,7 @@ export const LoginView = () => {
     handleSubmit,
     formState: { isDirty, isValid },
   } = useForm<LoginCredentialsDto>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema()),
     defaultValues: {
       username: '',
       password: '',

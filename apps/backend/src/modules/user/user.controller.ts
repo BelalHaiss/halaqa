@@ -23,9 +23,11 @@ import {
   createLearnerSchema,
   queryLearnersSchema,
   updateLearnerSchema,
-} from './validation/learner.validation';
-import { createStaffSchema, updateStaffSchema } from './validation/staff.validation';
-import { changeOwnPasswordSchema, updateOwnProfileSchema } from './validation/profile.validation';
+  createStaffSchema,
+  updateStaffSchema,
+  changeOwnPasswordSchema,
+  updateOwnProfileSchema,
+} from '@halaqa/shared';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -35,7 +37,7 @@ export class UserController {
   @Post('learner')
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   createLearner(
-    @Body(new ZodValidationPipe(createLearnerSchema))
+    @Body(new ZodValidationPipe(createLearnerSchema('en')))
     dto: CreateLearnerDto
   ): Promise<LearnerDto> {
     return this.userService.createLearner(dto);
@@ -45,7 +47,7 @@ export class UserController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
   queryLearners(
     @User() actor: UserEntity,
-    @Query(new ZodValidationPipe(queryLearnersSchema))
+    @Query(new ZodValidationPipe(queryLearnersSchema('en')))
     query: QueryLearnersDto
   ): Promise<QueryLearnersResponseDto> {
     return this.userService.queryLearners(actor, query);
@@ -55,7 +57,7 @@ export class UserController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
   updateLearner(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(updateLearnerSchema))
+    @Body(new ZodValidationPipe(updateLearnerSchema('en')))
     dto: UpdateLearnerDto
   ): Promise<LearnerDto> {
     return this.userService.updateLearner(id, dto);
@@ -77,7 +79,7 @@ export class UserController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   createStaffUser(
     @User() actor: UserEntity,
-    @Body(new ZodValidationPipe(createStaffSchema))
+    @Body(new ZodValidationPipe(createStaffSchema('en')))
     dto: CreateStaffUserDto
   ): Promise<StaffUserDto> {
     return this.userService.createStaffUser(actor, dto);
@@ -88,7 +90,7 @@ export class UserController {
   updateStaffUser(
     @Param('id') id: string,
     @User() actor: UserEntity,
-    @Body(new ZodValidationPipe(updateStaffSchema))
+    @Body(new ZodValidationPipe(updateStaffSchema('en')))
     dto: UpdateStaffUserDto
   ): Promise<StaffUserDto> {
     return this.userService.updateStaffUser(id, actor, dto);
@@ -108,7 +110,7 @@ export class UserController {
   @Patch('me/profile')
   updateOwnProfile(
     @User() user: UserEntity,
-    @Body(new ZodValidationPipe(updateOwnProfileSchema))
+    @Body(new ZodValidationPipe(updateOwnProfileSchema('en')))
     dto: UpdateOwnProfileDto
   ): Promise<UserAuthType> {
     return this.userService.updateOwnProfile(user.id, dto);
@@ -117,7 +119,7 @@ export class UserController {
   @Post('me/change-password')
   async changeOwnPassword(
     @User() user: UserEntity,
-    @Body(new ZodValidationPipe(changeOwnPasswordSchema))
+    @Body(new ZodValidationPipe(changeOwnPasswordSchema('en')))
     dto: ChangeOwnPasswordDto
   ): Promise<void> {
     await this.userService.changeOwnPassword(user.id, dto);

@@ -15,7 +15,7 @@ import {
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Typography } from '@/components/ui/typography';
 import { Field, FieldError } from '@/components/ui/field';
-import { createRescheduleSchema, type RescheduleFormData } from '../schema/reschedule.schema';
+import { createRescheduleSchema, type RescheduleFormData } from '../utils/session.validation';
 
 interface RescheduleDialogProps {
   open: boolean;

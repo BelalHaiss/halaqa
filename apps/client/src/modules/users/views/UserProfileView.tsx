@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, Lock, AlertCircle } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ChangeOwnPasswordDto, TIMEZONES, UpdateOwnProfileDto } from '@halaqa/shared';
-import { changeOwnPasswordSchema, updateOwnProfileSchema } from '../schema/user-profile.schema';
+import { changeOwnPasswordSchema, updateOwnProfileSchema } from '@halaqa/shared';
 import { FormField } from '@/components/forms/form-field';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { UserBadge } from '../components/UserBadge';
@@ -24,7 +24,7 @@ export function UserProfileView() {
 
   // Profile form
   const profileForm = useForm<UpdateOwnProfileDto>({
-    resolver: zodResolver(updateOwnProfileSchema),
+    resolver: zodResolver(updateOwnProfileSchema()),
     defaultValues: {
       name: user?.name || '',
       username: user?.username || '',
@@ -35,7 +35,7 @@ export function UserProfileView() {
 
   // Password form
   const passwordForm = useForm<ChangeOwnPasswordDto>({
-    resolver: zodResolver(changeOwnPasswordSchema),
+    resolver: zodResolver(changeOwnPasswordSchema()),
     defaultValues: {
       currentPassword: '',
       newPassword: '',

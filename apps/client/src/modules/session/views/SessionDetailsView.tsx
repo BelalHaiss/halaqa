@@ -13,7 +13,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { BackButton } from '@/components/ui/back-button';
 import { PageHeader } from '@/components/ui/page-header';
 import { Typography } from '@/components/ui/typography';
-import { attendanceEditSchema, type AttendanceEditFormData } from '../schema/session.schema';
+import { attendanceEditSchema, type AttendanceEditFormData } from '../utils/session.validation';
 import { getSessionStatusConfig } from '../utils/session.util';
 import { useSessionDetailsViewModel } from '../viewmodels/session-details.viewmodel';
 import { AttendanceRow } from '../components/AttendanceRow';

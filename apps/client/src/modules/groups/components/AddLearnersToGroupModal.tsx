@@ -33,7 +33,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Typography } from '@/components/ui/typography';
-import { createLearnerSchema } from '@/modules/learners/schema/learner.schema';
+import { createLearnerSchema } from '@halaqa/shared';
 
 type AddLearnersToGroupModalProps = {
   open: boolean;
@@ -75,7 +75,7 @@ export function AddLearnersToGroupModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const createLearnerForm = useForm<CreateLearnerDto>({
-    resolver: zodResolver(createLearnerSchema),
+    resolver: zodResolver(createLearnerSchema()),
     mode: 'onTouched',
     defaultValues: createLearnerDefaultValues,
   });

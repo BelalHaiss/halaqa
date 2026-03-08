@@ -13,8 +13,11 @@ import { useApp } from '@/contexts/AppContext';
 import { useApiMutation } from '@/lib/hooks/useApiMutation';
 import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryClient, queryKeys } from '@/lib/query-client';
-import { createStaffUserSchema, updateStaffUserSchema } from '../schema/user.schema';
+import { createStaffSchema, updateStaffSchema } from '@halaqa/shared';
 import { userService } from '../services/user.service';
+
+const createStaffUserSchema = createStaffSchema();
+const updateStaffUserSchema = updateStaffSchema();
 
 const DEFAULT_FORM_VALUES: CreateStaffUserDto = {
   name: '',

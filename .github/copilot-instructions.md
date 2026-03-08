@@ -34,11 +34,11 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 
 ---
 
-## 🔐 zod Schemas in Client
+## 🔐 Zod Schemas
 
-- Zod only in `schema/`
-
-- Zod schema must satisfy shared DTOs and reusable validation zod schema inside utils/validation folder so use from it or edit if needed
+- All schemas live in `packages/shared/src/validation/` as factory functions `schema(locale?: 'ar' | 'en')` (default `'ar'`); import directly from `@halaqa/shared`
+- Backend: import directly from `@halaqa/shared` and call with `'en'` inline — no local validation wrapper files
+- Create `modules/[module]/utils/[module].validation.ts` **only** for client-or backend only when you need to extend or customize the shared schema for that specific module; import shared schema and extend it with Zod's `.extend()` or `.merge()`
 
 ---
 
@@ -118,7 +118,6 @@ React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
 - always use existing modules if exist or create with Nest CLI `nest g res modules/[name] --no-spec`
 - Shared DTOs only
 - `DatesAsObjects` backend-only
-- Zod schema must satisfy shared DTOs and reusable validation zod schema inside utils/validation folder so use from it or edit if needed
 - we have 2 global guards applied AuthGuard, RolesGuard but we have decorators for customization them
 - we have zod-validation pipe for any DTO or Query and it should only applied Route parameter not route handler
 - we have user decorator that extract user info from request and attach it to request object use it in your controllers don't add any custom logic

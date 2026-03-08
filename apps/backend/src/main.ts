@@ -9,12 +9,13 @@ import {
 } from './exceptions/exception';
 import { AppLogger } from './modules/logging/app-logger.service';
 import { isDevelopment } from './utils/util';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
   const appLogger = app.get(AppLogger);
   app.useLogger(appLogger);
-
+  app.set('trust proxy', 'loopback');
   if (isDevelopment) {
     app.enableCors({
       origin: '*', // Adjust this to your frontend URL and port

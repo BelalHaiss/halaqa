@@ -29,8 +29,14 @@ import { Typography } from '@/components/ui/typography';
 import { DateTimePicker } from '@/components/ui/date-time-picker';
 import { Field, FieldError } from '@/components/ui/field';
 import { dayNames } from '../constants';
-import { createGroupSchema, updateGroupSchema } from '../schema/group.schema';
-import { groupFormSchema, type GroupFormValues } from '../schema/group-form.schema';
+import {
+  createGroupSchema as _createGroupSchema,
+  updateGroupSchema as _updateGroupSchema,
+} from '@halaqa/shared';
+import { groupFormSchema, type GroupFormValues } from '../utils/group.validation';
+
+const createGroupSchema = _createGroupSchema();
+const updateGroupSchema = _updateGroupSchema();
 
 type BaseGroupFormModalProps = {
   open: boolean;

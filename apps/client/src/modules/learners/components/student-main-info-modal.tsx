@@ -23,7 +23,7 @@ import { Typography } from '@/components/ui/typography';
 import {
   studentMainInfoFormSchema,
   type StudentMainInfoFormValues,
-} from './student-main-info.schema';
+} from '../utils/learner.validation';
 import { LearnerGroupsReadonlyPanel } from './LearnerGroupsReadonlyPanel';
 
 export type StudentMainInfoMode = 'view' | 'edit' | 'create';

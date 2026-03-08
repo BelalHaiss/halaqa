@@ -18,9 +18,9 @@ import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   addLearnersToGroupSchema,
   createGroupSchema,
-  createLearnerForGroupSchema,
+  createLearnerSchema,
   updateGroupSchema,
-} from './validation/group.validation';
+} from '@halaqa/shared';
 import { GroupService } from './group.service';
 import { GroupLearnerOrchestrator } from '../orchestrator/group-learner.orchestrator';
 
@@ -54,7 +54,7 @@ export class GroupController {
   @Post()
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   createGroup(
-    @Body(new ZodValidationPipe(createGroupSchema))
+    @Body(new ZodValidationPipe(createGroupSchema('en')))
     dto: CreateGroupDto
   ): Promise<GroupDetailsDto> {
     return this.groupService.createGroup(dto);
@@ -64,7 +64,7 @@ export class GroupController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   updateGroup(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(updateGroupSchema))
+    @Body(new ZodValidationPipe(updateGroupSchema('en')))
     dto: UpdateGroupDto
   ): Promise<GroupDetailsDto> {
     return this.groupService.updateGroup(id, dto);
@@ -74,7 +74,7 @@ export class GroupController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   async createLearnerAndAddToGroup(
     @Param('id') groupId: string,
-    @Body(new ZodValidationPipe(createLearnerForGroupSchema))
+    @Body(new ZodValidationPipe(createLearnerSchema('en')))
     dto: CreateLearnerDto,
     @User() user: UserEntity
   ): Promise<GroupDetailsDto> {
@@ -86,7 +86,7 @@ export class GroupController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   async addExistingLearnersToGroup(
     @Param('id') groupId: string,
-    @Body(new ZodValidationPipe(addLearnersToGroupSchema))
+    @Body(new ZodValidationPipe(addLearnersToGroupSchema('en')))
     dto: AddLearnersToGroupDto,
     @User() user: UserEntity
   ): Promise<GroupDetailsDto> {

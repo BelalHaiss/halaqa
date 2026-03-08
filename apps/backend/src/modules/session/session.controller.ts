@@ -12,7 +12,7 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { User } from 'src/decorators/user.decorator';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import { SessionService } from './session.service';
-import { updateSessionActionSchema, sessionQuerySchema } from './validation/session.validation';
+import { updateSessionActionSchema, sessionQuerySchema } from '@halaqa/shared';
 
 @Controller('sessions')
 @Roles([UserRole.ADMIN, UserRole.MODERATOR, UserRole.TUTOR])
@@ -26,7 +26,7 @@ export class SessionController {
 
   @Get('history')
   async querySessions(
-    @Query(new ZodValidationPipe(sessionQuerySchema)) query: SessionQueryDTO,
+    @Query(new ZodValidationPipe(sessionQuerySchema('en'))) query: SessionQueryDTO,
     @User() user: AuthenticatedUser
   ): Promise<PaginatedResult<SessionSummaryDTO[]>> {
     return this.sessionService.querySessions(query, user);
@@ -43,7 +43,7 @@ export class SessionController {
   @Patch(':id')
   async updateSession(
     @Param('id') id: string,
-    @Body(new ZodValidationPipe(updateSessionActionSchema))
+    @Body(new ZodValidationPipe(updateSessionActionSchema('en')))
     payload: UpdateSessionActionDTO,
     @User() user: AuthenticatedUser
   ): Promise<SessionDetailsDTO> {

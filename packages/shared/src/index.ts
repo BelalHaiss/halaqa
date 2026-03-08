@@ -12,3 +12,14 @@ export * from './utils/date.util';
 export * from './utils/date.constants';
 export * from './utils/object.util';
 export * from './utils/timezones.util';
+
+// Export validation schemas
+export * from './validation/messages';
+export * from './validation/fields.schema';
+export * from './validation/timezone.schema';
+export * from './validation/api.schema';
+export * from './validation/auth.schema';
+export * from './validation/user.schema';
+export * from './validation/learner.schema';
+export * from './validation/group.schema';
+export * from './validation/session.schema';
