@@ -58,7 +58,7 @@ COPY --from=builder /app/apps/backend/prisma.config.ts ./apps/backend/prisma.con
 COPY --from=builder /app/apps/client/build ./apps/client/build
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 
-RUN mkdir -p /app/apps/backend/logs && chown -R node:node /app
+RUN mkdir -p /app/logs && chown -R node:node /app
 
 WORKDIR /app/apps/backend
 EXPOSE 5000
