@@ -27,18 +27,15 @@ export const nameSchema = (locale: ValidationLocale = 'ar') => {
   return z.string().trim().min(NAME_MIN_LENGTH, m.nameTooShort).max(NAME_MAX_LENGTH, m.nameTooLong);
 };
 
-export const usernameSchema = (locale: ValidationLocale = 'ar') => {
+export const usernameAccountSchema = (locale: ValidationLocale = 'ar') => {
   const m = getMessages(locale);
   return z
     .string()
     .trim()
     .min(USERNAME_MIN_LENGTH, m.usernameTooShort)
-    .max(USERNAME_MAX_LENGTH, m.usernameTooLong);
-};
-
-export const usernameAccountSchema = (locale: ValidationLocale = 'ar') => {
-  const m = getMessages(locale);
-  return usernameSchema(locale).regex(USERNAME_ACCOUNT_REGEX, m.usernameInvalidChars);
+    .max(USERNAME_MAX_LENGTH, m.usernameTooLong)
+    .regex(USERNAME_ACCOUNT_REGEX, m.usernameInvalidChars)
+    .toLowerCase();
 };
 
 export const passwordSchema = (locale: ValidationLocale = 'ar') => {

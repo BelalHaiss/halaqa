@@ -47,7 +47,7 @@ RUN apk add --no-cache dumb-init
 
 ENV NODE_ENV=production
 ENV PORT=5000
-ENV LOGS_DIR=./logs
+ENV LOGS_DIR=/app/logs
 
 WORKDIR /app
 

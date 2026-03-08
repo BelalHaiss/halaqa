@@ -14,10 +14,7 @@ async function bootstrapAdmin() {
       timezone: 'Africa/Cairo',
       notes: null,
     },
-    update: {
-      role: 'ADMIN',
-      password: hashedPassword,
-    },
+    update: {},
   });
 
   console.log('Bootstrap admin is ready (username: admin)');

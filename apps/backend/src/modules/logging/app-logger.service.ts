@@ -101,9 +101,16 @@ export class AppLogger extends ConsoleLogger {
     const stack =
       typeof event.stack === 'string' ? this.sanitizeText(event.stack, 8000) : undefined;
 
+    const sanitizedEvent = Object.fromEntries(
+      Object.entries(event).map(([k, v]) => [
+        k,
+        typeof v === 'string' ? this.sanitizeText(v, 3000) : v,
+      ])
+    );
+
     this.fileLogger.log({
       level,
-      ...event,
+      ...sanitizedEvent,
       message,
       ...(stack ? { stack } : {}),
     });
@@ -111,15 +118,15 @@ export class AppLogger extends ConsoleLogger {
 
   private toMessage(value: unknown): string {
     if (value instanceof Error) {
-      return this.sanitizeText(value.message, 3000);
+      return value.message;
     }
 
     if (typeof value === 'string') {
-      return this.sanitizeText(value, 3000);
+      return value;
     }
 
     try {
-      return this.sanitizeText(JSON.stringify(value), 3000);
+      return JSON.stringify(value);
     } catch {
       return 'Unknown object error';
     }
@@ -129,9 +136,9 @@ export class AppLogger extends ConsoleLogger {
     const trimmed = value.length > maxLength ? `${value.slice(0, maxLength)}...` : value;
 
     return trimmed
-      .replace(/(Bearer\s+)[\w.-]+/gi, '$1[REDACTED]')
+      .replace(/(Bearer\s+)[\w\-._~+/]+=*/gi, '$1[REDACTED]')
       .replace(
-        /(password|token|authorization|cookie|secret)\s*[:=]\s*([^\s,;]+)/gi,
+        /(password|token|authorization|cookie|secret)\s*["']?\s*[:=]\s*["']?([^\s,"';]+)["']?/gi,
         '$1=[REDACTED]'
       );
   }
