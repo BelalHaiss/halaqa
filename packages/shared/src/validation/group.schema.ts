@@ -2,11 +2,13 @@ import z, { ZodType } from 'zod';
 import {
   AddLearnersToGroupDto,
   CreateGroupDto,
+  CreateLearnersDto,
   GroupScheduleDay,
   GroupStatus,
   UpdateGroupDto,
   UpdateGroupSettingsDto,
 } from '../group.types';
+import { createLearnerSchema } from './learner.schema';
 import { getMessages, ValidationLocale } from './messages';
 import {
   dayOfWeekSchema,
@@ -98,3 +100,8 @@ export const addLearnersToGroupSchema = (locale: ValidationLocale = 'ar') =>
   z.object({
     learnerIds: z.array(nonEmptyIdSchema(locale)).min(1),
   }) satisfies ZodType<AddLearnersToGroupDto>;
+
+export const createLearnersSchema = (locale: ValidationLocale = 'ar') =>
+  z.object({
+    learners: z.array(createLearnerSchema(locale)).min(1),
+  }) satisfies ZodType<CreateLearnersDto>;

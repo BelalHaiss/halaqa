@@ -2,8 +2,8 @@ import { apiClient } from '@/services';
 import {
   AddLearnersToGroupDto,
   CountDto,
-  CreateLearnerDto,
   CreateGroupDto,
+  CreateLearnersDto,
   GroupDetailsDto,
   GroupSelectOptionDto,
   GroupSummaryDto,
@@ -50,11 +50,11 @@ export class GroupService {
     return apiClient.patch<GroupDetailsDto>(`/groups/${groupId}`, group);
   }
 
-  async createLearnerAndAddToGroup(
+  async createLearnersAndAddToGroup(
     groupId: string,
-    dto: CreateLearnerDto
+    dto: CreateLearnersDto
   ): Promise<UnifiedApiResponse<GroupDetailsDto>> {
-    return apiClient.post<GroupDetailsDto>(`/groups/${groupId}/students/create`, dto);
+    return apiClient.post<GroupDetailsDto>(`/groups/${groupId}/students/create-many`, dto);
   }
 
   async addExistingLearnersToGroup(

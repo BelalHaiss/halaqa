@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AddLearnersToGroupDto, CreateLearnerDto, DEFAULT_TIMEZONE } from '@halaqa/shared';
+import { AddLearnersToGroupDto, CreateLearnersDto, DEFAULT_TIMEZONE } from '@halaqa/shared';
 import { UserRole } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
 
@@ -7,27 +7,31 @@ import { DatabaseService } from '../database/database.service';
 export class GroupLearnerOrchestrator {
   constructor(private readonly prismaService: DatabaseService) {}
 
-  async createLearnerAndAttachToGroup(groupId: string, dto: CreateLearnerDto): Promise<void> {
+  async createLearnersAndAttachToGroup(groupId: string, dto: CreateLearnersDto): Promise<void> {
     await this.prismaService.$transaction(async (tx) => {
-      const createdLearner = await tx.user.create({
-        data: {
-          name: dto.name,
-          role: UserRole.STUDENT,
-          username: null,
-          password: null,
-          timezone: dto.timezone || DEFAULT_TIMEZONE,
-          notes: dto.contact?.notes,
-        },
-        select: {
-          id: true,
-        },
-      });
+      const createdLearners = await Promise.all(
+        dto.learners.map((learner) =>
+          tx.user.create({
+            data: {
+              name: learner.name,
+              role: UserRole.STUDENT,
+              username: null,
+              password: null,
+              timezone: learner.timezone || DEFAULT_TIMEZONE,
+              notes: learner.contact?.notes,
+            },
+            select: {
+              id: true,
+            },
+          })
+        )
+      );
 
-      await tx.groupStudent.create({
-        data: {
+      await tx.groupStudent.createMany({
+        data: createdLearners.map((learner) => ({
           groupId,
-          userId: createdLearner.id,
-        },
+          userId: learner.id,
+        })),
       });
     });
   }

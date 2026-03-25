@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AddLearnersToGroupDto,
   CreateLearnerDto,
+  CreateLearnersDto,
   DEFAULT_TIMEZONE,
   LearnerDto,
   TIMEZONES,
+  createLearnerSchema,
 } from '@halaqa/shared';
+import { z } from 'zod';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,14 +36,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Typography } from '@/components/ui/typography';
-import { createLearnerSchema } from '@halaqa/shared';
 
 type AddLearnersToGroupModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   learners: LearnerDto[];
   onAttachExisting: (dto: AddLearnersToGroupDto) => Promise<void> | void;
-  onCreateAndAttach: (dto: CreateLearnerDto) => Promise<void> | void;
+  onCreateAndAttach: (dto: CreateLearnersDto) => Promise<void> | void;
   isLoadingLearners?: boolean;
   isAttachingExisting?: boolean;
   isCreatingLearner?: boolean;
@@ -49,13 +51,19 @@ type AddLearnersToGroupModalProps = {
 type PendingActionType = 'attach-existing' | 'create-new' | null;
 type AddLearnersModalTab = 'existing' | 'create';
 
-const createLearnerDefaultValues: CreateLearnerDto = {
+const createLearnerDefaultValues = (): CreateLearnerDto => ({
   name: '',
   timezone: DEFAULT_TIMEZONE,
   contact: {
     notes: '',
   },
-};
+});
+
+const createManyLearnersSchema = z.object({
+  learners: z.array(createLearnerSchema()).min(1),
+});
+
+type CreateManyLearnersFormValues = z.infer<typeof createManyLearnersSchema>;
 
 export function AddLearnersToGroupModal({
   open,
@@ -74,10 +82,16 @@ export function AddLearnersToGroupModal({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const createLearnerForm = useForm<CreateLearnerDto>({
-    resolver: zodResolver(createLearnerSchema()),
+  const createLearnerForm = useForm<CreateManyLearnersFormValues>({
+    resolver: zodResolver(createManyLearnersSchema),
     mode: 'onTouched',
-    defaultValues: createLearnerDefaultValues,
+    defaultValues: {
+      learners: [createLearnerDefaultValues()],
+    },
+  });
+  const createLearnerFields = useFieldArray({
+    control: createLearnerForm.control,
+    name: 'learners',
   });
 
   const learnerNameById = useMemo(
@@ -100,7 +114,9 @@ export function AddLearnersToGroupModal({
     setPendingAction(null);
     setConfirmOpen(false);
     setErrorMessage(null);
-    createLearnerForm.reset(createLearnerDefaultValues);
+    createLearnerForm.reset({
+      learners: [createLearnerDefaultValues()],
+    });
   };
 
   const openAttachExistingConfirmation = () => {
@@ -130,13 +146,16 @@ export function AddLearnersToGroupModal({
           learnerIds: selectedLearnerIds,
         });
       } else if (pendingAction === 'create-new') {
-        const values = createLearnerForm.getValues();
-        const notes = values.contact?.notes?.trim();
-
         await onCreateAndAttach({
-          name: values.name.trim(),
-          timezone: values.timezone,
-          contact: notes ? { notes } : undefined,
+          learners: createLearnerForm.getValues('learners').map((learner) => {
+            const notes = learner.contact?.notes?.trim();
+
+            return {
+              name: learner.name.trim(),
+              timezone: learner.timezone,
+              contact: notes ? { notes } : undefined,
+            };
+          }),
         });
       }
 
@@ -148,12 +167,12 @@ export function AddLearnersToGroupModal({
   };
 
   const confirmTitle =
-    pendingAction === 'attach-existing' ? 'تأكيد إضافة المتعلمين' : 'تأكيد إنشاء متعلم جديد';
+    pendingAction === 'attach-existing' ? 'تأكيد إضافة المتعلمين' : 'تأكيد إنشاء متعلمين جدد';
 
   const confirmDescription =
     pendingAction === 'attach-existing'
       ? `سيتم إضافة ${selectedLearnerIds.length} متعلم إلى الحلقة`
-      : 'سيتم إنشاء متعلم جديد وإضافته إلى الحلقة';
+      : `سيتم إنشاء ${createLearnerForm.getValues('learners').length} متعلم وإضافتهم إلى الحلقة`;
 
   return (
     <>
@@ -170,7 +189,7 @@ export function AddLearnersToGroupModal({
           <DialogHeader>
             <DialogTitle>إضافة متعلمين</DialogTitle>
             <DialogDescription>
-              يمكنك اختيار متعلمين موجودين أو إنشاء متعلم جديد وإضافته إلى الحلقة
+              يمكنك اختيار متعلمين موجودين أو إنشاء عدة متعلمين جدد وإضافتهم إلى الحلقة
             </DialogDescription>
           </DialogHeader>
 
@@ -251,40 +270,73 @@ export function AddLearnersToGroupModal({
                 onSubmit={createLearnerForm.handleSubmit(openCreateLearnerConfirmation)}
                 className='space-y-4'
               >
-                <FormField
-                  control={createLearnerForm.control}
-                  name='name'
-                  id='new-learner-name'
-                  label='الاسم'
-                  type='text'
-                  placeholder='اسم المتعلم'
-                  disabled={isCreatingLearner}
-                />
+                <div className='flex justify-end gap-2'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    color='muted'
+                    onClick={() => createLearnerFields.append(createLearnerDefaultValues())}
+                    disabled={isCreatingLearner}
+                  >
+                    إضافة متعلم آخر
+                  </Button>
+                </div>
 
-                <FormField
-                  control={createLearnerForm.control}
-                  name='timezone'
-                  id='new-learner-timezone'
-                  label='المنطقة الزمنية'
-                  type='select'
-                  placeholder='اختر المنطقة الزمنية'
-                  disabled={isCreatingLearner}
-                  options={TIMEZONES.map((timezone) => ({
-                    value: timezone.value,
-                    label: timezone.label,
-                  }))}
-                />
+                <div className='max-h-[50vh] space-y-4 overflow-y-auto pr-1'>
+                  {createLearnerFields.fields.map((field, index) => (
+                    <div key={field.id} className='space-y-4 rounded-lg border p-4'>
+                      <div className='flex items-center justify-between gap-2'>
+                        <Typography as='div' size='sm' weight='medium'>
+                          متعلم جديد #{index + 1}
+                        </Typography>
+                        <Button
+                          type='button'
+                          variant='outline'
+                          color='danger'
+                          onClick={() => createLearnerFields.remove(index)}
+                          disabled={isCreatingLearner || createLearnerFields.fields.length === 1}
+                        >
+                          حذف
+                        </Button>
+                      </div>
 
-                <FormField
-                  control={createLearnerForm.control}
-                  name='contact.notes'
-                  id='new-learner-notes'
-                  label='ملاحظات'
-                  type='textarea'
-                  placeholder='ملاحظات عن المتعلم'
-                  rows={3}
-                  disabled={isCreatingLearner}
-                />
+                      <FormField
+                        control={createLearnerForm.control}
+                        name={`learners.${index}.name`}
+                        id={`new-learner-name-${index}`}
+                        label='الاسم'
+                        type='text'
+                        placeholder='اسم المتعلم'
+                        disabled={isCreatingLearner}
+                      />
+
+                      <FormField
+                        control={createLearnerForm.control}
+                        name={`learners.${index}.timezone`}
+                        id={`new-learner-timezone-${index}`}
+                        label='المنطقة الزمنية'
+                        type='select'
+                        placeholder='اختر المنطقة الزمنية'
+                        disabled={isCreatingLearner}
+                        options={TIMEZONES.map((timezone) => ({
+                          value: timezone.value,
+                          label: timezone.label,
+                        }))}
+                      />
+
+                      <FormField
+                        control={createLearnerForm.control}
+                        name={`learners.${index}.contact.notes`}
+                        id={`new-learner-notes-${index}`}
+                        label='ملاحظات'
+                        type='textarea'
+                        placeholder='ملاحظات عن المتعلم'
+                        rows={3}
+                        disabled={isCreatingLearner}
+                      />
+                    </div>
+                  ))}
+                </div>
               </form>
             </TabsContent>
           </Tabs>
@@ -326,7 +378,7 @@ export function AddLearnersToGroupModal({
                   !createLearnerForm.formState.isValid
                 }
               >
-                إنشاء وإضافة
+                إنشاء وإضافة الكل
               </Button>
             )}
           </DialogFooter>
@@ -338,7 +390,7 @@ export function AddLearnersToGroupModal({
         onOpenChange={setConfirmOpen}
         title={confirmTitle}
         description={confirmDescription}
-        confirmText={pendingAction === 'attach-existing' ? 'إضافة' : 'إنشاء'}
+        confirmText={pendingAction === 'attach-existing' ? 'إضافة' : 'إنشاء الكل'}
         cancelText='إلغاء'
         onConfirm={handleConfirm}
       />

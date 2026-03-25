@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   AddLearnersToGroupDto,
-  CreateLearnerDto,
+  CreateLearnersDto,
   GroupDetailsDto,
   GroupStudentSummaryDto,
   GroupTutorSummaryDto,
@@ -72,10 +72,10 @@ export const useGroupDetailsViewModel = (
     },
   });
 
-  const createLearnerAndAttachMutation = useApiMutation<CreateLearnerDto, GroupDetailsDto>({
-    mutationFn: async (payload) => groupService.createLearnerAndAddToGroup(groupId, payload),
+  const createManyLearnersAndAttachMutation = useApiMutation<CreateLearnersDto, GroupDetailsDto>({
+    mutationFn: async (payload) => groupService.createLearnersAndAddToGroup(groupId, payload),
     onSuccess: async () => {
-      toast.success('تمت إضافة المتعلم للحلقة بنجاح');
+      toast.success('تمت إضافة المتعلمين للحلقة بنجاح');
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: queryKeys.groups.detail(groupId),
@@ -85,7 +85,7 @@ export const useGroupDetailsViewModel = (
       ]);
     },
     onError: (error) => {
-      toast.error(error.message || 'فشل إضافة المتعلم');
+      toast.error(error.message || 'فشل إضافة المتعلمين');
     },
   });
 
@@ -203,12 +203,12 @@ export const useGroupDetailsViewModel = (
     await addExistingLearnersMutation.mutateAsync(dto);
   };
 
-  const createLearnerAndAttachToGroup = async (dto: CreateLearnerDto) => {
+  const createLearnersAndAddToGroup = async (dto: CreateLearnersDto) => {
     if (!canManageGroup) {
       throw new Error('غير مصرح لك بتنفيذ العملية');
     }
 
-    await createLearnerAndAttachMutation.mutateAsync(dto);
+    await createManyLearnersAndAttachMutation.mutateAsync(dto);
   };
 
   const availableLearners = useMemo(() => {
@@ -236,7 +236,7 @@ export const useGroupDetailsViewModel = (
     openLearnerInfoModal,
     submitLearnerMainInfo,
     addExistingLearnersToGroup,
-    createLearnerAndAttachToGroup,
+    createLearnersAndAddToGroup,
     availableLearners,
     isLoadingAvailableLearners: learnersQuery.isPending,
     isAddLearnersModalOpen,
@@ -247,7 +247,7 @@ export const useGroupDetailsViewModel = (
     selectedLearner,
 
     isUpdatingGroup: updateGroupMutation.isPending,
-    isAddingStudent: createLearnerAndAttachMutation.isPending,
+    isAddingStudent: createManyLearnersAndAttachMutation.isPending,
     isAddingExistingStudents: addExistingLearnersMutation.isPending,
     isRemovingStudent: removeStudentMutation.isPending,
     isUpdatingLearner: updateLearnerMutation.isPending,
