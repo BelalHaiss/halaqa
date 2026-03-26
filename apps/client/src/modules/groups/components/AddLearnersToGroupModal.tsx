@@ -270,7 +270,7 @@ export function AddLearnersToGroupModal({
                 onSubmit={createLearnerForm.handleSubmit(openCreateLearnerConfirmation)}
                 className='space-y-4'
               >
-                <div className='flex justify-end gap-2'>
+                <div className='flex justify-end'>
                   <Button
                     type='button'
                     variant='outline'
@@ -282,24 +282,9 @@ export function AddLearnersToGroupModal({
                   </Button>
                 </div>
 
-                <div className='max-h-[50vh] space-y-4 overflow-y-auto pr-1'>
+                <div className='max-h-[50vh] space-y-3 overflow-y-auto pr-1' dir='rtl'>
                   {createLearnerFields.fields.map((field, index) => (
-                    <div key={field.id} className='space-y-4 rounded-lg border p-4'>
-                      <div className='flex items-center justify-between gap-2'>
-                        <Typography as='div' size='sm' weight='medium'>
-                          متعلم جديد #{index + 1}
-                        </Typography>
-                        <Button
-                          type='button'
-                          variant='outline'
-                          color='danger'
-                          onClick={() => createLearnerFields.remove(index)}
-                          disabled={isCreatingLearner || createLearnerFields.fields.length === 1}
-                        >
-                          حذف
-                        </Button>
-                      </div>
-
+                    <div key={field.id} className='flex items-end gap-3 rounded-lg border p-4'>
                       <FormField
                         control={createLearnerForm.control}
                         name={`learners.${index}.name`}
@@ -324,16 +309,16 @@ export function AddLearnersToGroupModal({
                         }))}
                       />
 
-                      <FormField
-                        control={createLearnerForm.control}
-                        name={`learners.${index}.contact.notes`}
-                        id={`new-learner-notes-${index}`}
-                        label='ملاحظات'
-                        type='textarea'
-                        placeholder='ملاحظات عن المتعلم'
-                        rows={3}
-                        disabled={isCreatingLearner}
-                      />
+                      <Button
+                        type='button'
+                        variant='outline'
+                        color='danger'
+                        onClick={() => createLearnerFields.remove(index)}
+                        disabled={isCreatingLearner || createLearnerFields.fields.length === 1}
+                        className='mb-0.5'
+                      >
+                        حذف
+                      </Button>
                     </div>
                   ))}
                 </div>
