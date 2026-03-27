@@ -36,6 +36,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimezoneDisplay } from '@/components/ui/timezone-display';
 import { Typography } from '@/components/ui/typography';
+import { Trash2 } from 'lucide-react';
 
 type AddLearnersToGroupModalProps = {
   open: boolean;
@@ -270,21 +271,12 @@ export function AddLearnersToGroupModal({
                 onSubmit={createLearnerForm.handleSubmit(openCreateLearnerConfirmation)}
                 className='space-y-4'
               >
-                <div className='flex justify-end'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    color='muted'
-                    onClick={() => createLearnerFields.append(createLearnerDefaultValues())}
-                    disabled={isCreatingLearner}
-                  >
-                    إضافة متعلم آخر
-                  </Button>
-                </div>
-
                 <div className='max-h-[50vh] space-y-3 overflow-y-auto pr-1' dir='rtl'>
                   {createLearnerFields.fields.map((field, index) => (
-                    <div key={field.id} className='flex items-end gap-3 rounded-lg border p-4'>
+                    <div
+                      key={field.id}
+                      className='flex h-32 items-start gap-3 rounded-lg border p-4'
+                    >
                       <FormField
                         control={createLearnerForm.control}
                         name={`learners.${index}.name`}
@@ -308,16 +300,15 @@ export function AddLearnersToGroupModal({
                           label: timezone.label,
                         }))}
                       />
-
                       <Button
                         type='button'
                         variant='outline'
                         color='danger'
                         onClick={() => createLearnerFields.remove(index)}
                         disabled={isCreatingLearner || createLearnerFields.fields.length === 1}
-                        className='mb-0.5'
+                        className='self-center'
                       >
-                        حذف
+                        <Trash2 />
                       </Button>
                     </div>
                   ))}
@@ -333,39 +324,54 @@ export function AddLearnersToGroupModal({
           ) : null}
 
           <DialogFooter>
-            <Button
-              type='button'
-              variant='outline'
-              color='muted'
-              onClick={() => onOpenChange(false)}
-              disabled={isAttachingExisting || isCreatingLearner}
-            >
-              إلغاء
-            </Button>
+            <div className='flex w-full items-center justify-between'>
+              <div>
+                <Button
+                  type='button'
+                  variant='outline'
+                  color='muted'
+                  onClick={() => createLearnerFields.append(createLearnerDefaultValues())}
+                  disabled={isCreatingLearner}
+                >
+                  إضافة متعلم آخر
+                </Button>
+              </div>
+              <div className='flex gap-3'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  color='muted'
+                  onClick={() => onOpenChange(false)}
+                  disabled={isAttachingExisting || isCreatingLearner}
+                >
+                  إلغاء
+                </Button>
 
-            {activeTab === 'existing' ? (
-              <Button
-                type='button'
-                onClick={openAttachExistingConfirmation}
-                disabled={
-                  isLoadingLearners || isAttachingExisting || selectedLearnerIds.length === 0
-                }
-              >
-                إضافة المتعلمين المحددين
-              </Button>
-            ) : (
-              <Button
-                type='submit'
-                form='create-learner-form'
-                disabled={
-                  isCreatingLearner ||
-                  !createLearnerForm.formState.isDirty ||
-                  !createLearnerForm.formState.isValid
-                }
-              >
-                إنشاء وإضافة الكل
-              </Button>
-            )}
+                {activeTab === 'existing' ? (
+                  <Button
+                    type='button'
+                    onClick={openAttachExistingConfirmation}
+                    disabled={
+                      isLoadingLearners || isAttachingExisting || selectedLearnerIds.length === 0
+                    }
+                  >
+                    إضافة المتعلمين المحددين
+                  </Button>
+                ) : (
+                  <Button
+                    type='submit'
+                    form='create-learner-form'
+                    disabled={
+                      isCreatingLearner ||
+                      !createLearnerForm.formState.isDirty ||
+                      !createLearnerForm.formState.isValid
+                    }
+                  >
+                    إنشاء وإضافة الكل
+                  </Button>
+                )}
+              </div>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
