@@ -5,12 +5,11 @@ import {
   AddLearnersToGroupDto,
   CreateLearnerDto,
   CreateLearnersDto,
+  createLearnersSchema,
   DEFAULT_TIMEZONE,
   LearnerDto,
   TIMEZONES,
-  createLearnerSchema,
 } from '@halaqa/shared';
-import { z } from 'zod';
 import { FormField } from '@/components/forms/form-field';
 import { Button } from '@/components/ui/button';
 import {
@@ -60,12 +59,6 @@ const createLearnerDefaultValues = (): CreateLearnerDto => ({
   },
 });
 
-const createManyLearnersSchema = z.object({
-  learners: z.array(createLearnerSchema()).min(1),
-});
-
-type CreateManyLearnersFormValues = z.infer<typeof createManyLearnersSchema>;
-
 export function AddLearnersToGroupModal({
   open,
   onOpenChange,
@@ -83,8 +76,8 @@ export function AddLearnersToGroupModal({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const createLearnerForm = useForm<CreateManyLearnersFormValues>({
-    resolver: zodResolver(createManyLearnersSchema),
+  const createLearnerForm = useForm<CreateLearnersDto>({
+    resolver: zodResolver(createLearnersSchema()),
     mode: 'onTouched',
     defaultValues: {
       learners: [createLearnerDefaultValues()],
@@ -271,11 +264,11 @@ export function AddLearnersToGroupModal({
                 onSubmit={createLearnerForm.handleSubmit(openCreateLearnerConfirmation)}
                 className='space-y-4'
               >
-                <div className='max-h-[50vh] space-y-3 overflow-y-auto pr-1' dir='rtl'>
+                <div className='max-h-[50vh] space-y-2 overflow-y-auto pr-1' dir='rtl'>
                   {createLearnerFields.fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className='flex h-32 items-start gap-3 rounded-lg border p-4'
+                      className='flex items-baseline  gap-2 rounded-lg border p-2'
                     >
                       <FormField
                         control={createLearnerForm.control}
