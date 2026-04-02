@@ -223,7 +223,7 @@ export const GroupDetailsView = () => {
         isAttachingExisting={vm.isAddingExistingStudents}
         isCreatingLearner={vm.isAddingStudent}
         onAttachExisting={vm.addExistingLearnersToGroup}
-        onCreateAndAttach={vm.createLearnerAndAttachToGroup}
+        onCreateAndAttach={vm.createLearnersAndAddToGroup}
       />
 
       <ConfirmDialog

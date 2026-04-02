@@ -2,6 +2,7 @@
 // DTOs (Public Types)
 // ============================================================================
 
+import type { CreateLearnerDto } from './learner.types';
 import { DayOfWeek, MinutesFromMidnight } from './types/api.types';
 
 export type GroupStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
@@ -85,4 +86,8 @@ export interface UpdateGroupSettingsDto {
 
 export interface AddLearnersToGroupDto {
   learnerIds: string[];
+}
+
+export interface CreateLearnersDto {
+  learners: CreateLearnerDto[];
 }

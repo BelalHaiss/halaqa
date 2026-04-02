@@ -2,8 +2,8 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import type {
   AddLearnersToGroupDto,
   CountDto,
-  CreateLearnerDto,
   CreateGroupDto,
+  CreateLearnersDto,
   GroupDetailsDto,
   GroupSelectOptionDto,
   GroupSummaryDto,
@@ -18,7 +18,7 @@ import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   addLearnersToGroupSchema,
   createGroupSchema,
-  createLearnerSchema,
+  createLearnersSchema,
   updateGroupSchema,
 } from '@halaqa/shared';
 import { GroupService } from './group.service';
@@ -70,15 +70,15 @@ export class GroupController {
     return this.groupService.updateGroup(id, dto);
   }
 
-  @Post(':id/students/create')
+  @Post(':id/students/create-many')
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
-  async createLearnerAndAddToGroup(
+  async createLearnersAndAddToGroup(
     @Param('id') groupId: string,
-    @Body(new ZodValidationPipe(createLearnerSchema('en')))
-    dto: CreateLearnerDto,
+    @Body(new ZodValidationPipe(createLearnersSchema('en')))
+    dto: CreateLearnersDto,
     @User() user: UserEntity
   ): Promise<GroupDetailsDto> {
-    await this.groupLearnerOrchestrator.createLearnerAndAttachToGroup(groupId, dto);
+    await this.groupLearnerOrchestrator.createLearnersAndAttachToGroup(groupId, dto);
     return this.groupService.getGroupById(groupId, user);
   }
 
