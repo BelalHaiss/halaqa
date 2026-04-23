@@ -5,6 +5,7 @@ export * from './learner.types';
 export * from './group.types';
 export * from './session.types';
 export * from './attendance.types';
+export * from './currency.types';
 export * from './validation/fields.constants';
 
 // Export utilities
@@ -23,3 +24,4 @@ export * from './validation/user.schema';
 export * from './validation/learner.schema';
 export * from './validation/group.schema';
 export * from './validation/session.schema';
+export * from './validation/currency.schema';

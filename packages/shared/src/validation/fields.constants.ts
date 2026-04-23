@@ -28,3 +28,24 @@ export const PAGINATION_MIN_LIMIT = 1;
 export const PAGINATION_MAX_LIMIT = 100;
 export const PAGINATION_DEFAULT_PAGE = 1;
 export const PAGINATION_DEFAULT_LIMIT = 10;
+
+export const SUPPORTED_CURRENCIES = [
+  'USD',
+  'EUR',
+  'GBP',
+  'JPY',
+  'CNY',
+  'INR',
+  'CAD',
+  'AUD',
+  'CHF',
+  'TRY',
+  'SAR',
+  'AED',
+  'EGP',
+  'KWD',
+  'QAR',
+] as const;
+
+export const CURRENCY_AMOUNT_MIN = 0;
+export const CURRENCY_AMOUNT_MAX = 99999999.99;

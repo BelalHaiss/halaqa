@@ -26,6 +26,9 @@ type Messages = {
   durationMinutesInvalid: string;
   pageInvalid: string;
   limitInvalid: string;
+  invalidCurrency: string;
+  amountTooSmall: string;
+  amountTooLarge: string;
 };
 
 export const validationMessages: Record<ValidationLocale, Messages> = {
@@ -55,6 +58,9 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     durationMinutesInvalid: 'المدة غير صحيحة',
     pageInvalid: 'رقم الصفحة غير صحيح',
     limitInvalid: 'عدد النتائج غير صحيح',
+    invalidCurrency: 'العملة غير مدعومة',
+    amountTooSmall: 'المبلغ أصغر من الحد المسموح',
+    amountTooLarge: 'المبلغ أكبر من الحد المسموح',
   },
   en: {
     nameTooShort: 'Name must be at least 2 characters',
@@ -82,6 +88,9 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     durationMinutesInvalid: 'Invalid duration',
     pageInvalid: 'Invalid page number',
     limitInvalid: 'Invalid limit',
+    invalidCurrency: 'Unsupported currency',
+    amountTooSmall: 'Amount is below the minimum allowed value',
+    amountTooLarge: 'Amount is above the maximum allowed value',
   },
 };
 
