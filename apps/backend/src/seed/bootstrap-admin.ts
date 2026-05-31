@@ -1,4 +1,5 @@
 import argon from 'argon2';
+import { normalizeArabic } from '@halaqa/shared';
 import { prismaSeedClient } from './seed';
 
 async function bootstrapAdmin() {
@@ -9,6 +10,7 @@ async function bootstrapAdmin() {
     create: {
       username: 'admin',
       name: 'System Admin',
+      nameNormalized: normalizeArabic('System Admin'),
       role: 'ADMIN',
       password: hashedPassword,
       timezone: 'Africa/Cairo',

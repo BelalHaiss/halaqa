@@ -1,172 +1,44 @@
-# Halaqa - manage quran study groups with ease
+# Halaqa — Quran Study Group Manager
 
-## 🏗️ Structure
+## Structure
 
-**Monorepo:** `apps/client` (React), `apps/backend` (NestJS), `packages/shared` (DTOs only)
+**Monorepo:** `apps/client` (React 19, Vite, Tailwind v4), `apps/backend` (NestJS), `packages/shared` (DTOs + utils + validation schemas)
 
----
+## Global Rules
 
-## 🌍 Global
+- Single source of truth → `packages/shared`. No DTO duplication across apps.
+- Customize shared types only via `Pick` / `Omit` / `Partial`.
+- `DatesAsObjects` is backend-only. Client always receives `ISODateString`.
+- User-facing UI copy must be Arabic-only across the client app.
+- No READMEs.
+- Start always with dto, shared, backend, client
 
-- **Single source of truth** → `packages/shared`
-- No DTO duplication
-- Customize types via `Pick` / `Omit` / `Partial` only
-- Client & backend share contracts
+## Scoped Instructions
 
----
+Detailed rules live in `.github/instructions/`. Copilot loads them automatically per file path.
 
-## ⚛️ Client Stack
+| File                            | Scope                                   |
+| ------------------------------- | --------------------------------------- |
+| `client.instructions.md`        | `apps/client/**`                        |
+| `styling.instructions.md`       | `apps/client/**`                        |
+| `backend.instructions.md`       | `apps/backend/**`                       |
+| `date-handling.instructions.md` | `**` (global)                           |
+| `api-database.instructions.md`  | `apps/backend/**`, `packages/shared/**` |
+| `payment-instructions.md`       | `apps/backend/**`                       |
 
-React 19, Vite, TS, Tailwind v4, shadcn/ui, React Router v7
+## Principles
 
----
+- Modular, DRY, strict separation of concerns.
+- Consistency over creativity.
+- Keep code small, focused, and readable.
 
-## 📦 Client Architecture
+## Review Checklist
 
-- **One feature = one module**
-- Modules live in `src/modules/*`
-- `src/components/ui` is only for generic, app-wide UI primitives (no feature/business logic)
-- Every module owns its components inside `src/modules/[module]/components`
-- Use Atomic Design inside modules (`atoms`, `molecules`, `organisms`) when needed
-- If another module needs a component, export it from that module public API (`src/modules/[module]/index.ts`)
-- Avoid deep cross-module imports; consume only module public exports
-- Types → `@halaqa/shared` or module-local
-
----
-
-## 🔐 Zod Schemas
-
-- All schemas live in `packages/shared/src/validation/` as factory functions `schema(locale?: 'ar' | 'en')` (default `'ar'`); import directly from `@halaqa/shared`
-- Backend: import directly from `@halaqa/shared` and call with `'en'` inline — no local validation wrapper files
-- Create `modules/[module]/utils/[module].validation.ts` **only** for client-or backend only when you need to extend or customize the shared schema for that specific module; import shared schema and extend it with Zod's `.extend()` or `.merge()`
-
----
-
-## 📋 Forms
-
-- you must use react-hook-form for any forms small or large
-- Use `FormField` for dynamic fields
-- Lives in `src/components/forms/form-field.tsx`
-
----
-
-## 🎨 MVVM
-
-- **View** = JSX only
-- **ViewModel** = logic/state/actions (usually in `hooks/` or `view-model/`)
-- No business logic in View components
-- View components receive prepared state/handlers from ViewModel
-- Keep components small, focused, and easy to read
-- Atomic Design for components
-- Small, focused components
-
----
-
-## 🎨 Design / Tailwind
-
-- `index.css` = Tailwind source
-- Tailwind v4 only (`@import 'tailwindcss'`, `@theme inline`, `@custom-variant`)
-- Prefer tokens from `index.css` and semantic utilities (`bg-background`, `text-foreground`, etc.)
-- Avoid arbitrary values unless required for Radix/Base UI CSS variables or advanced state selectors
-- Minimal layout classes
-- use simple flex box with no much elements and wrapper just style the elements with tokens and CVA variants or make wrapper div if needed
-- No shadcn overrides
-
----
-
-## 🧩 shadcn
-
-- shadcn only (via MCP)
-- Use CVA for variants/colors for the components similar to button, badge, etc
-- Extend before creating
-
----
-
-## 📝 Components / HTML
-
-- No native HTML elements
-- Always use reusable components or shadcn
-- Single source of truth
-- No inline styles
-- Keep code simple, readable, and short and no too much nesting and wrapper
-- Follow React best practices and patterns
-
----
-
-## 🔄 Data Fetching
-
-- **GET** → `useApiQuery`
-- **Mutations** → `useApiMutation`
-- Query keys centralized
-- Mutations invalidate cache
-- No raw TanStack hooks
-
----
-
-## ⚠️ Mutations
-
-- All mutations require `ConfirmDialog` Component
-- No execution without confirmation
-- after mutation fire `toast` with success or error message
-
-## ⚠️ Forbidden Practices
-
-- No `useEffect` unless there is no safer alternative
-
-## 🔧 Backend
-
-- always use existing modules if exist or create with Nest CLI `nest g res modules/[name] --no-spec`
-- Shared DTOs only
-- `DatesAsObjects` backend-only
-- we have 2 global guards applied AuthGuard, RolesGuard but we have decorators for customization them
-- we have zod-validation pipe for any DTO or Query and it should only applied Route parameter not route handler
-- we have user decorator that extract user info from request and attach it to request object use it in your controllers don't add any custom logic
-- must use prisma transactions for multi-step operations or operations that modify multiple tables
-- Use an Orchestrator module for multi-domain workflows, and wrap all related writes in a single Prisma transaction for atomicity
-
----
-
-## ✅ Review Checklist
-
-- [ ] Module structure
-- [ ] No duplicated types
-- [ ] MVVM respected
-- [ ] shadcn + CVA only
-- [ ] Tokens + minimal Tailwind
-- [ ] Standard API hooks
-- [ ] Cache invalidation
-- [ ] ConfirmDialog present
-
----
-
-## 💡 Principles
-
-- Modular, DRY, strict separation
-- Consistency > creativity
-- Simple, reusable
-- No READMEs
-- No `DatesAsObjects` on client
-
-## important - for handling Date
-
-Store all event timestamps in DB as UTC (DATETIME).
-
-Every Group must have an IANA timezone (e.g., Africa/Cairo) — schedules depend on it.
-
-Store schedule time as startMinutes (from midnight in Group.timezone); convert to UTC only when creating the actual DateTime.
-
-Use Group.timezone for schedule/day-of-week logic.
-
-Convert stored UTC → User.timezone only for UI display.
-
-Always query date ranges based on User.timezone.
-
-Return date values in responses exactly as stored in DB (UTC).
-
-Use only shared date.util (Luxon-based) for all date logic.
-
-Use only shared timezone.util for timezone operations.
-
-Do not add any date/time libraries in client or backend apps.
-
-we working with date we use this format "YYYY-MM-DD" (ISO date-only string) and time as a number (minutes from midnight), both interpreted in Group.timezone.
+- [ ] No duplicated types — use `@halaqa/shared`
+- [ ] Module structure followed
+- [ ] MVVM respected (no logic in View)
+- [ ] shadcn + CVA only, no inline styles
+- [ ] Semantic Tailwind tokens, no arbitrary values
+- [ ] `useApiQuery` / `useApiMutation` only
+- [ ] Cache invalidated after mutations
+- [ ] `ConfirmDialog` + `toast` on every mutation

@@ -92,6 +92,23 @@ export const queryKeys = {
     list: (query?: unknown) => [...queryKeys.reports.lists(), query] as const,
   },
 
+  // Payments queries
+  payments: {
+    all: ['payments'] as const,
+    learnerLists: () => [...queryKeys.payments.all, 'learner-list'] as const,
+    learnerList: (query?: unknown) => [...queryKeys.payments.learnerLists(), query] as const,
+    learnerDetails: () => [...queryKeys.payments.all, 'learner-detail'] as const,
+    learnerDetail: (id: string) => [...queryKeys.payments.learnerDetails(), id] as const,
+    tutorLists: () => [...queryKeys.payments.all, 'tutor-list'] as const,
+    tutorList: (query?: unknown) => [...queryKeys.payments.tutorLists(), query] as const,
+    tutorDetails: () => [...queryKeys.payments.all, 'tutor-detail'] as const,
+    tutorDetail: (id: string) => [...queryKeys.payments.tutorDetails(), id] as const,
+    tutorLatestAllowedDate: (tutorId: string) =>
+      [...queryKeys.payments.all, 'tutor-latest-date', tutorId] as const,
+    tutorPreview: (payload?: unknown) =>
+      [...queryKeys.payments.all, 'tutor-preview', payload] as const,
+  },
+
   // Dashboard queries
   dashboard: {
     all: ['dashboard'] as const,

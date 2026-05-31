@@ -20,7 +20,12 @@ export class AuthService {
     if (!foundUser) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const isPasswordValid = await this.verifyPassword(loginDTO.password, foundUser.password!);
+
+    if (!foundUser.password) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await this.verifyPassword(loginDTO.password, foundUser.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');

@@ -1,7 +1,7 @@
 import { User, PrismaClient } from 'generated/prisma/client';
 import { faker, fakerAR } from '@faker-js/faker';
 import argon from 'argon2';
-import { UserRole } from '@halaqa/shared';
+import { UserRole, normalizeArabic } from '@halaqa/shared';
 
 const seedTimezones = [
   'Africa/Cairo',
@@ -12,8 +12,10 @@ const seedTimezones = [
 ];
 
 export const seedAppUser = async (username: string, role: UserRole) => {
+  const name = fakerAR.person.fullName();
   const user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> = {
-    name: fakerAR.person.fullName(),
+    name,
+    nameNormalized: normalizeArabic(name),
     role,
     password: await argon.hash('12345678'),
     username,
@@ -38,14 +40,18 @@ export async function seedUsers(args: {
     ),
   ]);
 
-  const learners = Array.from({ length: args.totalLearners }, () => ({
-    name: fakerAR.person.fullName(),
-    role: 'STUDENT' as const,
-    username: null,
-    password: null,
-    timezone: faker.helpers.arrayElement(seedTimezones),
-    notes: faker.datatype.boolean(0.45) ? fakerAR.lorem.sentence() : null,
-  }));
+  const learners = Array.from({ length: args.totalLearners }, () => {
+    const name = fakerAR.person.fullName();
+    return {
+      name,
+      nameNormalized: normalizeArabic(name),
+      role: 'STUDENT' as const,
+      username: null,
+      password: null,
+      timezone: faker.helpers.arrayElement(seedTimezones),
+      notes: faker.datatype.boolean(0.45) ? fakerAR.lorem.sentence() : null,
+    };
+  });
 
   await args.prisma.user.createMany({
     data: [...staffUsers, ...learners],

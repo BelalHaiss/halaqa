@@ -11,35 +11,44 @@ datasource db {
 }
 
 model User {
-  id            String             @id @default(ulid())
-  username      String?            @unique @db.VarChar(50)
-  name          String             @db.VarChar(100)
-  password      String?            @db.VarChar(255)
-  role          UserRole
-  createdAt     DateTime           @default(now()) @map("created_at")
-  updatedAt     DateTime           @updatedAt @map("updated_at")
-  timezone      String             @default("Africa/Cairo")
-  attendance    AttendanceRecord[]
-  studentGroups GroupStudent[]
-  notes         String?            @db.Text
-  tutorGroups   Group[]
+  id                    String                 @id @default(ulid())
+  username              String?                @unique @db.VarChar(50)
+  name                  String                 @db.VarChar(100)
+  nameNormalized        String                 @default("") @map("name_normalized") @db.VarChar(100)
+  password              String?                @db.VarChar(255)
+  role                  UserRole
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  timezone              String                 @default("Africa/Cairo")
+  attendance            AttendanceRecord[]
+  studentGroups         GroupStudent[]
+  notes                 String?                @db.Text
+  tutorGroups           Group[]
+  sessionsAsTutor       Session[]              @relation("SessionTutor")
+  learnerPayments       LearnerPayment[]       @relation("LearnerPaymentLearner")
+  receivedTutorPayments TutorPayment[]         @relation("TutorPaymentTutor")
+  createdTransactions   FinancialTransaction[] @relation("TransactionCreatedBy")
 
   @@index([role])
+  @@index([nameNormalized])
   @@map("users")
 }
 
 model Group {
-  id           String             @id @default(ulid())
-  name         String             @db.VarChar(100)
-  description  String?            @db.VarChar(500)
-  tutorId      String?            @map("tutor_id")
-  status       GroupStatus        @default(ACTIVE)
-  createdAt    DateTime           @default(now()) @map("created_at")
-  updatedAt    DateTime           @updatedAt @map("updated_at")
-  timezone     String             @default("Africa/Cairo")
-  scheduleDays GroupScheduleDay[]
-  students     GroupStudent[]
-  sessions     Session[]
+  id              String             @id @default(ulid())
+  name            String             @db.VarChar(100)
+  description     String?            @db.VarChar(500)
+  tutorId         String?            @map("tutor_id")
+  tutorHourlyRate Decimal?           @map("tutor_hourly_rate") @db.Decimal(12, 2)
+  tutorCurrency   CurrencyCode?      @map("tutor_currency")
+  billingType     GroupBillingType   @default(FREE) @map("billing_type")
+  status          GroupStatus        @default(ACTIVE)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  timezone        String             @default("Africa/Cairo")
+  scheduleDays    GroupScheduleDay[]
+  students        GroupStudent[]
+  sessions        Session[]
 
   //  we should have relation for tutor and user
   tutor User? @relation(fields: [tutorId], references: [id], onDelete: SetNull)
@@ -61,20 +70,25 @@ model GroupScheduleDay {
 }
 
 model GroupStudent {
-  groupId  String   @map("group_id")
-  userId   String   @map("user_id")
-  joinedAt DateTime @default(now()) @map("joined_at")
-  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId  String    @map("group_id")
+  userId   String    @map("user_id")
+  joinedAt DateTime  @default(now()) @map("joined_at")
+  leftAt   DateTime? @map("left_at")
+  group    Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([groupId, userId])
   @@index([userId])
+  @@index([leftAt])
   @@map("group_students")
 }
 
 model Session {
   id                String             @id @default(ulid())
   groupId           String             @map("group_id")
+  tutorId           String             @map("tutor_id")
+  tutorSessionPrice Decimal?           @map("tutor_session_price") @db.Decimal(12, 2)
+  tutorCurrency     CurrencyCode?      @map("tutor_currency")
   startedAt         DateTime
   originalStartedAt DateTime?          @map("original_started_at")
   status            SessionStatus
@@ -83,13 +97,85 @@ model Session {
   updatedAt         DateTime           @updatedAt @map("updated_at")
   attendance        AttendanceRecord[]
   group             Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tutor             User               @relation("SessionTutor", fields: [tutorId], references: [id], onDelete: Restrict)
 
   @@unique([groupId, startedAt])
   @@index([groupId])
+  @@index([tutorId])
   @@index([startedAt])
   @@index([groupId, originalStartedAt])
   @@index([status])
   @@map("sessions")
+}
+
+model FinancialTransaction {
+  id               String                @id @default(ulid())
+  type             TransactionType
+  amount           Decimal               @db.Decimal(12, 2)
+  currency         CurrencyCode
+  entityType       TransactionEntityType @map("entity_type")
+  learnerPaymentId String?               @map("learner_payment_id")
+  tutorPaymentId   String?               @map("tutor_payment_id")
+  createdById      String                @map("created_by_id")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  createdBy        User                  @relation("TransactionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  learnerPayment   LearnerPayment?       @relation(fields: [learnerPaymentId], references: [id], onDelete: Cascade)
+  tutorPayment     TutorPayment?         @relation(fields: [tutorPaymentId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([entityType])
+  @@index([createdById])
+  @@index([createdAt])
+  @@index([learnerPaymentId])
+  @@index([tutorPaymentId])
+  @@index([entityType, learnerPaymentId])
+  @@index([entityType, tutorPaymentId])
+  @@map("financial_transactions")
+}
+
+model LearnerPayment {
+  id            String                 @id @default(ulid())
+  learnerId     String                 @map("learner_id")
+  billingType   LearnerBillingType     @map("billing_type")
+  sessionsCount Int                    @map("sessions_count") @db.UnsignedSmallInt
+  periodFrom    DateTime               @map("period_from")
+  periodTo      DateTime               @map("period_to")
+  totalAmount   Decimal                @map("total_amount") @db.Decimal(12, 2)
+  paidAmount    Decimal                @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  currency      CurrencyCode
+  status        PaymentStatus          @default(UNPAID)
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  learner       User                   @relation("LearnerPaymentLearner", fields: [learnerId], references: [id], onDelete: Cascade)
+  transactions  FinancialTransaction[]
+
+  @@index([learnerId])
+  @@index([status])
+  @@index([periodFrom])
+  @@index([periodTo])
+  @@index([learnerId, periodFrom, periodTo])
+  @@map("learner_payments")
+}
+
+model TutorPayment {
+  id            String                 @id @default(ulid())
+  tutorId       String                 @map("tutor_id")
+  periodFrom    DateTime               @map("period_from")
+  periodTo      DateTime               @map("period_to")
+  sessionsCount Int                    @map("sessions_count") @db.UnsignedSmallInt
+  totalAmount   Decimal                @map("total_amount") @db.Decimal(12, 2)
+  currency      CurrencyCode
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  tutor         User                   @relation("TutorPaymentTutor", fields: [tutorId], references: [id], onDelete: Restrict)
+  transactions  FinancialTransaction[]
+
+  @@index([tutorId])
+  @@index([periodFrom])
+  @@index([periodTo])
+  @@index([tutorId, periodFrom, periodTo])
+  @@map("tutor_payments")
 }
 
 model AttendanceRecord {
@@ -122,6 +208,15 @@ enum GroupStatus {
   COMPLETED
 }
 
+enum GroupBillingType {
+  FREE
+  SESSION_COUNT_MONTHLY
+}
+
+enum LearnerBillingType {
+  SESSION_COUNT_MONTHLY
+}
+
 enum SessionStatus {
   RESCHEDULED
   COMPLETED
@@ -133,4 +228,38 @@ enum AttendanceStatus {
   ATTENDED
   MISSED
   EXCUSED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionEntityType {
+  LEARNER_PAYMENT
+  TUTOR_PAYMENT
+}
+
+enum CurrencyCode {
+  USD
+  EUR
+  GBP
+  JPY
+  CNY
+  INR
+  CAD
+  AUD
+  CHF
+  TRY
+  SAR
+  AED
+  EGP
+  KWD
+  QAR
 }

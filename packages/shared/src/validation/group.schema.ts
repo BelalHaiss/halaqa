@@ -3,6 +3,7 @@ import {
   AddLearnersToGroupDto,
   CreateGroupDto,
   CreateLearnersDto,
+  GroupBillingType,
   GroupScheduleDay,
   GroupStatus,
   UpdateGroupDto,
@@ -20,12 +21,18 @@ import {
   tutorIdSchema,
 } from './fields.schema';
 import { timezoneFieldSchema } from './timezone.schema';
+import { currencyCodeSchema } from './currency.schema';
 
 const groupStatusSchema = z.enum([
   'ACTIVE',
   'INACTIVE',
   'COMPLETED',
 ]) satisfies ZodType<GroupStatus>;
+
+const groupBillingTypeSchema = z.enum([
+  'FREE',
+  'SESSION_COUNT_MONTHLY',
+]) satisfies ZodType<GroupBillingType>;
 
 const groupScheduleDaySchema = (locale: ValidationLocale = 'ar') =>
   z.object({
@@ -41,19 +48,41 @@ const uniqueScheduleDays = (value: GroupScheduleDay[]) => {
 
 export const createGroupSchema = (locale: ValidationLocale = 'ar') => {
   const m = getMessages(locale);
-  return z.intersection(
-    z.object({
-      name: nameSchema(locale),
-      description: descriptionSchema(locale).optional(),
-      tutorId: tutorIdSchema(locale),
-      status: groupStatusSchema.optional(),
-      scheduleDays: z
-        .array(groupScheduleDaySchema(locale))
-        .min(1, m.scheduleDaysMin)
-        .refine(uniqueScheduleDays, { message: m.scheduleDaysDuplicate }),
-    }),
-    timezoneFieldSchema(locale)
-  ) satisfies ZodType<CreateGroupDto>;
+  return z
+    .intersection(
+      z.object({
+        name: nameSchema(locale),
+        description: descriptionSchema(locale).optional(),
+        tutorId: tutorIdSchema(locale),
+        status: groupStatusSchema.optional(),
+        scheduleDays: z
+          .array(groupScheduleDaySchema(locale))
+          .min(1, m.scheduleDaysMin)
+          .refine(uniqueScheduleDays, { message: m.scheduleDaysDuplicate }),
+        billingType: groupBillingTypeSchema.optional(),
+        tutorHourlyRate: z.number().positive(m.hourlyRateTooSmall).optional(),
+        tutorCurrency: currencyCodeSchema(locale).optional(),
+      }),
+      timezoneFieldSchema(locale)
+    )
+    .superRefine((data, ctx) => {
+      if (data.billingType === 'SESSION_COUNT_MONTHLY') {
+        if (data.tutorHourlyRate == null) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['tutorHourlyRate'],
+            message: m.hourlyRateRequired,
+          });
+        }
+        if (!data.tutorCurrency) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['tutorCurrency'],
+            message: m.billingCurrencyRequired,
+          });
+        }
+      }
+    }) satisfies ZodType<CreateGroupDto>;
 };
 
 export const updateGroupSchema = (locale: ValidationLocale = 'ar') => {
@@ -71,10 +100,31 @@ export const updateGroupSchema = (locale: ValidationLocale = 'ar') => {
             .min(1, m.scheduleDaysMin)
             .refine(uniqueScheduleDays, { message: m.scheduleDaysDuplicate })
             .optional(),
+          billingType: groupBillingTypeSchema.optional(),
+          tutorHourlyRate: z.number().positive(m.hourlyRateTooSmall).nullish(),
+          tutorCurrency: currencyCodeSchema(locale).nullish(),
         })
         .refine((value) => Object.keys(value).length > 0, { message: m.atLeastOneField }),
       z.object({ timezone: z.string().trim().min(1).optional() })
     )
+    .superRefine((data, ctx) => {
+      if (data.billingType === 'SESSION_COUNT_MONTHLY') {
+        if (data.tutorHourlyRate == null) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['tutorHourlyRate'],
+            message: m.hourlyRateRequired,
+          });
+        }
+        if (!data.tutorCurrency) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['tutorCurrency'],
+            message: m.billingCurrencyRequired,
+          });
+        }
+      }
+    })
     .refine((value) => Object.keys(value).length > 0, {
       message: m.atLeastOneField,
     }) satisfies ZodType<UpdateGroupDto>;

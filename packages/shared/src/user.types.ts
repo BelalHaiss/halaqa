@@ -6,6 +6,7 @@ import { ISODateString } from './types/api.types';
 
 export type UserRole = 'ADMIN' | 'MODERATOR' | 'TUTOR' | 'STUDENT';
 export type UserAuthRole = Exclude<UserRole, 'STUDENT'>;
+export type AuthenticatedUserRole = UserRole;
 export interface UserProfile {
   userId: string;
   phone?: string;
@@ -35,7 +36,7 @@ export type UserAuthType = {
   id: string;
   username: string | null;
   name: string;
-  role: UserAuthRole;
+  role: AuthenticatedUserRole;
   createdAt: ISODateString;
   updatedAt: ISODateString;
   timezone: string;
@@ -116,6 +117,11 @@ export interface UpdateUserProfileDto {
   whatsapp?: string;
   telegram?: string;
   notes?: string;
+}
+
+export interface SetLearnerCredentialsDto {
+  username: string;
+  password: string;
 }
 
 export interface UserFilterDto {

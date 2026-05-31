@@ -9,6 +9,7 @@ import type {
   StaffUsersResponseDto,
   QueryLearnersDto,
   QueryLearnersResponseDto,
+  SetLearnerCredentialsDto,
   UpdateOwnProfileDto,
   UpdateStaffUserDto,
   UpdateLearnerDto,
@@ -24,6 +25,7 @@ import {
   queryLearnersSchema,
   updateLearnerSchema,
   createStaffSchema,
+  setLearnerCredentialsSchema,
   updateStaffSchema,
   changeOwnPasswordSchema,
   updateOwnProfileSchema,
@@ -67,6 +69,16 @@ export class UserController {
   @Roles([UserRole.ADMIN, UserRole.MODERATOR])
   async deleteLearner(@Param('id') id: string): Promise<void> {
     await this.userService.deleteLearner(id);
+  }
+
+  @Post('learner/:id/credentials')
+  @Roles([UserRole.ADMIN, UserRole.MODERATOR])
+  setLearnerCredentials(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(setLearnerCredentialsSchema('en')))
+    dto: SetLearnerCredentialsDto
+  ): Promise<LearnerDto> {
+    return this.userService.setLearnerCredentials(id, dto);
   }
 
   @Get('staff')

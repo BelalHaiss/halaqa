@@ -13,6 +13,7 @@ import {
   Sun,
   UserCog,
   Settings,
+  HandCoins,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -65,6 +66,12 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       href: '/learners',
       icon: GraduationCap,
       roles: ['ADMIN', 'MODERATOR', 'TUTOR'],
+    },
+    {
+      name: 'المدفوعات',
+      href: '/payments',
+      icon: HandCoins,
+      roles: ['ADMIN', 'MODERATOR', 'TUTOR', 'STUDENT'],
     },
   ];
 

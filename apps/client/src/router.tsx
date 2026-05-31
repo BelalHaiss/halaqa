@@ -4,6 +4,7 @@ import { GroupsView, GroupDetailsView } from '@/modules/groups';
 import { TodaySessionsView, SessionDetailsView, SessionHistoryView } from '@/modules/session';
 import { UsersView, UserProfileView } from '@/modules/users';
 import { LearnersView } from '@/modules/learners';
+import { PaymentsView } from '@/modules/payments';
 import { RouteErrorElement } from '@/modules/observability';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
 
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: 'learners',
         element: <LearnersView />,
+      },
+      {
+        path: 'payments',
+        element: <PaymentsView />,
       },
       {
         path: 'profile',

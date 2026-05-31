@@ -12,6 +12,7 @@ import { SessionModule } from './modules/session/session.module';
 import { OrchestratorModule } from './modules/orchestrator/orchestrator.module';
 import { LoggingModule } from './modules/logging/logging.module';
 import { ObservabilityModule } from './modules/observability/observability.module';
+import { PaymentModule } from './modules/payments/payment.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { resolve } from 'path';
@@ -39,6 +40,7 @@ import { resolve } from 'path';
     UserModule,
     SessionModule,
     GroupModule,
+    PaymentModule,
     OrchestratorModule,
     LoggingModule,
     ObservabilityModule,

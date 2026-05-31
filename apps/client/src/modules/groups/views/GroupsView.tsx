@@ -13,6 +13,7 @@ import { Typography } from '@/components/ui/typography';
 import { dayNames, STATUS_LABELS, STATUS_ORDER } from '../constants';
 import { getGroupStatusConfig } from '../utils/group.util';
 import { StatsCountCard } from '../components/StatsCountCard';
+import { BillingTypeBadge } from '../components/BillingTypeBadge';
 import { GroupFormModal } from '../components/GroupFormModal';
 import { GroupScheduleTimeText } from '../components/GroupScheduleTimeText';
 import { useGroupsViewModel } from '../viewmodels/groups.viewmodel';
@@ -138,9 +139,12 @@ export const GroupsView = () => {
                           <div className='rounded-lg bg-primary/10 p-2'>
                             <Users className='h-5 w-5 text-primary' />
                           </div>
-                          <Badge variant={statusConfig.variant} color={statusConfig.color}>
-                            {statusConfig.label}
-                          </Badge>
+                          <div className='flex items-center gap-1.5'>
+                            <BillingTypeBadge billingType={group.billingType} />
+                            <Badge variant={statusConfig.variant} color={statusConfig.color}>
+                              {statusConfig.label}
+                            </Badge>
+                          </div>
                         </div>
 
                         <Typography as='h3' size='lg' weight='semibold'>
