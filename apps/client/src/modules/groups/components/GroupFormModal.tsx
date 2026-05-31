@@ -6,9 +6,11 @@ import {
   DEFAULT_TIMEZONE,
   GroupDetailsDto,
   GroupTutorSummaryDto,
+  SUPPORTED_CURRENCIES,
   TIMEZONES,
   type TimeMinutes,
   UpdateGroupDto,
+  getCurrencyLabel,
   minutesToInputTimeString,
   timeToStartMinutes,
 } from '@halaqa/shared';
@@ -64,6 +66,13 @@ const groupStatusOptions = [
   { value: 'COMPLETED', label: 'مكتمل' },
 ];
 
+const groupBillingTypeOptions = [
+  { value: 'FREE', label: 'مجاني' },
+  { value: 'SESSION_COUNT_MONTHLY', label: 'محاسبة بالجلسات' },
+];
+
+const currencyOptions = SUPPORTED_CURRENCIES.map((c) => ({ value: c, label: getCurrencyLabel(c) }));
+
 const DEFAULT_GROUP_TIME = '17:00';
 
 const buildUniformDayTimes = (time: string) => Array.from({ length: dayNames.length }, () => time);
@@ -103,6 +112,9 @@ export function GroupFormModal({
       tutorId: group?.tutorId ?? '',
       timezone: group?.timezone ?? DEFAULT_TIMEZONE,
       status: group?.status ?? 'ACTIVE',
+      billingType: group?.billingType ?? 'FREE',
+      tutorHourlyRate: group?.tutorHourlyRate ?? undefined,
+      tutorCurrency: group?.tutorCurrency ?? '',
       sameTimeForAllDays: hasSameTimeForAllDays,
       time: defaultTime,
       dayTimes,
@@ -119,6 +131,7 @@ export function GroupFormModal({
   const selectedDays = form.watch('selectedDays');
   const sameTimeForAllDays = form.watch('sameTimeForAllDays');
   const dayTimes = form.watch('dayTimes');
+  const billingType = form.watch('billingType');
 
   const canSubmit = !isLoading && form.formState.isDirty && form.formState.isValid;
 
@@ -148,6 +161,15 @@ export function GroupFormModal({
           timezone: values.timezone,
           status: values.status,
           scheduleDays,
+          billingType: values.billingType || undefined,
+          tutorHourlyRate:
+            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorHourlyRate
+              ? values.tutorHourlyRate
+              : undefined,
+          tutorCurrency:
+            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorCurrency
+              ? (values.tutorCurrency as CreateGroupDto['tutorCurrency'])
+              : undefined,
         };
 
         const parsed = createGroupSchema.safeParse(payload);
@@ -165,6 +187,15 @@ export function GroupFormModal({
           timezone: values.timezone,
           status: values.status,
           scheduleDays,
+          billingType: values.billingType || undefined,
+          tutorHourlyRate:
+            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorHourlyRate
+              ? values.tutorHourlyRate
+              : null,
+          tutorCurrency:
+            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorCurrency
+              ? (values.tutorCurrency as UpdateGroupDto['tutorCurrency'])
+              : null,
         };
 
         const parsed = updateGroupSchema.safeParse(payload);
@@ -261,6 +292,40 @@ export function GroupFormModal({
               disabled={isLoading}
               options={groupStatusOptions}
             />
+
+            <FormField
+              control={form.control}
+              name='billingType'
+              id='group-billing-type'
+              label='نوع الفوترة'
+              type='select'
+              disabled={isLoading}
+              options={groupBillingTypeOptions}
+            />
+
+            {billingType === 'SESSION_COUNT_MONTHLY' && (
+              <div className='grid grid-cols-2 gap-3'>
+                <FormField
+                  control={form.control}
+                  name='tutorHourlyRate'
+                  id='group-tutor-hourly-rate'
+                  label='أجر المعلم بالساعة'
+                  type='number'
+                  placeholder='0'
+                  disabled={isLoading}
+                />
+                <FormField
+                  control={form.control}
+                  name='tutorCurrency'
+                  id='group-tutor-currency'
+                  label='العملة'
+                  type='select'
+                  placeholder='اختر العملة'
+                  disabled={isLoading}
+                  options={currencyOptions}
+                />
+              </div>
+            )}
 
             <div className='space-y-2'>
               <Typography as='div' size='sm'>

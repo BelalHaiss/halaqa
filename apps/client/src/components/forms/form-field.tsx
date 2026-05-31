@@ -21,7 +21,7 @@ export interface SelectOption {
 export interface IFormField {
   name: string;
   label?: string | ReactNode;
-  type: 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea';
+  type: 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea' | 'number';
   placeholder?: string;
   disabled?: boolean;
   id?: string;
@@ -135,6 +135,25 @@ function FormFieldComponent<T extends FieldValues>({
       className: inputClassName,
     };
 
+    if (type === 'number') {
+      return (
+        <Input
+          type='number'
+          id={fieldId}
+          placeholder={placeholder}
+          disabled={disabled}
+          value={value === undefined || value === null || Number.isNaN(value) ? '' : String(value)}
+          onChange={(e) => {
+            const raw = e.target.value;
+            onChange(raw === '' ? undefined : Number(raw));
+          }}
+          onBlur={onBlur}
+          aria-invalid={invalid}
+          className={inputClassName}
+        />
+      );
+    }
+
     if (type === 'password') {
       return <PasswordInput {...commonProps} />;
     }
@@ -157,7 +176,7 @@ function FormFieldComponent<T extends FieldValues>({
             ) : (
               <>
                 {label && <FieldLabel htmlFor={fieldId}>{label}</FieldLabel>}
-                {renderInput(value || '', onChange, onBlur, invalid)}
+                {renderInput(type === 'number' ? value : value || '', onChange, onBlur, invalid)}
               </>
             )}
             {showError && error && <FieldErrorComponent errors={[error as FieldError]} />}

@@ -15,6 +15,7 @@ import { StudentMainInfoModal } from '@/modules/learners/components/student-main
 import { dayNames } from '../constants';
 import { getGroupStatusConfig } from '../utils/group.util';
 import { AddLearnersToGroupModal } from '../components/AddLearnersToGroupModal';
+import { BillingTypeBadge } from '../components/BillingTypeBadge';
 import { GroupFormModal } from '../components/GroupFormModal';
 import { GroupScheduleTimeText } from '../components/GroupScheduleTimeText';
 import { StudentSummaryCard } from '../components/StudentSummaryCard';
@@ -79,9 +80,12 @@ export const GroupDetailsView = () => {
         <CardHeader>
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <CardTitle size='lg'>معلومات الحلقة</CardTitle>
-            <Badge variant={groupStatusConfig.variant} color={groupStatusConfig.color}>
-              {groupStatusConfig.label}
-            </Badge>
+            <div className='flex items-center gap-1.5'>
+              <BillingTypeBadge billingType={vm.group.billingType} />
+              <Badge variant={groupStatusConfig.variant} color={groupStatusConfig.color}>
+                {groupStatusConfig.label}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className='space-y-3'>

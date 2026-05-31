@@ -2,6 +2,7 @@ import z, { ZodType } from 'zod';
 import {
   ChangeOwnPasswordDto,
   CreateStaffUserDto,
+  SetLearnerCredentialsDto,
   UpdateOwnProfileDto,
   UpdateStaffUserDto,
   UserAuthRole,
@@ -61,3 +62,9 @@ export const changeOwnPasswordSchema = (locale: ValidationLocale = 'ar') => {
       path: ['confirmPassword'],
     }) satisfies ZodType<ChangeOwnPasswordDto>;
 };
+
+export const setLearnerCredentialsSchema = (locale: ValidationLocale = 'ar') =>
+  z.object({
+    username: usernameAccountSchema(locale),
+    password: passwordSchema(locale),
+  }) satisfies ZodType<SetLearnerCredentialsDto>;

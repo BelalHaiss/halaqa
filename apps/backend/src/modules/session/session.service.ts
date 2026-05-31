@@ -32,6 +32,7 @@ import {
   mapSessionDetails,
   mapSessionSummary,
   mapVirtualSessionDetails,
+  MISSED_THRESHOLD_HOURS,
   parseVirtualSessionId,
   shouldSetOriginalStartedAtForAttendance,
 } from './session.util';
@@ -59,6 +60,7 @@ const sessionDetailsInclude = {
         select: {
           dayOfWeek: true,
           startMinutes: true,
+          durationMinutes: true,
         },
       },
     },
@@ -101,6 +103,7 @@ type GroupWithTutorStudentsAndSchedule = Prisma.GroupGetPayload<{
       select: {
         dayOfWeek: true;
         startMinutes: true;
+        durationMinutes: true;
       };
     };
   };
@@ -120,17 +123,30 @@ export class SessionService {
   // Public Methods
   // ==========================================================================
 
-  /** Get all sessions scheduled for today in user's timezone */
+  /** Get all sessions scheduled for today in user's timezone.
+   *
+   * Extends the query window backwards by MISSED_THRESHOLD_HOURS so that
+   * late-night sessions (e.g. 11:40 PM) remain visible after midnight until
+   * they are explicitly resolved or the cron processes them into MISSED records.
+   * Sessions from the lookback window that are already resolved (COMPLETED,
+   * CANCELED, RESCHEDULED) are excluded — only unresolved ones are surfaced.
+   */
   async getTodaySessions(user: User): Promise<SessionSummaryDTO[]> {
     const {
-      startAsDatetime: dayStart,
       endAsDatetime: dayEnd,
       startAsJSDate: dayStartDate,
       endAsJSDate: dayEndDate,
     } = getStartAndEndOfDay(user.timezone);
-    const dayStartUtcIso = dayStart.toUTC().toISO()!;
+
     const dayEndUtcIso = dayEnd.toUTC().toISO()!;
-    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(dayStartUtcIso, dayEndUtcIso);
+
+    // Extend backwards so sessions near midnight aren't lost after the day rolls over
+    const extendedStartDate = new Date(
+      dayStartDate.getTime() - MISSED_THRESHOLD_HOURS * 60 * 60 * 1000
+    );
+    const extendedStartUtcIso = extendedStartDate.toISOString();
+
+    const weekdayCandidates = buildWeekdayCandidatesForUtcRange(extendedStartUtcIso, dayEndUtcIso);
 
     const groups = await this.prismaService.group.findMany({
       where: {
@@ -159,6 +175,7 @@ export class SessionService {
           select: {
             dayOfWeek: true,
             startMinutes: true,
+            durationMinutes: true,
           },
         },
       },
@@ -169,10 +186,12 @@ export class SessionService {
     }
 
     const plannedOccurrences = groups.flatMap((group) =>
-      generatePlannedOccurrencesForRange(group, dayStartUtcIso, dayEndUtcIso).map((startedAt) => ({
-        groupId: group.id,
-        startedAt,
-      }))
+      generatePlannedOccurrencesForRange(group, extendedStartUtcIso, dayEndUtcIso).map(
+        (startedAt) => ({
+          groupId: group.id,
+          startedAt,
+        })
+      )
     );
 
     if (plannedOccurrences.length === 0) {
@@ -187,13 +206,13 @@ export class SessionService {
         OR: [
           {
             startedAt: {
-              gte: dayStartDate,
+              gte: extendedStartDate,
               lte: dayEndDate,
             },
           },
           {
             originalStartedAt: {
-              gte: dayStartDate,
+              gte: extendedStartDate,
               lte: dayEndDate,
             },
           },
@@ -210,6 +229,8 @@ export class SessionService {
 
     const sessionRecordsByGroup = groupSessionRecordsByGroup(sessionRecords);
     const groupsById = new Map(groups.map((group) => [group.id, group]));
+
+    const seenSessionIds = new Set<string>();
 
     const sessions = plannedOccurrences
       .map((occurrence) => {
@@ -240,7 +261,25 @@ export class SessionService {
           }),
         };
       })
-      .filter((session): session is NonNullable<typeof session> => Boolean(session));
+      .filter((session): session is NonNullable<typeof session> => {
+        if (!session) return false;
+
+        // Deduplicate: a RESCHEDULED record can be matched by both the original
+        // slot (via originalStartedAt) and the new slot (via startedAt) when
+        // both fall within the extended query range. Keep the first encounter.
+        if (seenSessionIds.has(session.summary.id)) return false;
+        seenSessionIds.add(session.summary.id);
+
+        // Sessions within the lookback window (before today's midnight) are only
+        // surfaced when unresolved — resolved ones already belong to history.
+        const isInLookback = session.startedAt.getTime() < dayStartDate.getTime();
+        if (isInLookback) {
+          const status = session.summary.sessionStatus;
+          return status === 'SCHEDULED' || status === 'MISSED';
+        }
+
+        return true;
+      });
 
     sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
 
@@ -363,7 +402,7 @@ export class SessionService {
       case 'CANCEL':
         return this.cancelSession(target);
       case 'RESCHEDULE':
-        return this.rescheduleSession(target, payload, user.timezone);
+        return this.rescheduleSession(target, payload, target.group.timezone);
       case 'ATTENDANCE':
         return this.recordAttendance(target, payload);
       default:
@@ -382,102 +421,119 @@ export class SessionService {
       cutoffUtc.toISO()!
     );
 
-    const groups = await this.prismaService.group.findMany({
-      where: {
-        status: GroupStatus.ACTIVE,
-        createdAt: {
-          lte: cutoffUtc.toJSDate(),
-        },
-        scheduleDays: {
-          some: {
-            dayOfWeek: {
-              in: weekdayCandidates,
+    await this.prismaService.$transaction(async (tx) => {
+      const groups = await tx.group.findMany({
+        where: {
+          status: GroupStatus.ACTIVE,
+          createdAt: {
+            lte: cutoffUtc.toJSDate(),
+          },
+          scheduleDays: {
+            some: {
+              dayOfWeek: {
+                in: weekdayCandidates,
+              },
             },
           },
         },
-      },
-      include: {
-        scheduleDays: {
-          where: {
-            dayOfWeek: {
-              in: weekdayCandidates,
+        include: {
+          scheduleDays: {
+            where: {
+              dayOfWeek: {
+                in: weekdayCandidates,
+              },
             },
-          },
-          select: {
-            dayOfWeek: true,
-            startMinutes: true,
+            select: {
+              dayOfWeek: true,
+              startMinutes: true,
+              durationMinutes: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (groups.length === 0) return;
+      if (groups.length === 0) return;
 
-    // Step 1: Generate all expected sessions based on each group's schedule
-    // For each group, generate all session times in the time window (36h-12h ago)
-    // flatMap is used because each group produces multiple sessions, and we want one flat array
-    const cutoffUtcIso = cutoffUtc.toISO()!;
-    const lookbackUtcMillis = lookbackUtc.toMillis();
-    const cutoffUtcMillis = cutoffUtc.toMillis();
-    const plannedOccurrences = groups.flatMap((group) => {
-      const groupRangeStartUtc = new Date(Math.max(lookbackUtcMillis, group.createdAt.getTime()));
+      // Step 1: Generate all expected sessions based on each group's schedule
+      // For each group, generate all session times in the time window (36h-12h ago)
+      // flatMap is used because each group produces multiple sessions, and we want one flat array
+      const cutoffUtcIso = cutoffUtc.toISO()!;
+      const lookbackUtcMillis = lookbackUtc.toMillis();
+      const cutoffUtcMillis = cutoffUtc.toMillis();
+      const plannedOccurrences = groups.flatMap((group) => {
+        const groupRangeStartUtc = new Date(Math.max(lookbackUtcMillis, group.createdAt.getTime()));
 
-      if (groupRangeStartUtc.getTime() > cutoffUtcMillis) {
-        return [];
-      }
+        if (groupRangeStartUtc.getTime() > cutoffUtcMillis) {
+          return [];
+        }
 
-      return generatePlannedOccurrencesForRange(
-        group,
-        groupRangeStartUtc.toISOString(),
-        cutoffUtcIso
-      ).map((startedAt) => ({
-        groupId: group.id,
-        startedAt,
-      }));
-    });
+        return generatePlannedOccurrencesForRange(
+          group,
+          groupRangeStartUtc.toISOString(),
+          cutoffUtcIso
+        ).map((startedAt) => ({
+          groupId: group.id,
+          startedAt,
+        }));
+      });
 
-    if (plannedOccurrences.length === 0) return;
+      if (plannedOccurrences.length === 0) return;
 
-    // Step 2: Fetch actual session records from database
-    // Query for sessions that match the time window (check both startedAt and originalStartedAt)
-    const existingSessions = await this.prismaService.session.findMany({
-      where: {
-        groupId: { in: groups.map((g) => g.id) },
-        OR: [
-          {
-            startedAt: {
-              gte: lookbackUtc.toJSDate(),
-              lte: cutoffUtc.toJSDate(),
+      // Step 2: Fetch actual session records from database
+      // Query for sessions that match the time window (check both startedAt and originalStartedAt)
+      const existingSessions = await tx.session.findMany({
+        where: {
+          groupId: { in: groups.map((g) => g.id) },
+          OR: [
+            {
+              startedAt: {
+                gte: lookbackUtc.toJSDate(),
+                lte: cutoffUtc.toJSDate(),
+              },
             },
-          },
-          {
-            originalStartedAt: {
-              gte: lookbackUtc.toJSDate(),
-              lte: cutoffUtc.toJSDate(),
+            {
+              originalStartedAt: {
+                gte: lookbackUtc.toJSDate(),
+                lte: cutoffUtc.toJSDate(),
+              },
             },
-          },
-        ],
-      },
-      select: {
-        groupId: true,
-        startedAt: true,
-        originalStartedAt: true,
-      },
-    });
+          ],
+        },
+        select: {
+          groupId: true,
+          startedAt: true,
+          originalStartedAt: true,
+        },
+      });
 
-    // Step 3: Compare planned vs actual to find missing sessions
-    // Create a set of "groupId:timestamp" keys for fast lookup
-    const existingKeys = collectOccurrenceKeys(existingSessions);
-    // Filter out planned occurrences that already have records
-    const missedOccurrences = filterMissingOccurrences(plannedOccurrences, existingKeys);
+      // Step 3: Compare planned vs actual to find missing sessions
+      // Create a set of "groupId:timestamp" keys for fast lookup
+      const existingKeys = collectOccurrenceKeys(existingSessions);
+      // Filter out planned occurrences that already have records
+      const missedOccurrences = filterMissingOccurrences(plannedOccurrences, existingKeys);
 
-    if (missedOccurrences.length === 0) return;
+      if (missedOccurrences.length === 0) return;
 
-    // Step 4: Create session records with MISSED status
-    // Use upsert to avoid duplicates (in case of race conditions)
-    await Promise.all(
-      missedOccurrences.map((occurrence) =>
-        this.prismaService.session.upsert({
+      const groupsById = new Map(groups.map((group) => [group.id, group]));
+
+      // Step 4: Create session records with MISSED status
+      // Use upsert to avoid duplicates (in case of race conditions)
+      const upserts = missedOccurrences.flatMap((occurrence) => {
+        const group = groupsById.get(occurrence.groupId);
+
+        if (!group?.tutorId) {
+          return [];
+        }
+
+        const localDay = fromUTC(occurrence.startedAt.toISOString(), group.timezone);
+        const dayOfWeek = localDay.weekday === 7 ? 0 : localDay.weekday;
+        const scheduleDay = group.scheduleDays.find((d) => d.dayOfWeek === dayOfWeek);
+        const durationMinutes = scheduleDay?.durationMinutes ?? 0;
+        const tutorSessionPrice = group.tutorHourlyRate
+          ? group.tutorHourlyRate.mul(durationMinutes).div(60)
+          : null;
+
+        return tx.session.upsert({
           where: {
             groupId_startedAt: {
               groupId: occurrence.groupId,
@@ -487,12 +543,17 @@ export class SessionService {
           update: { status: SessionStatus.MISSED },
           create: {
             groupId: occurrence.groupId,
+            tutorId: group.tutorId,
+            tutorSessionPrice,
+            tutorCurrency: group.tutorCurrency,
             startedAt: occurrence.startedAt,
             status: SessionStatus.MISSED,
           },
-        })
-      )
-    );
+        });
+      });
+
+      await Promise.all(upserts);
+    });
   }
 
   // ==========================================================================
@@ -500,6 +561,8 @@ export class SessionService {
   // ==========================================================================
 
   private async cancelSession(target: ResolvedSessionTarget): Promise<SessionDetailsDTO> {
+    const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
+
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
           where: {
@@ -513,6 +576,7 @@ export class SessionService {
       : await this.prismaService.session.create({
           data: {
             groupId: target.group.id,
+            ...tutorSnapshot,
             startedAt: target.startedAt,
             status: SessionStatus.CANCELED,
           },
@@ -527,9 +591,10 @@ export class SessionService {
   private async rescheduleSession(
     target: ResolvedSessionTarget,
     payload: UpdateSessionActionDTO,
-    userTimezone: string
+    groupTimezone: string
   ): Promise<SessionDetailsDTO> {
-    const newStartedAt = new Date(combineDateTime(payload.date!, payload.time!, userTimezone));
+    const newStartedAt = new Date(combineDateTime(payload.date!, payload.time!, groupTimezone));
+    const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
 
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
@@ -547,6 +612,7 @@ export class SessionService {
       : await this.prismaService.session.create({
           data: {
             groupId: target.group.id,
+            ...tutorSnapshot,
             status: SessionStatus.RESCHEDULED,
             originalStartedAt: target.startedAt,
             startedAt: newStartedAt,
@@ -575,12 +641,14 @@ export class SessionService {
 
     const updatedSession = await this.prismaService.$transaction(async (tx) => {
       const nowUtcMillis = fromUTC(getNowAsUTC(), 'UTC').toMillis();
+      const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
 
       const sessionRecord = target.sessionRecord
         ? await this.applyAttendanceActionOnExistingSession(tx, target.sessionRecord, nowUtcMillis)
         : await tx.session.create({
             data: {
               groupId: target.group.id,
+              ...tutorSnapshot,
               status: SessionStatus.COMPLETED,
               // If attendance is captured before planned start, keep that start
               // as original occurrence metadata for later traceability.
@@ -659,6 +727,7 @@ export class SessionService {
               }
             : {}),
         },
+        include: sessionDetailsInclude,
       });
     }
 
@@ -736,6 +805,7 @@ export class SessionService {
           select: {
             dayOfWeek: true,
             startMinutes: true,
+            durationMinutes: true,
           },
         },
       },
@@ -772,6 +842,26 @@ export class SessionService {
     if (user.role === UserRole.TUTOR && user.id !== tutorId) {
       throw new ForbiddenException('Tutor can only access own group sessions');
     }
+  }
+
+  private getSessionTutorSnapshot(group: GroupWithTutorStudentsAndSchedule, startedAt: Date) {
+    if (!group.tutorId) {
+      throw new BadRequestException(`Group ${group.id} has no assigned tutor`);
+    }
+
+    const localDay = fromUTC(startedAt.toISOString(), group.timezone);
+    const dayOfWeek = localDay.weekday === 7 ? 0 : localDay.weekday;
+    const scheduleDay = group.scheduleDays.find((d) => d.dayOfWeek === dayOfWeek);
+    const durationMinutes = scheduleDay?.durationMinutes ?? 0;
+    const tutorSessionPrice = group.tutorHourlyRate
+      ? group.tutorHourlyRate.mul(durationMinutes).div(60)
+      : null;
+
+    return {
+      tutorId: group.tutorId,
+      tutorSessionPrice,
+      tutorCurrency: group.tutorCurrency,
+    };
   }
 
   private assertAttendanceStudentsBelongToGroup(

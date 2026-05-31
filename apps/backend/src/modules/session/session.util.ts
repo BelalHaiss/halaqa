@@ -11,9 +11,8 @@ import { SessionStatus, UserRole } from 'generated/prisma/client';
 // Virtual sessions represent planned occurrences without DB records
 const VIRTUAL_SESSION_PREFIX = 'virtual';
 // Sessions marked MISSED if not acted upon 12hrs after start
-const MISSED_THRESHOLD_HOURS = 12;
-// Missed sessions can be rescheduled within 12hrs window
-const RECENTLY_MISSED_WINDOW_HOURS = 12;
+// Also used as the lookback window in getTodaySessions
+export const MISSED_THRESHOLD_HOURS = 12;
 
 /**
  * Branded type for virtual session identifiers.
@@ -54,6 +53,7 @@ type SessionDetailsRecordLike = {
   group: {
     id: string;
     name: string;
+    timezone: string;
     tutor: {
       id: string;
       name: string;
@@ -78,6 +78,7 @@ type SessionDetailsRecordLike = {
 type VirtualSessionGroupLike = {
   id: string;
   name: string;
+  timezone: string;
   tutor: {
     id: string;
     name: string;
@@ -163,28 +164,22 @@ export function resolveSessionStatus(args: {
   return nowUtc.toMillis() >= missedAfter.toMillis() ? 'MISSED' : 'SCHEDULED';
 }
 
-/** Check if session can be rescheduled (true for RESCHEDULED or MISSED within time window) */
+/** Check if session can be rescheduled.
+ * - Virtual (no record): always true
+ * - RESCHEDULED: always true (can be moved again)
+ * - MISSED: always true — admins can resolve missed sessions at any time
+ */
 export function canSessionBeRescheduled(args: {
   sessionRecord?: SessionRecordLike | null;
-  nowUtcIso?: string;
 }): boolean {
   if (!args.sessionRecord) {
     return true;
   }
 
-  if (args.sessionRecord.status === SessionStatus.RESCHEDULED) {
-    return true;
-  }
-
-  if (args.sessionRecord.status === SessionStatus.MISSED) {
-    const nowUtc = fromUTC(args.nowUtcIso ?? getNowAsUTC(), 'UTC');
-    const startedAtUtc = fromUTC(args.sessionRecord.startedAt.toISOString(), 'UTC');
-    const diffMillis = nowUtc.toMillis() - startedAtUtc.toMillis();
-
-    return diffMillis >= 0 && diffMillis <= RECENTLY_MISSED_WINDOW_HOURS * 60 * 60 * 1000;
-  }
-
-  return false;
+  return (
+    args.sessionRecord.status === SessionStatus.RESCHEDULED ||
+    args.sessionRecord.status === SessionStatus.MISSED
+  );
 }
 
 // ============================================================================
@@ -227,6 +222,7 @@ export function mapSessionDetails(args: {
     groupInfo: {
       id: args.sessionRecord.group.id,
       name: args.sessionRecord.group.name,
+      timezone: args.sessionRecord.group.timezone,
     },
     tutorInfo: args.sessionRecord.group.tutor
       ? {
@@ -241,7 +237,6 @@ export function mapSessionDetails(args: {
     }),
     canBeRescheduled: canSessionBeRescheduled({
       sessionRecord: args.sessionRecord,
-      nowUtcIso: args.nowUtcIso,
     }),
     startedAt: args.sessionRecord.startedAt.toISOString() as SessionDetailsDTO['startedAt'],
     originalStartedAt: args.sessionRecord.originalStartedAt
@@ -272,6 +267,7 @@ export function mapVirtualSessionDetails(args: {
     groupInfo: {
       id: args.group.id,
       name: args.group.name,
+      timezone: args.group.timezone,
     },
     tutorInfo: args.group.tutor
       ? {

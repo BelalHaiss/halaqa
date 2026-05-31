@@ -29,6 +29,10 @@ type Messages = {
   invalidCurrency: string;
   amountTooSmall: string;
   amountTooLarge: string;
+  amountExceedsRemaining: string;
+  hourlyRateRequired: string;
+  hourlyRateTooSmall: string;
+  billingCurrencyRequired: string;
 };
 
 export const validationMessages: Record<ValidationLocale, Messages> = {
@@ -61,6 +65,10 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     invalidCurrency: 'العملة غير مدعومة',
     amountTooSmall: 'المبلغ أصغر من الحد المسموح',
     amountTooLarge: 'المبلغ أكبر من الحد المسموح',
+    amountExceedsRemaining: 'المبلغ لا يمكن أن يتجاوز المتبقي',
+    hourlyRateRequired: 'الأجر بالساعة مطلوب',
+    hourlyRateTooSmall: 'الأجر يجب أن يكون أكبر من الصفر',
+    billingCurrencyRequired: 'اختر عملة الأجر',
   },
   en: {
     nameTooShort: 'Name must be at least 2 characters',
@@ -91,6 +99,10 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     invalidCurrency: 'Unsupported currency',
     amountTooSmall: 'Amount is below the minimum allowed value',
     amountTooLarge: 'Amount is above the maximum allowed value',
+    amountExceedsRemaining: 'Amount cannot exceed the remaining balance',
+    hourlyRateRequired: 'Hourly rate is required',
+    hourlyRateTooSmall: 'Hourly rate must be greater than zero',
+    billingCurrencyRequired: 'Billing currency is required',
   },
 };
 

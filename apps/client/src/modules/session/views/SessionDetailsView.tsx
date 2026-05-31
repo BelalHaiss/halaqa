@@ -90,7 +90,9 @@ export const SessionDetailsView = () => {
 
   const shouldShowAttendanceCard = true;
   const canStoreAttendance =
-    vm.session?.status === 'SCHEDULED' || vm.session?.status === 'RESCHEDULED';
+    vm.session?.status === 'SCHEDULED' ||
+    vm.session?.status === 'RESCHEDULED' ||
+    vm.session?.status === 'MISSED';
 
   const handleSaveAttendance = attendanceForm.handleSubmit(async (values) => {
     await vm.saveAttendance(
@@ -268,13 +270,6 @@ export const SessionDetailsView = () => {
               </div>
             ) : (
               <>
-                {canStoreAttendance && vm.session.status !== 'COMPLETED' ? (
-                  <Alert alertType='WARN'>
-                    <AlertDescription>
-                      لا توجد قيم افتراضية للحضور. يجب تحديد حالة كل طالب قبل حفظ الحضور.
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
                 <div className='space-y-2'>
                   {vm.session.students.map((student, index) =>
                     canStoreAttendance ? (
@@ -337,7 +332,7 @@ export const SessionDetailsView = () => {
           setIsRescheduleDialogOpen(false);
         }}
         isLoading={vm.isUpdating}
-        timezone={user.timezone}
+        timezone={vm.session.groupInfo.timezone}
       />
     </div>
   );

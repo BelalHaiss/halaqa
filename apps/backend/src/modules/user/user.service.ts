@@ -17,6 +17,7 @@ import {
   LearnerDto,
   QueryLearnersDto,
   QueryLearnersResponseDto,
+  SetLearnerCredentialsDto,
   StaffUserDto,
   StaffUsersResponseDto,
   UpdateOwnProfileDto,
@@ -24,6 +25,7 @@ import {
   UserAuthRole,
   UserAuthType,
   UpdateLearnerDto,
+  normalizeArabic,
 } from '@halaqa/shared';
 import { Prisma, User, UserRole } from 'generated/prisma/client';
 
@@ -70,6 +72,7 @@ export class UserService {
     const createdStaffUser = await this.prismaService.user.create({
       data: {
         name: dto.name,
+        nameNormalized: normalizeArabic(dto.name),
         username: dto.username,
         role: dto.role,
         timezone: dto.timezone ?? DEFAULT_TIMEZONE,
@@ -111,7 +114,9 @@ export class UserService {
     const updatedStaffUser = await this.prismaService.user.update({
       where: { id },
       data: {
-        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.name !== undefined
+          ? { name: dto.name, nameNormalized: normalizeArabic(dto.name) }
+          : {}),
         ...(dto.username !== undefined ? { username: dto.username } : {}),
         ...(dto.role !== undefined ? { role: dto.role } : {}),
         ...(dto.timezone !== undefined ? { timezone: dto.timezone } : {}),
@@ -179,6 +184,7 @@ export class UserService {
       where: { id: userId },
       data: {
         name: dto.name,
+        nameNormalized: normalizeArabic(dto.name),
         username: dto.username,
         timezone: dto.timezone,
       },
@@ -220,6 +226,7 @@ export class UserService {
     const createdLearner = await this.prismaService.user.create({
       data: {
         name: dto.name,
+        nameNormalized: normalizeArabic(dto.name),
         role: UserRole.STUDENT,
         username: null,
         password: null,
@@ -229,6 +236,47 @@ export class UserService {
     });
 
     return this.toLearnerDto(createdLearner);
+  }
+
+  async setLearnerCredentials(id: string, dto: SetLearnerCredentialsDto): Promise<LearnerDto> {
+    const learner = await this.prismaService.user.findFirst({
+      where: {
+        id,
+        role: UserRole.STUDENT,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!learner) {
+      throw new NotFoundException('Learner not found');
+    }
+
+    const existingUser = await this.prismaService.user.findUnique({
+      where: {
+        username: dto.username,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingUser && existingUser.id !== id) {
+      throw new ConflictException('Username already exists');
+    }
+
+    const updatedLearner = await this.prismaService.user.update({
+      where: {
+        id,
+      },
+      data: {
+        username: dto.username,
+        password: await argon.hash(dto.password),
+      },
+    });
+
+    return this.toLearnerDto(updatedLearner);
   }
 
   async queryLearners(actor: User, query: QueryLearnersDto): Promise<QueryLearnersResponseDto> {
@@ -250,8 +298,8 @@ export class UserService {
         : {}),
       ...(searchQuery
         ? {
-            name: {
-              contains: searchQuery,
+            nameNormalized: {
+              contains: normalizeArabic(searchQuery),
             },
           }
         : {}),
@@ -314,6 +362,7 @@ export class UserService {
 
     if (dto.name !== undefined) {
       data.name = dto.name;
+      data.nameNormalized = normalizeArabic(dto.name);
     }
 
     if (dto.timezone !== undefined) {
@@ -456,7 +505,7 @@ export class UserService {
     createdAt: Date;
     updatedAt: Date;
   }): UserAuthType {
-    if (!user.username || !this.isStaffRole(user.role)) {
+    if (!user.username) {
       throw new NotFoundException('User not found');
     }
 

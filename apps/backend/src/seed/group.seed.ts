@@ -1,5 +1,5 @@
 import { faker, fakerAR } from '@faker-js/faker';
-import { GroupStatus, PrismaClient } from 'generated/prisma/client';
+import { CurrencyCode, GroupStatus, PrismaClient } from 'generated/prisma/client';
 
 export type SeededGroupScheduleDay = {
   dayOfWeek: number;
@@ -44,6 +44,9 @@ export const seededGroupData = (): SeededGroupData => {
 
 export type SeededGroupWithStudents = {
   id: string;
+  tutorId: string;
+  tutorHourlyRate: number;
+  tutorCurrency: CurrencyCode;
   timezone: string;
   scheduleDays: SeededGroupScheduleDay[];
   studentIds: string[];
@@ -61,11 +64,15 @@ export async function seedGroups(args: {
   const createdGroups: SeededGroupWithStudents[] = [];
 
   for (const groupData of groupsSeed) {
+    const selectedTutor = faker.helpers.arrayElement(args.tutors);
+
     const group = await args.prisma.group.create({
       data: {
         name: groupData.name,
         description: groupData.description,
-        tutorId: faker.helpers.arrayElement(args.tutors).id,
+        tutorId: selectedTutor.id,
+        tutorHourlyRate: faker.number.int({ min: 75, max: 300 }),
+        tutorCurrency: faker.helpers.arrayElement<CurrencyCode>(['EGP', 'SAR', 'AED']),
         timezone: groupData.timezone,
         status: groupData.status,
         scheduleDays: {
@@ -94,6 +101,10 @@ export async function seedGroups(args: {
 
     createdGroups.push({
       id: group.id,
+      tutorId: selectedTutor.id,
+      tutorHourlyRate: Number(group.tutorHourlyRate),
+
+      tutorCurrency: group.tutorCurrency!,
       timezone: group.timezone,
       scheduleDays: groupData.scheduleDays,
       studentIds: selectedStudents.map((student) => student.id),

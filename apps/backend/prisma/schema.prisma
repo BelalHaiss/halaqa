@@ -14,6 +14,7 @@ model User {
   id                    String                 @id @default(ulid())
   username              String?                @unique @db.VarChar(50)
   name                  String                 @db.VarChar(100)
+  nameNormalized        String                 @default("") @map("name_normalized") @db.VarChar(100)
   password              String?                @db.VarChar(255)
   role                  UserRole
   createdAt             DateTime               @default(now()) @map("created_at")
@@ -29,25 +30,25 @@ model User {
   createdTransactions   FinancialTransaction[] @relation("TransactionCreatedBy")
 
   @@index([role])
+  @@index([nameNormalized])
   @@map("users")
 }
 
 model Group {
-  id                   String                @id @default(ulid())
-  name                 String                @db.VarChar(100)
-  description          String?               @db.VarChar(500)
-  tutorId              String?               @map("tutor_id")
-  tutorHourlyRate      Decimal               @default(0) @map("tutor_hourly_rate") @db.Decimal(12, 2)
-  tutorCurrency        CurrencyCode          @default(EGP) @map("tutor_currency")
-  billingType          GroupBillingType      @default(FREE) @map("billing_type")
-  status               GroupStatus           @default(ACTIVE)
-  createdAt            DateTime              @default(now()) @map("created_at")
-  updatedAt            DateTime              @updatedAt @map("updated_at")
-  timezone             String                @default("Africa/Cairo")
-  scheduleDays         GroupScheduleDay[]
-  students             GroupStudent[]
-  sessions             Session[]
-  learnerPaymentGroups LearnerPaymentGroup[]
+  id              String             @id @default(ulid())
+  name            String             @db.VarChar(100)
+  description     String?            @db.VarChar(500)
+  tutorId         String?            @map("tutor_id")
+  tutorHourlyRate Decimal?           @map("tutor_hourly_rate") @db.Decimal(12, 2)
+  tutorCurrency   CurrencyCode?      @map("tutor_currency")
+  billingType     GroupBillingType   @default(FREE) @map("billing_type")
+  status          GroupStatus        @default(ACTIVE)
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  timezone        String             @default("Africa/Cairo")
+  scheduleDays    GroupScheduleDay[]
+  students        GroupStudent[]
+  sessions        Session[]
 
   //  we should have relation for tutor and user
   tutor User? @relation(fields: [tutorId], references: [id], onDelete: SetNull)
@@ -86,8 +87,8 @@ model Session {
   id                String             @id @default(ulid())
   groupId           String             @map("group_id")
   tutorId           String             @map("tutor_id")
-  tutorSessionPrice Decimal            @default(0) @map("tutor_session_price") @db.Decimal(12, 2)
-  tutorCurrency     CurrencyCode       @default(EGP) @map("tutor_currency")
+  tutorSessionPrice Decimal?           @map("tutor_session_price") @db.Decimal(12, 2)
+  tutorCurrency     CurrencyCode?      @map("tutor_currency")
   startedAt         DateTime
   originalStartedAt DateTime?          @map("original_started_at")
   status            SessionStatus
@@ -128,12 +129,15 @@ model FinancialTransaction {
   @@index([createdAt])
   @@index([learnerPaymentId])
   @@index([tutorPaymentId])
+  @@index([entityType, learnerPaymentId])
+  @@index([entityType, tutorPaymentId])
   @@map("financial_transactions")
 }
 
 model LearnerPayment {
   id            String                 @id @default(ulid())
   learnerId     String                 @map("learner_id")
+  billingType   LearnerBillingType     @map("billing_type")
   sessionsCount Int                    @map("sessions_count") @db.UnsignedSmallInt
   periodFrom    DateTime               @map("period_from")
   periodTo      DateTime               @map("period_to")
@@ -144,7 +148,6 @@ model LearnerPayment {
   createdAt     DateTime               @default(now()) @map("created_at")
   updatedAt     DateTime               @updatedAt @map("updated_at")
   learner       User                   @relation("LearnerPaymentLearner", fields: [learnerId], references: [id], onDelete: Cascade)
-  groups        LearnerPaymentGroup[]
   transactions  FinancialTransaction[]
 
   @@index([learnerId])
@@ -153,20 +156,6 @@ model LearnerPayment {
   @@index([periodTo])
   @@index([learnerId, periodFrom, periodTo])
   @@map("learner_payments")
-}
-
-model LearnerPaymentGroup {
-  learnerPaymentId String         @map("learner_payment_id")
-  groupId          String         @map("group_id")
-  isActive         Boolean        @default(false) @map("is_active")
-  createdAt        DateTime       @default(now()) @map("created_at")
-  learnerPayment   LearnerPayment @relation(fields: [learnerPaymentId], references: [id], onDelete: Cascade)
-  group            Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  @@id([learnerPaymentId, groupId])
-  @@index([groupId])
-  @@index([isActive])
-  @@map("learner_payment_groups")
 }
 
 model TutorPayment {
@@ -221,6 +210,10 @@ enum GroupStatus {
 
 enum GroupBillingType {
   FREE
+  SESSION_COUNT_MONTHLY
+}
+
+enum LearnerBillingType {
   SESSION_COUNT_MONTHLY
 }
 

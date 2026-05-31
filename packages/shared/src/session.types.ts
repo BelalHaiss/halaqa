@@ -34,7 +34,7 @@ export interface SessionSummaryDTO {
 /** Detailed view for single session with attendance */
 export interface SessionDetailsDTO {
   id: string;
-  groupInfo: { id: string; name: string };
+  groupInfo: { id: string; name: string; timezone: string };
   tutorInfo: { id: string; name: string } | null;
   status: SessionComputedStatus;
   canBeRescheduled: boolean;

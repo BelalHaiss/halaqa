@@ -79,6 +79,9 @@ export class GroupService {
         : null,
       timezone: group.timezone,
       status: group.status,
+      billingType: group.billingType,
+      tutorHourlyRate: group.tutorHourlyRate ? Number(group.tutorHourlyRate) : null,
+      tutorCurrency: group.tutorCurrency,
       scheduleDays: group.scheduleDays.map((day) => ({
         dayOfWeek: day.dayOfWeek,
         startMinutes: day.startMinutes,
@@ -122,6 +125,9 @@ export class GroupService {
       tutorId: group.tutorId,
       timezone: group.timezone,
       status: group.status,
+      billingType: group.billingType,
+      tutorHourlyRate: group.tutorHourlyRate ? Number(group.tutorHourlyRate) : null,
+      tutorCurrency: group.tutorCurrency,
       scheduleDays: group.scheduleDays.map((day) => ({
         dayOfWeek: day.dayOfWeek,
         startMinutes: day.startMinutes,
@@ -195,6 +201,9 @@ export class GroupService {
         tutorId: dto.tutorId,
         timezone: dto.timezone,
         status: dto.status ?? 'ACTIVE',
+        billingType: dto.billingType ?? 'FREE',
+        tutorHourlyRate: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorHourlyRate : null,
+        tutorCurrency: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorCurrency : null,
         scheduleDays: {
           createMany: {
             data: dto.scheduleDays.map((day) => ({
@@ -236,6 +245,12 @@ export class GroupService {
           tutorId: dto.tutorId,
           timezone: dto.timezone,
           status: dto.status,
+          ...(dto.billingType !== undefined && {
+            billingType: dto.billingType,
+            tutorHourlyRate:
+              dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorHourlyRate : null,
+            tutorCurrency: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorCurrency : null,
+          }),
         },
       });
 
