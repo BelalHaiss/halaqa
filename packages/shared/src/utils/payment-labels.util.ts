@@ -15,6 +15,7 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 const TRANSACTION_ENTITY_TYPE_LABELS: Record<TransactionEntityType, string> = {
   LEARNER_PAYMENT: 'دفعة متعلم',
   TUTOR_PAYMENT: 'مستحق معلم',
+  MANUAL: 'يدوي',
 };
 
 const CURRENCY_LABELS: Partial<Record<CurrencyCode, string>> = {

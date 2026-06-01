@@ -108,23 +108,38 @@ model Session {
   @@map("sessions")
 }
 
+model TransactionLabel {
+  id             String               @id @default(ulid())
+  name           String               @db.VarChar(100)
+  nameNormalized String               @default("") @map("name_normalized") @db.VarChar(100)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  transactions   FinancialTransaction[]
+
+  @@index([nameNormalized])
+  @@map("transaction_labels")
+}
+
 model FinancialTransaction {
   id               String                @id @default(ulid())
   type             TransactionType
   amount           Decimal               @db.Decimal(12, 2)
   currency         CurrencyCode
   entityType       TransactionEntityType @map("entity_type")
+  labelId          String?               @map("label_id")
+  notes            String?               @db.Text
   learnerPaymentId String?               @map("learner_payment_id")
   tutorPaymentId   String?               @map("tutor_payment_id")
   createdById      String                @map("created_by_id")
   createdAt        DateTime              @default(now()) @map("created_at")
   updatedAt        DateTime              @updatedAt @map("updated_at")
+  label            TransactionLabel?     @relation(fields: [labelId], references: [id], onDelete: SetNull)
   createdBy        User                  @relation("TransactionCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
   learnerPayment   LearnerPayment?       @relation(fields: [learnerPaymentId], references: [id], onDelete: Cascade)
   tutorPayment     TutorPayment?         @relation(fields: [tutorPaymentId], references: [id], onDelete: Cascade)
 
   @@index([type])
   @@index([entityType])
+  @@index([labelId])
   @@index([createdById])
   @@index([createdAt])
   @@index([learnerPaymentId])
@@ -244,6 +259,7 @@ enum TransactionType {
 enum TransactionEntityType {
   LEARNER_PAYMENT
   TUTOR_PAYMENT
+  MANUAL
 }
 
 enum CurrencyCode {

@@ -6,7 +6,7 @@ import {
   PAGINATION_MIN_LIMIT,
   PAGINATION_MIN_PAGE,
 } from './fields.constants';
-import { ValidationLocale } from './messages';
+import { ValidationLocale, getMessages } from './messages';
 import {
   attendanceNotesSchema,
   isoDateOnlySchema,
@@ -42,12 +42,18 @@ export const updateSessionActionSchema = (locale: ValidationLocale = 'ar') =>
     }),
   ]) satisfies ZodType<UpdateSessionActionDTO>;
 
-export const sessionQuerySchema = (locale: ValidationLocale = 'ar') =>
-  z.object({
-    page: z.coerce.number().min(PAGINATION_MIN_PAGE).optional(),
-    limit: z.coerce.number().min(PAGINATION_MIN_LIMIT).max(PAGINATION_MAX_LIMIT).optional(),
+export const sessionQuerySchema = (locale: ValidationLocale = 'ar') => {
+  const m = getMessages(locale);
+  return z.object({
+    page: z.coerce.number().min(PAGINATION_MIN_PAGE, m.pageInvalid).optional(),
+    limit: z.coerce
+      .number()
+      .min(PAGINATION_MIN_LIMIT, m.limitInvalid)
+      .max(PAGINATION_MAX_LIMIT, m.limitInvalid)
+      .optional(),
     fromDate: optionalIsoDateOnlySchema(locale),
     toDate: optionalIsoDateOnlySchema(locale),
     status: z.enum(['RESCHEDULED', 'COMPLETED', 'CANCELED', 'MISSED']).optional(),
     groupId: z.string().optional(),
   }) satisfies ZodType<SessionQueryDTO>;
+};

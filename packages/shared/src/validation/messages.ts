@@ -33,6 +33,10 @@ type Messages = {
   hourlyRateRequired: string;
   hourlyRateTooSmall: string;
   billingCurrencyRequired: string;
+  periodFromBeforeTo: string;
+  initialPaidExceedsTotal: string;
+  transactionLabelRequired: string;
+  transactionLabelConflict: string;
 };
 
 export const validationMessages: Record<ValidationLocale, Messages> = {
@@ -69,6 +73,10 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     hourlyRateRequired: 'الأجر بالساعة مطلوب',
     hourlyRateTooSmall: 'الأجر يجب أن يكون أكبر من الصفر',
     billingCurrencyRequired: 'اختر عملة الأجر',
+    periodFromBeforeTo: 'تاريخ البداية يجب أن يكون قبل أو يساوي تاريخ النهاية',
+    initialPaidExceedsTotal: 'المبلغ المدفوع لا يمكن أن يكون أكبر من المبلغ الإجمالي',
+    transactionLabelRequired: 'يجب تحديد تصنيف للمعاملة',
+    transactionLabelConflict: 'لا يمكن تحديد تصنيف موجود وإنشاء تصنيف جديد في نفس الوقت',
   },
   en: {
     nameTooShort: 'Name must be at least 2 characters',
@@ -103,6 +111,11 @@ export const validationMessages: Record<ValidationLocale, Messages> = {
     hourlyRateRequired: 'Hourly rate is required',
     hourlyRateTooSmall: 'Hourly rate must be greater than zero',
     billingCurrencyRequired: 'Billing currency is required',
+    periodFromBeforeTo: 'Start date must be before or equal to end date',
+    initialPaidExceedsTotal: 'Initial paid amount cannot exceed total amount',
+    transactionLabelRequired: 'A transaction label is required',
+    transactionLabelConflict:
+      'Cannot specify both an existing label and a new label at the same time',
   },
 };
 

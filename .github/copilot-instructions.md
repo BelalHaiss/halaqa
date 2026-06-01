@@ -30,6 +30,7 @@ Detailed rules live in `.github/instructions/`. Copilot loads them automatically
 
 - Modular, DRY, strict separation of concerns.
 - Consistency over creativity.
+- reusability and single source of truth via `packages/shared`. used also in zod schema and dto and backend .
 - Keep code small, focused, and readable.
 
 ## Review Checklist

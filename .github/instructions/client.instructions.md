@@ -22,10 +22,13 @@ applyTo: 'apps/client/**'
 
 ## Forms
 
+See `forms.instructions.md` for full Zod/schema conventions. Client-specific rules:
+
 - react-hook-form on every form, small or large
-- use ZodValidation with schemas from `@halaqa/shared` or module-local extensions if required and make sure to extend shared schemas in instead of redefining them
-- `useForm` must use the shared backend DTO as its transformed submit type together with the same shared Zod schema used by backend validation
+- Always call schema factories with no arguments (uses default `'ar'` locale)
+- `useForm<Dto>` — use the shared DTO as the form generic, not a separate interface
 - Use `FormField` from `src/components/forms/form-field.tsx` for dynamic fields
+- Extend shared schemas in `modules/[module]/utils/[module].validation.ts` — never redefine them
 
 ## Data Fetching
 
@@ -44,12 +47,6 @@ applyTo: 'apps/client/**'
 
 - No `useEffect` unless absolutely no safer alternative exists
 - No raw `fetch` or `axios` calls — always go through the API hooks
-
-## Zod Schemas
-
-- Import all schemas from `@halaqa/shared`
-- Extend or customize in `modules/[module]/utils/[module].validation.ts` using `.extend()` or `.merge()`
-- Never redefine a shared schema locally
 
 ## Pagination
 

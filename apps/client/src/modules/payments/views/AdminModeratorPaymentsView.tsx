@@ -1,10 +1,11 @@
-import { GraduationCap, HandCoins } from 'lucide-react';
+import { ArrowRightLeft, GraduationCap, HandCoins } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AdminLearnerPaymentsView } from './AdminLearnerPaymentsView';
+import { AdminTransactionsView } from './AdminTransactionsView';
 import { AdminTutorPaymentsView } from './AdminTutorPaymentsView';
 
-const VALID_TABS = ['learner', 'tutor'] as const;
+const VALID_TABS = ['learner', 'tutor', 'transactions'] as const;
 type PaymentTab = (typeof VALID_TABS)[number];
 
 const normalizeTab = (value: string | null): PaymentTab => {
@@ -44,9 +45,20 @@ export function AdminModeratorPaymentsView() {
           <HandCoins className='h-4 w-4' />
           أجور المعلمين
         </Button>
+        <Button
+          type='button'
+          variant={activeTab === 'transactions' ? 'solid' : 'ghost'}
+          onClick={() => setTab('transactions')}
+          className='rounded-full gap-2'
+        >
+          <ArrowRightLeft className='h-4 w-4' />
+          المعاملات
+        </Button>
       </div>
 
-      {activeTab === 'learner' ? <AdminLearnerPaymentsView /> : <AdminTutorPaymentsView />}
+      {activeTab === 'learner' && <AdminLearnerPaymentsView />}
+      {activeTab === 'tutor' && <AdminTutorPaymentsView />}
+      {activeTab === 'transactions' && <AdminTransactionsView />}
     </div>
   );
 }

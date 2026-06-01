@@ -109,6 +109,20 @@ export const queryKeys = {
       [...queryKeys.payments.all, 'tutor-preview', payload] as const,
   },
 
+  // Transaction labels queries
+  transactionLabels: {
+    all: ['transaction-labels'] as const,
+    lists: () => [...queryKeys.transactionLabels.all, 'list'] as const,
+    list: (search?: string) => [...queryKeys.transactionLabels.lists(), search ?? ''] as const,
+  },
+
+  // Transactions queries
+  transactions: {
+    all: ['transactions'] as const,
+    lists: () => [...queryKeys.transactions.all, 'list'] as const,
+    list: (query?: unknown) => [...queryKeys.transactions.lists(), query] as const,
+  },
+
   // Dashboard queries
   dashboard: {
     all: ['dashboard'] as const,
