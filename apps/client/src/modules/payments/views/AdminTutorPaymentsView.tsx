@@ -3,7 +3,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { PageHeader } from '@/components/ui/page-header';
 import { CreateTutorPaymentModal } from '../components/CreateTutorPaymentModal';
@@ -40,12 +39,6 @@ export function AdminTutorPaymentsView() {
           </Badge>
 
           <div className='grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5'>
-            <Input
-              value={vm.filters.search}
-              onChange={(e) => vm.setSearch(e.target.value)}
-              placeholder='بحث بالاسم'
-            />
-
             <TutorLazySelect
               value={vm.filters.selectedTutorId}
               onValueChange={vm.setTutorId}

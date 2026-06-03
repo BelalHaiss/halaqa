@@ -15,6 +15,7 @@ export type SortOrder = 'asc' | 'desc';
 export type LearnerPaymentsSortBy =
   | 'learnerName'
   | 'sessionsCount'
+  | 'attendedCount'
   | 'totalAmount'
   | 'paidAmount'
   | 'currency'
@@ -50,6 +51,7 @@ export interface LearnerPaymentSummaryDto {
   learnerName: string;
   billingType: LearnerBillingType;
   sessionsCount: number;
+  attendedCount: number;
   periodFrom: ISODateString;
   periodTo: ISODateString;
   totalAmount: number;
@@ -63,6 +65,7 @@ export interface LearnerPaymentSummaryDto {
 
 export type QueryLearnerPaymentsDto = PaginationQueryType &
   DateRangeQueryType & {
+    learnerId?: string;
     status?: PaymentStatus;
     currency?: CurrencyCode;
     sortBy?: LearnerPaymentsSortBy;

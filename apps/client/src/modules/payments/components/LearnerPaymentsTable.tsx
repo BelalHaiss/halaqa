@@ -47,6 +47,7 @@ export function LearnerPaymentsTable({
   const sortableColumns: LearnerPaymentsSortBy[] = [
     'learnerName',
     'sessionsCount',
+    'attendedCount',
     'totalAmount',
     'paidAmount',
     'currency',
@@ -66,6 +67,11 @@ export function LearnerPaymentsTable({
         accessorKey: 'sessionsCount',
         header: 'عدد الجلسات',
         id: 'sessionsCount',
+      },
+      {
+        accessorKey: 'attendedCount',
+        header: 'الجلسات المحضورة',
+        id: 'attendedCount',
       },
       {
         accessorKey: 'totalAmount',

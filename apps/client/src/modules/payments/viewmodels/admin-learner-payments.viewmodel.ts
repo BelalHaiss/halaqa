@@ -40,8 +40,8 @@ export function useAdminLearnerPaymentsViewModel() {
   const limit = normalizePositiveInteger(searchParams.get('limit'), DEFAULT_LIMIT);
   const fromDate = searchParams.get('fromDate')?.trim() ?? '';
   const toDate = searchParams.get('toDate')?.trim() ?? '';
-  const search = searchParams.get('search')?.trim() ?? '';
-  const sessionsCountValue = normalizePositiveInteger(searchParams.get('sessionsCount'), 0);
+  const learnerId = searchParams.get('learnerId')?.trim() ?? '';
+  const learnerName = searchParams.get('learnerName')?.trim() ?? '';
   const status = normalizeStatus(searchParams.get('status'));
   const sortBy = (searchParams.get('learnerSortBy')?.trim() ?? '') as LearnerPaymentsSortBy | '';
   const sortOrder = (searchParams.get('learnerSortOrder')?.trim() ?? 'desc') as SortOrder;
@@ -73,17 +73,18 @@ export function useAdminLearnerPaymentsViewModel() {
     () => ({
       page,
       limit,
+      ...(learnerId ? { learnerId } : {}),
       ...(status ? { status } : {}),
-      ...(sessionsCountValue > 0 ? { sessionsCount: sessionsCountValue } : {}),
       ...(fromDate ? { fromDate: fromDate as QueryLearnerPaymentsDto['fromDate'] } : {}),
       ...(toDate ? { toDate: toDate as QueryLearnerPaymentsDto['toDate'] } : {}),
-      ...(search ? { search } : {}),
       ...(sortBy ? { sortBy } : {}),
       ...(sortBy ? { sortOrder } : {}),
       ...(currency ? { currency } : {}),
     }),
-    [currency, fromDate, sortBy, sortOrder, limit, page, search, sessionsCountValue, status, toDate]
+    [currency, fromDate, learnerId, sortBy, sortOrder, limit, page, status, toDate]
   );
+
+  console.log('Querying learner payments with:', query);
 
   const paymentsQuery = useApiQuery({
     queryKey: queryKeys.payments.learnerList(query),
@@ -102,6 +103,7 @@ export function useAdminLearnerPaymentsViewModel() {
     onSuccess: async () => {
       toast.success('تم إنشاء اشتراك المتعلم بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -117,6 +119,7 @@ export function useAdminLearnerPaymentsViewModel() {
     onSuccess: async () => {
       toast.success('تم تسجيل الدفعة بنجاح');
       await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -128,6 +131,7 @@ export function useAdminLearnerPaymentsViewModel() {
     onSuccess: async () => {
       toast.success('تم حذف اشتراك المتعلم');
       await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -159,22 +163,22 @@ export function useAdminLearnerPaymentsViewModel() {
       limit,
       fromDate,
       toDate,
-      search,
+      learnerId,
+      learnerName,
       status,
       currency: currency || undefined,
-      sessionsCount: sessionsCountValue > 0 ? sessionsCountValue : undefined,
       sortBy: sortBy || undefined,
       sortOrder,
     },
 
     setPage: (nextPage: number) =>
       updateParams({ page: nextPage > DEFAULT_PAGE ? String(nextPage) : undefined }),
-    setSearch: (value: string) => updateParams({ search: value || undefined }, true),
+    setLearnerId: (id: string, name: string) =>
+      updateParams({ learnerId: id || undefined, learnerName: name || undefined }, true),
     setFromDate: (value: string) => updateParams({ fromDate: value || undefined }, true),
     setToDate: (value: string) => updateParams({ toDate: value || undefined }, true),
     setStatus: (value: PaymentStatus | '') => updateParams({ status: value || undefined }, true),
     setCurrency: (value: CurrencyCode | '') => updateParams({ currency: value || undefined }, true),
-    setSessionsCount: (value: string) => updateParams({ sessionsCount: value || undefined }, true),
     setSort: (nextSortBy: LearnerPaymentsSortBy) => {
       const nextOrder: SortOrder = sortBy === nextSortBy && sortOrder === 'asc' ? 'desc' : 'asc';
       updateParams({ learnerSortBy: nextSortBy, learnerSortOrder: nextOrder }, true);

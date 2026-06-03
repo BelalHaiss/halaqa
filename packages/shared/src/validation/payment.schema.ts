@@ -39,6 +39,7 @@ const sortOrderSchema = z.enum(['asc', 'desc']) satisfies ZodType<SortOrder>;
 const learnerSortBySchema = z.enum([
   'learnerName',
   'sessionsCount',
+  'attendedCount',
   'totalAmount',
   'paidAmount',
   'currency',
@@ -105,10 +106,9 @@ export const queryLearnerPaymentsSchema = (locale: ValidationLocale = 'ar') =>
     limit: z.coerce.number().min(PAGINATION_MIN_LIMIT).max(PAGINATION_MAX_LIMIT).optional(),
     fromDate: optionalIsoDateOnlySchema(locale),
     toDate: optionalIsoDateOnlySchema(locale),
+    learnerId: z.string().trim().min(1).optional(),
     status: paymentStatusSchema.optional(),
-    sessionsCount: z.coerce.number().int().positive().optional(),
     currency: currencyCodeSchema(locale).optional(),
-    search: z.string().trim().min(1).optional(),
     sortBy: learnerSortBySchema.optional(),
     sortOrder: sortOrderSchema.optional(),
   }) satisfies ZodType<QueryLearnerPaymentsDto>;
@@ -138,7 +138,6 @@ export const queryTutorPaymentsSchema = (locale: ValidationLocale = 'ar') =>
     toDate: optionalIsoDateOnlySchema(locale),
     tutorId: z.string().trim().min(1).optional(),
     currency: currencyCodeSchema(locale).optional(),
-    search: z.string().trim().min(1).optional(),
     sortBy: tutorSortBySchema.optional(),
     sortOrder: sortOrderSchema.optional(),
   }) satisfies ZodType<QueryTutorPaymentsDto>;

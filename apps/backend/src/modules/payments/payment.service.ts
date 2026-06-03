@@ -65,6 +65,7 @@ export class PaymentService {
 
     const where: Prisma.LearnerPaymentWhereInput = {
       ...this.getLearnerPaymentsScope(actor),
+      ...(query.learnerId ? { learnerId: query.learnerId } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.currency ? { currency: query.currency } : {}),
       ...(periodFromFilter ? { periodFrom: periodFromFilter } : {}),
@@ -592,6 +593,8 @@ export class PaymentService {
         return [{ learner: { name: sortOrder } }, { createdAt: 'desc' }];
       case 'sessionsCount':
         return [{ sessionsCount: sortOrder }, { createdAt: 'desc' }];
+      case 'attendedCount':
+        return [{ attendedCount: sortOrder }, { createdAt: 'desc' }];
       case 'totalAmount':
         return [{ totalAmount: sortOrder }, { createdAt: 'desc' }];
       case 'paidAmount':
@@ -640,6 +643,7 @@ export class PaymentService {
     learnerId: string;
     billingType: LearnerBillingType;
     sessionsCount: number;
+    attendedCount: number;
     periodFrom: Date;
     periodTo: Date;
     totalAmount: Prisma.Decimal;
@@ -668,6 +672,7 @@ export class PaymentService {
       learnerName: row.learner.name,
       billingType: row.billingType,
       sessionsCount: row.sessionsCount,
+      attendedCount: row.attendedCount,
       periodFrom: row.periodFrom.toISOString() as ISODateString,
       periodTo: row.periodTo.toISOString() as ISODateString,
       totalAmount: Number(row.totalAmount),

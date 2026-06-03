@@ -109,10 +109,10 @@ model Session {
 }
 
 model TransactionLabel {
-  id             String               @id @default(ulid())
-  name           String               @db.VarChar(100)
-  nameNormalized String               @default("") @map("name_normalized") @db.VarChar(100)
-  createdAt      DateTime             @default(now()) @map("created_at")
+  id             String                 @id @default(ulid())
+  name           String                 @db.VarChar(100)
+  nameNormalized String                 @default("") @map("name_normalized") @db.VarChar(100)
+  createdAt      DateTime               @default(now()) @map("created_at")
   transactions   FinancialTransaction[]
 
   @@index([nameNormalized])
@@ -154,6 +154,7 @@ model LearnerPayment {
   learnerId     String                 @map("learner_id")
   billingType   LearnerBillingType     @map("billing_type")
   sessionsCount Int                    @map("sessions_count") @db.UnsignedSmallInt
+  attendedCount Int                    @default(0) @map("attended_count") @db.UnsignedSmallInt
   periodFrom    DateTime               @map("period_from")
   periodTo      DateTime               @map("period_to")
   totalAmount   Decimal                @map("total_amount") @db.Decimal(12, 2)

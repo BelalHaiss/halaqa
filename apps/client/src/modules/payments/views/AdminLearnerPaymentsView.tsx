@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { PageHeader } from '@/components/ui/page-header';
 import {
@@ -18,6 +17,7 @@ import { ApplyLearnerPaymentModal } from '../components/ApplyLearnerPaymentModal
 import { CreateLearnerPaymentModal } from '../components/CreateLearnerPaymentModal';
 import { CurrencySelectFilter } from '../components/CurrencySelectFilter';
 import { LearnerPaymentsTable } from '../components/LearnerPaymentsTable';
+import { LearnerSearchCombobox } from '../components/LearnerSearchCombobox';
 import { PaymentDatePicker } from '../components/PaymentDatePicker';
 import { PaymentDetailsModal } from '../components/PaymentDetailsModal';
 import { ResetPaymentsFiltersButton } from '../components/ResetPaymentsFiltersButton';
@@ -48,10 +48,10 @@ export function AdminLearnerPaymentsView() {
           </Badge>
 
           <div className='grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5'>
-            <Input
-              value={vm.filters.search}
-              onChange={(e) => vm.setSearch(e.target.value)}
-              placeholder='بحث بالاسم'
+            <LearnerSearchCombobox
+              value={vm.filters.learnerId}
+              onValueChange={vm.setLearnerId}
+              selectedName={vm.filters.learnerName}
             />
 
             <PaymentDatePicker
@@ -86,12 +86,6 @@ export function AdminLearnerPaymentsView() {
                 <SelectItem value='PAID'>{getPaymentStatusLabel('PAID')}</SelectItem>
               </SelectContent>
             </Select>
-
-            <Input
-              value={vm.filters.sessionsCount ? String(vm.filters.sessionsCount) : ''}
-              onChange={(e) => vm.setSessionsCount(e.target.value)}
-              placeholder='فلتر عدد الجلسات'
-            />
 
             <CurrencySelectFilter value={vm.filters.currency ?? ''} onChange={vm.setCurrency} />
 

@@ -88,6 +88,7 @@ export function useCreateTutorPaymentViewModel({
       toast.success('تم إنشاء أجور المعلم بنجاح');
       setPreview(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     onError: (error) => {
       toast.error(error.message);

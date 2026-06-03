@@ -32,7 +32,6 @@ export function useAdminTutorPaymentsViewModel() {
   const limit = normalizePositiveInteger(searchParams.get('limit'), DEFAULT_LIMIT);
   const fromDate = searchParams.get('fromDate')?.trim() ?? '';
   const toDate = searchParams.get('toDate')?.trim() ?? '';
-  const search = searchParams.get('search')?.trim() ?? '';
   const selectedTutorId = searchParams.get('id')?.trim() ?? '';
   const sortBy = (searchParams.get('tutorSortBy')?.trim() ?? '') as TutorPaymentsSortBy | '';
   const sortOrder = (searchParams.get('tutorSortOrder')?.trim() ?? 'desc') as SortOrder;
@@ -64,12 +63,11 @@ export function useAdminTutorPaymentsViewModel() {
       ...(selectedTutorId ? { tutorId: selectedTutorId } : {}),
       ...(fromDate ? { fromDate: fromDate as QueryTutorPaymentsDto['fromDate'] } : {}),
       ...(toDate ? { toDate: toDate as QueryTutorPaymentsDto['toDate'] } : {}),
-      ...(search ? { search } : {}),
       ...(sortBy ? { sortBy } : {}),
       ...(sortBy ? { sortOrder } : {}),
       ...(currency ? { currency } : {}),
     }),
-    [currency, fromDate, limit, page, search, selectedTutorId, sortBy, sortOrder, toDate]
+    [currency, fromDate, limit, page, selectedTutorId, sortBy, sortOrder, toDate]
   );
 
   const paymentsQuery = useApiQuery({
@@ -89,6 +87,7 @@ export function useAdminTutorPaymentsViewModel() {
     onSuccess: async () => {
       toast.success('تم حذف أجور المعلم');
       await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
     },
     onError: (error) => {
       toast.error(error.message);
@@ -110,7 +109,6 @@ export function useAdminTutorPaymentsViewModel() {
       limit,
       fromDate,
       toDate,
-      search,
       selectedTutorId,
       currency: currency || undefined,
       sortBy: sortBy || undefined,
@@ -119,7 +117,6 @@ export function useAdminTutorPaymentsViewModel() {
 
     setPage: (nextPage: number) =>
       updateParams({ page: nextPage > DEFAULT_PAGE ? String(nextPage) : undefined }),
-    setSearch: (value: string) => updateParams({ search: value || undefined }, true),
     setTutorId: (value: string) => updateParams({ id: value || undefined }, true),
     setFromDate: (value: string) => updateParams({ fromDate: value || undefined }, true),
     setToDate: (value: string) => updateParams({ toDate: value || undefined }, true),

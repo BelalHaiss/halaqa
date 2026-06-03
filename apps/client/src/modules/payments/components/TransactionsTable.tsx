@@ -53,9 +53,7 @@ export function TransactionsTable({
         id: 'amount',
         header: 'المبلغ',
         cell: ({ row }) => (
-          <span className='font-mono font-medium tabular-nums'>
-            {row.original.amount.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
-          </span>
+          <span className='font-mono font-medium tabular-nums'>{row.original.amount}</span>
         ),
       },
       {

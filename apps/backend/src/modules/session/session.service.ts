@@ -21,6 +21,7 @@ import {
   UserRole,
 } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
+import { LearnerAttendanceCountService } from '../payments/learner-attendance-count.service';
 import {
   buildGroupScopeWhere,
   buildWeekdayCandidatesForUtcRange,
@@ -117,7 +118,10 @@ type ResolvedSessionTarget = {
 
 @Injectable()
 export class SessionService {
-  constructor(private readonly prismaService: DatabaseService) {}
+  constructor(
+    private readonly prismaService: DatabaseService,
+    private readonly learnerAttendanceCountService: LearnerAttendanceCountService
+  ) {}
 
   // ==========================================================================
   // Public Methods
@@ -684,6 +688,14 @@ export class SessionService {
           })
         )
       );
+
+      await this.learnerAttendanceCountService.syncAttendedCount(tx, {
+        groupBillingType: target.group.billingType,
+        attendanceRecords: attendance.map((a) => ({
+          userId: a.studentId,
+          status: a.status,
+        })),
+      });
 
       return tx.session.findUniqueOrThrow({
         where: {

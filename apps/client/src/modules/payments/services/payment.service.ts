@@ -46,6 +46,7 @@ export const paymentService = {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       currency: query.currency,
+      learnerId: query.learnerId,
     });
 
     return apiClient.get<LearnerPaymentSummaryDto[]>(`/payments/learner?${queryString}`);

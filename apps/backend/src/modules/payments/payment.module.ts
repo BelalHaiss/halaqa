@@ -5,9 +5,16 @@ import { PaymentLabelController } from './payment-label.controller';
 import { PaymentLabelService } from './payment-label.service';
 import { TransactionController } from './transaction.controller';
 import { TransactionService } from './transaction.service';
+import { LearnerAttendanceCountService } from './learner-attendance-count.service';
 
 @Module({
   controllers: [PaymentController, PaymentLabelController, TransactionController],
-  providers: [PaymentService, PaymentLabelService, TransactionService],
+  providers: [
+    PaymentService,
+    PaymentLabelService,
+    TransactionService,
+    LearnerAttendanceCountService,
+  ],
+  exports: [LearnerAttendanceCountService],
 })
 export class PaymentModule {}
