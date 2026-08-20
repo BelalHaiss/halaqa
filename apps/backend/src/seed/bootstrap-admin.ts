@@ -4,7 +4,7 @@ import { prismaSeedClient } from './seed';
 
 async function bootstrapAdmin() {
   const hashedPassword = await argon.hash('12345678');
-  const adminPhone = '+201000000001';
+  const adminPhone = '+201032758989';
 
   await prismaSeedClient.user.upsert({
     where: { phone: adminPhone },
