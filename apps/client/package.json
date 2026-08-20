@@ -25,6 +25,7 @@
     "react-day-picker": "^9.13.2",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "react-phone-number-input": "^3.4.16",
     "react-router-dom": "^7.6.2",
     "sonner": "^2.0.3",
     "tailwind-merge": "^2.6.0",

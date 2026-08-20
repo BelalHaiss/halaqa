@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { createLearnerPaymentSchema, CreateLearnerPaymentDto } from '@halaqa/shared';
+import {
+  createLearnerPaymentSchema,
+  CreateLearnerPaymentDto,
+  CurrencyCode,
+  getCurrencyLabel,
+} from '@halaqa/shared';
 import z from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +15,7 @@ import { Field, FieldLabel, FieldError } from '@/components/ui/field';
 import { PaymentDatePicker } from './PaymentDatePicker';
 import { LearnerSearchCombobox } from './LearnerSearchCombobox';
 import { CurrencyFormField } from './CurrencyFormField';
+import { GroupLazySelect } from './GroupLazySelect';
 
 const createLearnerSchema = createLearnerPaymentSchema('ar');
 
@@ -29,20 +35,23 @@ export function CreateLearnerPaymentModal({
   isSubmitting,
 }: CreateLearnerPaymentModalProps) {
   const [selectedLearnerName, setSelectedLearnerName] = useState('');
+  const [groupPriceHint, setGroupPriceHint] = useState<{
+    monthlyPrice?: number;
+    currency?: CurrencyCode;
+  } | null>(null);
   const form = useForm<FormValues, unknown, CreateLearnerPaymentDto>({
     resolver: zodResolver(createLearnerSchema),
     defaultValues: {
       learnerId: '',
-      billingType: 'SESSION_COUNT_MONTHLY',
-      sessionsCount: 1,
+      groupId: '',
       periodFrom: '',
       periodTo: '',
       totalAmount: 0,
       currency: 'EGP',
-      initialPaidAmount: 0,
     },
   });
   const periodFrom = form.watch('periodFrom');
+  const learnerId = form.watch('learnerId');
   const { errors } = form.formState;
 
   const handleSubmit = form.handleSubmit(async (values) => {
@@ -50,6 +59,7 @@ export function CreateLearnerPaymentModal({
 
     form.reset();
     setSelectedLearnerName('');
+    setGroupPriceHint(null);
     onOpenChange(false);
   });
 
@@ -64,10 +74,12 @@ export function CreateLearnerPaymentModal({
           <Field data-invalid={!!errors.learnerId}>
             <FieldLabel htmlFor='learnerId'>المتعلم</FieldLabel>
             <LearnerSearchCombobox
-              value={form.watch('learnerId')}
+              value={learnerId}
               onValueChange={(id, name) => {
                 form.setValue('learnerId', id, { shouldValidate: true });
+                form.setValue('groupId', '', { shouldValidate: true });
                 setSelectedLearnerName(name);
+                setGroupPriceHint(null);
               }}
               selectedName={selectedLearnerName}
               placeholder='ابحث عن متعلم...'
@@ -75,14 +87,38 @@ export function CreateLearnerPaymentModal({
             />
             <FieldError errors={[errors.learnerId]} />
           </Field>
+
+          <Field data-invalid={!!errors.groupId}>
+            <FieldLabel htmlFor='groupId'>الحلقة</FieldLabel>
+            <GroupLazySelect
+              value={form.watch('groupId')}
+              learnerId={learnerId}
+              onValueChange={(id, option) => {
+                form.setValue('groupId', id, { shouldValidate: true });
+                setGroupPriceHint(
+                  option ? { monthlyPrice: option.monthlyPrice, currency: option.currency } : null
+                );
+              }}
+              placeholder='اختر الحلقة'
+              disabled={isSubmitting}
+            />
+            <FieldError errors={[errors.groupId]} />
+            {groupPriceHint?.monthlyPrice != null && groupPriceHint.currency && (
+              <p className='text-sm text-muted-foreground'>
+                السعر الشهري المسجل للحلقة: {groupPriceHint.monthlyPrice}{' '}
+                {getCurrencyLabel(groupPriceHint.currency)}
+              </p>
+            )}
+          </Field>
+
           <FormField
             control={form.control}
-            name='billingType'
-            label='نوع الاشتراك'
-            type='select'
-            options={[{ value: 'SESSION_COUNT_MONTHLY', label: 'شهري حسب عدد الجلسات' }]}
+            name='totalAmount'
+            label='المبلغ المطلوب'
+            type='number'
           />
-          <FormField control={form.control} name='sessionsCount' label='عدد الجلسات' type='text' />
+          <CurrencyFormField control={form.control} name='currency' disabled={isSubmitting} />
+
           <Field data-invalid={!!errors.periodFrom}>
             <FieldLabel htmlFor='periodFrom'>من</FieldLabel>
             <PaymentDatePicker
@@ -104,19 +140,6 @@ export function CreateLearnerPaymentModal({
             />
             <FieldError errors={[errors.periodTo]} />
           </Field>
-          <FormField
-            control={form.control}
-            name='totalAmount'
-            label='إجمالي الاشتراك'
-            type='number'
-          />
-          <FormField
-            control={form.control}
-            name='initialPaidAmount'
-            label='المدفوع الآن'
-            type='number'
-          />
-          <CurrencyFormField control={form.control} name='currency' disabled={isSubmitting} />
 
           <div className='flex items-center justify-end gap-2'>
             <Button

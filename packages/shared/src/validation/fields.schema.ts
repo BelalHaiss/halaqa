@@ -1,4 +1,5 @@
 import z from 'zod';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { DATE_ONLY_FORMAT_REGEX } from '../utils/date.constants';
 import { ISODateOnlyString, TimeMinutes } from '../types/api.types';
 import {
@@ -16,9 +17,6 @@ import {
   PASSWORD_MIN_LENGTH,
   TIME_MINUTES_MAX,
   TIME_MINUTES_MIN,
-  USERNAME_ACCOUNT_REGEX,
-  USERNAME_MAX_LENGTH,
-  USERNAME_MIN_LENGTH,
 } from './fields.constants';
 import { getMessages, ValidationLocale } from './messages';
 
@@ -27,15 +25,9 @@ export const nameSchema = (locale: ValidationLocale = 'ar') => {
   return z.string().trim().min(NAME_MIN_LENGTH, m.nameTooShort).max(NAME_MAX_LENGTH, m.nameTooLong);
 };
 
-export const usernameAccountSchema = (locale: ValidationLocale = 'ar') => {
+export const phoneSchema = (locale: ValidationLocale = 'ar') => {
   const m = getMessages(locale);
-  return z
-    .string()
-    .trim()
-    .min(USERNAME_MIN_LENGTH, m.usernameTooShort)
-    .max(USERNAME_MAX_LENGTH, m.usernameTooLong)
-    .regex(USERNAME_ACCOUNT_REGEX, m.usernameInvalidChars)
-    .toLowerCase();
+  return z.string().trim().refine(isValidPhoneNumber, { message: m.phoneInvalid });
 };
 
 export const passwordSchema = (locale: ValidationLocale = 'ar') => {

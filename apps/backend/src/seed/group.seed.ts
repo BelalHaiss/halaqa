@@ -45,8 +45,8 @@ export const seededGroupData = (): SeededGroupData => {
 export type SeededGroupWithStudents = {
   id: string;
   tutorId: string;
-  tutorHourlyRate: number;
-  tutorCurrency: CurrencyCode;
+  monthlyPrice: number;
+  currency: CurrencyCode;
   timezone: string;
   scheduleDays: SeededGroupScheduleDay[];
   studentIds: string[];
@@ -71,8 +71,9 @@ export async function seedGroups(args: {
         name: groupData.name,
         description: groupData.description,
         tutorId: selectedTutor.id,
-        tutorHourlyRate: faker.number.int({ min: 75, max: 300 }),
-        tutorCurrency: faker.helpers.arrayElement<CurrencyCode>(['EGP', 'SAR', 'AED']),
+        billingType: 'MONTHLY',
+        monthlyPrice: faker.number.int({ min: 75, max: 300 }),
+        currency: faker.helpers.arrayElement<CurrencyCode>(['EGP', 'SAR', 'AED']),
         timezone: groupData.timezone,
         status: groupData.status,
         scheduleDays: {
@@ -102,9 +103,8 @@ export async function seedGroups(args: {
     createdGroups.push({
       id: group.id,
       tutorId: selectedTutor.id,
-      tutorHourlyRate: Number(group.tutorHourlyRate),
-
-      tutorCurrency: group.tutorCurrency!,
+      monthlyPrice: Number(group.monthlyPrice),
+      currency: group.currency!,
       timezone: group.timezone,
       scheduleDays: groupData.scheduleDays,
       studentIds: selectedStudents.map((student) => student.id),

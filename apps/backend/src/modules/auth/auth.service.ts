@@ -15,7 +15,7 @@ export class AuthService {
   ) {}
 
   async login(loginDTO: LoginCredentialsDto) {
-    const foundUser = await this.userService.findByUsername(loginDTO.username);
+    const foundUser = await this.userService.findByPhone(loginDTO.phone);
 
     if (!foundUser) {
       throw new UnauthorizedException('Invalid credentials');

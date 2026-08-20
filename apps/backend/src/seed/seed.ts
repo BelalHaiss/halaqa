@@ -13,7 +13,7 @@ import {
   TOTAL_TUTORS,
 } from './seed.constants';
 import { seedPayments } from './payment.seed';
-import { seedDemoMultiCurrencySessions, seedSessionsAndAttendance } from './session.seed';
+import { seedSessionsAndAttendance } from './session.seed';
 import { seedUsers } from './user.seed';
 
 export const prismaSeedClient = new PrismaClient({
@@ -52,11 +52,6 @@ export const seedData = async () => {
       lookbackDays: MAX_SESSION_DAYS_LOOKBACK,
       sessionStatusWeights: SESSION_STATUS_WEIGHTS,
       attendanceStatusWeights: ATTENDANCE_STATUS_WEIGHTS,
-    });
-
-    await seedDemoMultiCurrencySessions({
-      prisma: prismaSeedClient,
-      group: groups[0],
     });
 
     // Resolve admin id for createdById on financial transactions

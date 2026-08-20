@@ -5,9 +5,8 @@ type PaymentStatusBadgeProps = {
   status: PaymentStatus;
 };
 
-const statusColor: Record<PaymentStatus, 'danger' | 'blue' | 'success'> = {
+const statusColor: Record<PaymentStatus, 'danger' | 'success'> = {
   UNPAID: 'danger',
-  PARTIAL: 'blue',
   PAID: 'success',
 };
 

@@ -13,7 +13,7 @@ import { paymentService } from '../services/payment.service';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
-const VALID_STATUS: PaymentStatus[] = ['UNPAID', 'PARTIAL', 'PAID'];
+const VALID_STATUS: PaymentStatus[] = ['UNPAID', 'PAID'];
 
 const normalizePositiveInteger = (value: string | null, fallback: number): number => {
   const parsed = Number(value);
@@ -109,7 +109,6 @@ export function useLearnerPaymentsViewModel() {
     setFromDate: (value: string) => updateParams({ fromDate: value || undefined }, true),
     setToDate: (value: string) => updateParams({ toDate: value || undefined }, true),
     setStatus: (value: PaymentStatus | '') => updateParams({ status: value || undefined }, true),
-    setSessionsCount: (value: string) => updateParams({ sessionsCount: value || undefined }, true),
     setLearnerSort: (sortBy: LearnerPaymentsSortBy) => {
       const nextOrder: SortOrder =
         learnerSortBy === sortBy && learnerSortOrder === 'asc' ? 'desc' : 'asc';

@@ -6,44 +6,24 @@ applyTo: 'apps/backend/**, packages/shared/**'
 
 ## Billing Types
 
-| `billingType`           | Meaning                                      |
-| ----------------------- | -------------------------------------------- |
-| `FREE`                  | No tutor payout; rate fields must be `null`  |
-| `SESSION_COUNT_MONTHLY` | Tutor paid per session; rate fields required |
+| `billingType` | Meaning                                                       |
+| -------------- | -------------------------------------------------------------- |
+| `FREE`        | No charge to learners; pricing fields must be `null`           |
+| `MONTHLY`     | Learner-facing monthly subscription; pricing fields required |
 
-## Group Rate Fields
+## Group Pricing Fields
 
-- `tutorHourlyRate` — hourly rate for the tutor (nullable; only set for `SESSION_COUNT_MONTHLY`)
-- `tutorCurrency` — currency for that rate (nullable; only set for `SESSION_COUNT_MONTHLY`)
+- `monthlyPrice` — the monthly subscription price shown to learners (nullable; only set for `MONTHLY`)
+- `currency` — currency for that price (nullable; only set for `MONTHLY`)
 
-## Session Snapshot Fields
+These fields are purely informational for the learner-payment creation flow: they're shown as a read-only hint (see `.github/payment-instructions.md`) but never bind or auto-fill the actual amount charged, which is always entered manually.
 
-Every session record snapshots the tutor pricing **at creation time** so future group changes don't affect historical payouts.
-
-| Session field       | How it is set                                             |
-| ------------------- | --------------------------------------------------------- |
-| `tutorId`           | Copied from `Group.tutorId`                               |
-| `tutorSessionPrice` | `tutorHourlyRate × durationMinutes / 60`; `null` for FREE |
-| `tutorCurrency`     | Copied from `Group.tutorCurrency`; `null` for FREE        |
-
-### Duration lookup
-
-`durationMinutes` comes from the `GroupScheduleDay` whose `dayOfWeek` matches the session's `startedAt` converted to `Group.timezone`.
-
-## Tutor Payout
-
-- Only sessions with `tutorSessionPrice IS NOT NULL` count toward tutor payments.
-- Payout sums `session.tutorSessionPrice` directly — do **not** recalculate from the current group rate.
+Sessions do not snapshot pricing — `Session` only stores `tutorId`. Tutor payouts are handled entirely outside the group/session pricing model as manual `EXPENSE` transactions (see `.github/payment-instructions.md`).
 
 ## Validation
 
-- When `billingType = SESSION_COUNT_MONTHLY`: `tutorHourlyRate` (positive) and `tutorCurrency` are required.
-- When `billingType = FREE`: `tutorHourlyRate` and `tutorCurrency` must be absent / `null`.
-
-## Learner Billing Type
-
-- `LearnerBillingType` is a separate enum from `GroupBillingType` — it lives on `LearnerPayment`, not on `Group`.
-- Currently only `SESSION_COUNT_MONTHLY` is supported. Do not infer the learner billing type from the group; store it explicitly on the payment.
+- When `billingType = MONTHLY`: `monthlyPrice` (positive) and `currency` are required.
+- When `billingType = FREE`: `monthlyPrice` and `currency` must be absent / `null`.
 
 ---
 
@@ -67,15 +47,30 @@ Every session record snapshots the tutor pricing **at creation time** so future 
 
 ## Action Rules
 
-- `canBeRescheduled` is `true` for: virtual sessions, `RESCHEDULED`, and `MISSED` (no time restriction)
-- `COMPLETED` and `CANCELED` sessions are immutable — no further actions
-- Attendance can be recorded on `SCHEDULED`, `RESCHEDULED`, and `MISSED` sessions
+Enforced server-side in `session.service.ts` via `canSessionBeRescheduled()` / `canRecordAttendance()` (`session.util.ts`) — not just hidden in the UI.
+
+| Status        | Cancel / Reschedule | Attendance |
+| ------------- | -------------------- | ---------- |
+| Virtual (no record) | ✅ Allowed      | ✅ Allowed |
+| `RESCHEDULED` | ✅ Allowed            | ✅ Allowed |
+| `MISSED`      | ✅ Allowed (no time restriction) | ❌ Blocked |
+| `COMPLETED`   | ❌ Blocked            | ✅ Allowed |
+| `CANCELED`    | ❌ Blocked            | ❌ Blocked |
+
+- `canSessionBeRescheduled` also governs cancel eligibility (same status rules apply to both actions).
+- `canRecordAttendance` is `false` only for `MISSED` and `CANCELED`; `true` otherwise, including `COMPLETED` (attendance is editable after completion).
 
 ## Today's Session Window
 
 - `getTodaySessions` extends the start of the query backwards by `MISSED_THRESHOLD_HOURS` (12h)
 - Sessions from the lookback window (before midnight) are only shown when unresolved (`SCHEDULED` or `MISSED`)
 - This prevents late-night sessions from disappearing after midnight before they are actioned
+
+## Missed Sessions Page
+
+- `GET /sessions/missed` (`getMissedSessions`) returns **every** `MISSED` session regardless of age — unpaginated, tutor-scoped via `buildGroupScopeWhere`.
+- Distinct from the "Today" window above: this is an all-time list, not bounded by the 12h lookback.
+- Rendered as a second section on the Today Sessions page (`TodaySessionsView.tsx`).
 
 ## Missed Session Cron
 

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import type { GroupSelectOptionDto } from '@halaqa/shared';
 import {
   Select,
   SelectContent,
@@ -12,47 +11,40 @@ import { useApiQuery } from '@/lib/hooks/useApiQuery';
 import { queryKeys } from '@/lib/query-client';
 import { paymentService } from '../services/payment.service';
 
-type GroupLazySelectProps = {
+const ALL_VALUE = '__ALL_GROUPS__';
+
+type GroupFilterSelectProps = {
   value: string;
-  onValueChange: (value: string, option?: GroupSelectOptionDto) => void;
-  learnerId: string;
-  placeholder: string;
-  disabled?: boolean;
+  onChange: (value: string) => void;
+  placeholder?: string;
 };
 
-export function GroupLazySelect({
+export function GroupFilterSelect({
   value,
-  onValueChange,
-  learnerId,
-  placeholder,
-  disabled,
-}: GroupLazySelectProps) {
+  onChange,
+  placeholder = 'الحلقة',
+}: GroupFilterSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const groupsQuery = useApiQuery({
-    queryKey: queryKeys.groups.options(learnerId),
-    queryFn: () => paymentService.queryGroupOptions(learnerId),
-    enabled: Boolean(learnerId) && (isOpen || Boolean(value)),
+    queryKey: queryKeys.groups.options(undefined, true),
+    queryFn: () => paymentService.queryGroupOptions(undefined, true),
+    enabled: isOpen || Boolean(value),
   });
 
   const options = useMemo(() => groupsQuery.data?.data ?? [], [groupsQuery.data?.data]);
 
-  const handleValueChange = (nextValue: string) => {
-    const option = options.find((group) => group.value === nextValue);
-    onValueChange(nextValue, option);
-  };
-
   return (
     <Select
-      value={value || undefined}
-      onValueChange={handleValueChange}
+      value={value || ALL_VALUE}
+      onValueChange={(v) => onChange(v === ALL_VALUE ? '' : v)}
       onOpenChange={setIsOpen}
-      disabled={disabled || !learnerId}
     >
       <SelectTrigger>
-        <SelectValue placeholder={learnerId ? placeholder : 'اختر متعلمًا أولاً'} />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
+        <SelectItem value={ALL_VALUE}>كل الحلقات</SelectItem>
         {groupsQuery.isPending ? (
           <SelectItem value='__loading__' disabled>
             <span className='inline-flex items-center gap-2'>
@@ -60,16 +52,12 @@ export function GroupLazySelect({
               جاري تحميل الحلقات...
             </span>
           </SelectItem>
-        ) : options.length > 0 ? (
+        ) : (
           options.map((group) => (
             <SelectItem key={group.value} value={group.value}>
               {group.name}
             </SelectItem>
           ))
-        ) : (
-          <SelectItem value='__empty__' disabled>
-            لا توجد حلقات مدفوعة لهذا المتعلم
-          </SelectItem>
         )}
       </SelectContent>
     </Select>

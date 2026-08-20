@@ -6,7 +6,6 @@ export async function cleanUpDatabase(prisma: PrismaClient): Promise<void> {
       // Payment tables first (FK deps: transactions → payments)
       await tx.financialTransaction.deleteMany();
       await tx.learnerPayment.deleteMany();
-      await tx.tutorPayment.deleteMany();
       // Session / attendance
       await tx.attendanceRecord.deleteMany();
       await tx.session.deleteMany();

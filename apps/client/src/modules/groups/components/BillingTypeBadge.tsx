@@ -10,7 +10,7 @@ const billingTypeConfig: Record<
   { label: string; variant: 'solid' | 'outline'; color: 'success' | 'muted' }
 > = {
   FREE: { label: 'مجاني', variant: 'outline', color: 'muted' },
-  SESSION_COUNT_MONTHLY: { label: 'مدفوع', variant: 'solid', color: 'success' },
+  MONTHLY: { label: 'شهري', variant: 'solid', color: 'success' },
 };
 
 export function BillingTypeBadge({ billingType }: BillingTypeBadgeProps) {

@@ -7,7 +7,7 @@ import { DayOfWeek, MinutesFromMidnight } from './types/api.types';
 import type { CurrencyCode } from './currency.types';
 
 export type GroupStatus = 'ACTIVE' | 'INACTIVE' | 'COMPLETED';
-export type GroupBillingType = 'FREE' | 'SESSION_COUNT_MONTHLY';
+export type GroupBillingType = 'FREE' | 'MONTHLY';
 
 export interface GroupScheduleDay {
   dayOfWeek: DayOfWeek;
@@ -27,6 +27,8 @@ export interface GroupTutorSummaryDto {
 export interface GroupSelectOptionDto {
   name: string;
   value: string;
+  monthlyPrice?: number;
+  currency?: CurrencyCode;
 }
 
 export interface GroupStudentSummaryDto {
@@ -44,8 +46,8 @@ export interface GroupSummaryDto {
   timezone: string;
   status: GroupStatus;
   billingType: GroupBillingType;
-  tutorHourlyRate: number | null;
-  tutorCurrency: CurrencyCode | null;
+  monthlyPrice: number | null;
+  currency: CurrencyCode | null;
   scheduleDays: GroupScheduleDay[];
   studentsCount: number;
   createdAt: string;
@@ -61,8 +63,8 @@ export interface GroupDetailsDto {
   timezone: string;
   status: GroupStatus;
   billingType: GroupBillingType;
-  tutorHourlyRate: number | null;
-  tutorCurrency: CurrencyCode | null;
+  monthlyPrice: number | null;
+  currency: CurrencyCode | null;
   scheduleDays: GroupScheduleDay[];
   students: GroupStudentSummaryDto[];
   createdAt: string;
@@ -77,8 +79,8 @@ export interface CreateGroupDto {
   status?: GroupStatus;
   scheduleDays: GroupScheduleDay[];
   billingType?: GroupBillingType;
-  tutorHourlyRate?: number;
-  tutorCurrency?: CurrencyCode;
+  monthlyPrice?: number;
+  currency?: CurrencyCode;
 }
 
 export interface UpdateGroupDto {
@@ -89,8 +91,8 @@ export interface UpdateGroupDto {
   status?: GroupStatus;
   scheduleDays?: GroupScheduleDay[];
   billingType?: GroupBillingType;
-  tutorHourlyRate?: number | null;
-  tutorCurrency?: CurrencyCode | null;
+  monthlyPrice?: number | null;
+  currency?: CurrencyCode | null;
 }
 
 export interface UpdateGroupSettingsDto {

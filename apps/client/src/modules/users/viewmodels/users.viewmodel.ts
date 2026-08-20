@@ -21,13 +21,13 @@ const updateStaffUserSchema = updateStaffSchema();
 
 const DEFAULT_FORM_VALUES: CreateStaffUserDto = {
   name: '',
-  username: '',
+  phone: '',
   role: 'TUTOR' as UserAuthRole,
   password: '',
   timezone: DEFAULT_TIMEZONE,
 };
 
-const FORM_FIELDS = ['name', 'username', 'role', 'timezone', 'password'] as const;
+const FORM_FIELDS = ['name', 'phone', 'role', 'timezone', 'password'] as const;
 type FormFieldName = (typeof FORM_FIELDS)[number];
 
 export function useUsersViewModel() {
@@ -140,7 +140,7 @@ export function useUsersViewModel() {
     setEditingUser(targetUser);
     form.reset({
       name: targetUser.name,
-      username: targetUser.username,
+      phone: targetUser.phone,
       role: targetUser.role,
       password: '',
       timezone: targetUser.timezone || DEFAULT_TIMEZONE,

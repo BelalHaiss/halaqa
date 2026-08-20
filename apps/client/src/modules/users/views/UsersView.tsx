@@ -79,12 +79,11 @@ function UsersView() {
 
               <FormField
                 control={vm.form.control}
-                name='username'
-                label='اسم الحساب'
-                type='text'
-                placeholder='username'
+                name='phone'
+                label='رقم الهاتف'
+                type='phone'
+                placeholder='+966501234567'
                 disabled={vm.isSubmitting}
-                inputClassName='text-left'
               />
 
               {!vm.editingUser && (
@@ -140,7 +139,7 @@ function UsersView() {
         <TableHeader className='bg-muted/40'>
           <TableRow>
             <TableHead className='px-4 py-3 text-right text-xs'>الاسم</TableHead>
-            <TableHead className='px-4 py-3 text-right text-xs'>اسم الحساب</TableHead>
+            <TableHead className='px-4 py-3 text-right text-xs'>رقم الهاتف</TableHead>
             <TableHead className='px-4 py-3 text-right text-xs'>الدور</TableHead>
             <TableHead className='px-4 py-3 text-right text-xs'>المنطقة الزمنية</TableHead>
             <TableHead className='px-4 py-3 text-left text-xs'>الإجراءات</TableHead>
@@ -173,7 +172,9 @@ function UsersView() {
                     <div className='text-sm'>{userItem.name}</div>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
-                    <div className='text-sm'>{userItem.username}</div>
+                    <div dir='ltr' className='text-right text-sm'>
+                      {userItem.phone}
+                    </div>
                   </TableCell>
                   <TableCell className='px-4 py-3'>
                     <UserBadge role={userItem.role} size='sm' />

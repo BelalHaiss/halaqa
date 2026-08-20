@@ -33,9 +33,9 @@ import { Prisma, User, UserRole } from 'generated/prisma/client';
 export class UserService {
   constructor(private prismaService: DatabaseService) {}
 
-  async findByUsername(username: string) {
+  async findByPhone(phone: string) {
     const user = await this.prismaService.user.findUnique({
-      where: { username },
+      where: { phone },
     });
     return user;
   }
@@ -61,19 +61,19 @@ export class UserService {
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
-        username: dto.username,
+        phone: dto.phone,
       },
       select: { id: true },
     });
     if (existingUser) {
-      throw new ConflictException('Username already exists');
+      throw new ConflictException('Phone number already exists');
     }
 
     const createdStaffUser = await this.prismaService.user.create({
       data: {
         name: dto.name,
         nameNormalized: normalizeArabic(dto.name),
-        username: dto.username,
+        phone: dto.phone,
         role: dto.role,
         timezone: dto.timezone ?? DEFAULT_TIMEZONE,
         password: await argon.hash(dto.password),
@@ -98,16 +98,16 @@ export class UserService {
       this.assertActorCanManageTargetRole(actor, dto.role);
     }
 
-    if (dto.username && dto.username !== targetUser.username) {
+    if (dto.phone && dto.phone !== targetUser.phone) {
       const existingUser = await this.prismaService.user.findUnique({
         where: {
-          username: dto.username,
+          phone: dto.phone,
         },
         select: { id: true },
       });
 
       if (existingUser) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException('Phone number already exists');
       }
     }
 
@@ -117,7 +117,7 @@ export class UserService {
         ...(dto.name !== undefined
           ? { name: dto.name, nameNormalized: normalizeArabic(dto.name) }
           : {}),
-        ...(dto.username !== undefined ? { username: dto.username } : {}),
+        ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
         ...(dto.role !== undefined ? { role: dto.role } : {}),
         ...(dto.timezone !== undefined ? { timezone: dto.timezone } : {}),
       },
@@ -168,15 +168,15 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
 
-    if (dto.username !== existingUser.username) {
+    if (dto.phone !== existingUser.phone) {
       const found = await this.prismaService.user.findUnique({
         where: {
-          username: dto.username,
+          phone: dto.phone,
         },
         select: { id: true },
       });
       if (found && found.id !== userId) {
-        throw new ConflictException('Username already exists');
+        throw new ConflictException('Phone number already exists');
       }
     }
 
@@ -185,7 +185,7 @@ export class UserService {
       data: {
         name: dto.name,
         nameNormalized: normalizeArabic(dto.name),
-        username: dto.username,
+        phone: dto.phone,
         timezone: dto.timezone,
       },
     });
@@ -228,7 +228,7 @@ export class UserService {
         name: dto.name,
         nameNormalized: normalizeArabic(dto.name),
         role: UserRole.STUDENT,
-        username: null,
+        phone: null,
         password: null,
         timezone: dto.timezone ?? DEFAULT_TIMEZONE,
         notes: dto.contact?.notes,
@@ -255,7 +255,7 @@ export class UserService {
 
     const existingUser = await this.prismaService.user.findUnique({
       where: {
-        username: dto.username,
+        phone: dto.phone,
       },
       select: {
         id: true,
@@ -263,7 +263,7 @@ export class UserService {
     });
 
     if (existingUser && existingUser.id !== id) {
-      throw new ConflictException('Username already exists');
+      throw new ConflictException('Phone number already exists');
     }
 
     const updatedLearner = await this.prismaService.user.update({
@@ -271,7 +271,7 @@ export class UserService {
         id,
       },
       data: {
-        username: dto.username,
+        phone: dto.phone,
         password: await argon.hash(dto.password),
       },
     });
@@ -474,20 +474,20 @@ export class UserService {
 
   private toStaffDto(user: {
     id: string;
-    username: string | null;
+    phone: string | null;
     name: string;
     role: UserRole;
     timezone: string;
     createdAt: Date;
     updatedAt: Date;
   }): StaffUserDto {
-    if (!user.username || !this.isStaffRole(user.role)) {
+    if (!user.phone || !this.isStaffRole(user.role)) {
       throw new NotFoundException('Staff user not found');
     }
 
     return {
       id: user.id,
-      username: user.username,
+      phone: user.phone,
       name: user.name,
       role: user.role,
       timezone: user.timezone,
@@ -498,20 +498,20 @@ export class UserService {
 
   private toAuthUserDto(user: {
     id: string;
-    username: string | null;
+    phone: string | null;
     name: string;
     role: UserRole;
     timezone: string;
     createdAt: Date;
     updatedAt: Date;
   }): UserAuthType {
-    if (!user.username) {
+    if (!user.phone) {
       throw new NotFoundException('User not found');
     }
 
     return {
       id: user.id,
-      username: user.username,
+      phone: user.phone,
       name: user.name,
       role: user.role,
       timezone: user.timezone,

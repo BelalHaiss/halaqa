@@ -1,23 +1,17 @@
 import z, { ZodType } from 'zod';
 import {
-  ApplyLearnerPaymentDto,
   CreateLearnerPaymentDto,
   CreateManualTransactionDto,
   CreateTransactionLabelDto,
-  CreateTutorPaymentDto,
-  LearnerBillingType,
   LearnerPaymentsSortBy,
   PaymentStatus,
-  PreviewTutorPaymentDto,
   QueryLearnerPaymentsDto,
   QueryTransactionLabelsDto,
   QueryTransactionsDto,
-  QueryTutorPaymentsDto,
   SortOrder,
   TransactionEntityType,
   TransactionType,
   TransactionsSortBy,
-  TutorPaymentsSortBy,
 } from '../payment.types';
 import {
   PAGINATION_MAX_LIMIT,
@@ -34,71 +28,40 @@ import {
   isoDateOnlySchema,
 } from './fields.schema';
 
-const paymentStatusSchema = z.enum(['UNPAID', 'PARTIAL', 'PAID']) satisfies ZodType<PaymentStatus>;
+const paymentStatusSchema = z.enum(['UNPAID', 'PAID']) satisfies ZodType<PaymentStatus>;
 const sortOrderSchema = z.enum(['asc', 'desc']) satisfies ZodType<SortOrder>;
 const learnerSortBySchema = z.enum([
   'learnerName',
-  'sessionsCount',
-  'attendedCount',
+  'groupName',
   'totalAmount',
-  'paidAmount',
   'currency',
   'status',
   'periodFrom',
   'periodTo',
   'createdAt',
 ]) satisfies ZodType<LearnerPaymentsSortBy>;
-const tutorSortBySchema = z.enum([
-  'tutorName',
-  'sessionsCount',
-  'totalAmount',
-  'currency',
-  'periodFrom',
-  'periodTo',
-  'createdAt',
-]) satisfies ZodType<TutorPaymentsSortBy>;
 
 const positiveAmountSchema = (locale: ValidationLocale = 'ar') => {
   const m = getMessages(locale);
   return z.coerce.number().positive(m.amountTooSmall);
 };
 
-const learnerBillingTypeSchema = z.enum([
-  'SESSION_COUNT_MONTHLY',
-]) satisfies ZodType<LearnerBillingType>;
-
 export const createLearnerPaymentSchema = (locale: ValidationLocale = 'ar') => {
   const m = getMessages(locale);
   return z
     .object({
       learnerId: nonEmptyIdSchema(locale),
-      billingType: learnerBillingTypeSchema,
-      sessionsCount: z.coerce.number().int().positive(),
+      groupId: nonEmptyIdSchema(locale),
       periodFrom: isoDateOnlySchema(locale),
       periodTo: isoDateOnlySchema(locale),
       totalAmount: positiveAmountSchema(locale),
       currency: currencyCodeSchema(locale),
-      initialPaidAmount: z.coerce.number().min(0).optional(),
     })
     .refine((value) => value.periodFrom <= value.periodTo, {
       message: m.periodFromBeforeTo,
       path: ['periodTo'],
-    })
-    .refine(
-      (value) =>
-        value.initialPaidAmount === undefined || value.initialPaidAmount <= value.totalAmount,
-      {
-        message: m.initialPaidExceedsTotal,
-        path: ['initialPaidAmount'],
-      }
-    ) satisfies ZodType<CreateLearnerPaymentDto>;
+    }) satisfies ZodType<CreateLearnerPaymentDto>;
 };
-
-export const applyLearnerPaymentSchema = (locale: ValidationLocale = 'ar') =>
-  z.object({
-    amount: positiveAmountSchema(locale),
-    currency: currencyCodeSchema(locale),
-  }) satisfies ZodType<ApplyLearnerPaymentDto>;
 
 export const queryLearnerPaymentsSchema = (locale: ValidationLocale = 'ar') =>
   z.object({
@@ -107,40 +70,12 @@ export const queryLearnerPaymentsSchema = (locale: ValidationLocale = 'ar') =>
     fromDate: optionalIsoDateOnlySchema(locale),
     toDate: optionalIsoDateOnlySchema(locale),
     learnerId: z.string().trim().min(1).optional(),
+    groupId: z.string().trim().min(1).optional(),
     status: paymentStatusSchema.optional(),
     currency: currencyCodeSchema(locale).optional(),
     sortBy: learnerSortBySchema.optional(),
     sortOrder: sortOrderSchema.optional(),
   }) satisfies ZodType<QueryLearnerPaymentsDto>;
-
-export const previewTutorPaymentSchema = (locale: ValidationLocale = 'ar') => {
-  const m = getMessages(locale);
-  return z
-    .object({
-      tutorId: nonEmptyIdSchema(locale),
-      periodFrom: isoDateOnlySchema(locale),
-      periodTo: isoDateOnlySchema(locale),
-    })
-    .refine((value) => value.periodFrom <= value.periodTo, {
-      message: m.periodFromBeforeTo,
-      path: ['periodTo'],
-    }) satisfies ZodType<PreviewTutorPaymentDto>;
-};
-
-export const createTutorPaymentSchema = (locale: ValidationLocale = 'ar') =>
-  previewTutorPaymentSchema(locale) satisfies ZodType<CreateTutorPaymentDto>;
-
-export const queryTutorPaymentsSchema = (locale: ValidationLocale = 'ar') =>
-  z.object({
-    page: z.coerce.number().min(PAGINATION_MIN_PAGE).optional(),
-    limit: z.coerce.number().min(PAGINATION_MIN_LIMIT).max(PAGINATION_MAX_LIMIT).optional(),
-    fromDate: optionalIsoDateOnlySchema(locale),
-    toDate: optionalIsoDateOnlySchema(locale),
-    tutorId: z.string().trim().min(1).optional(),
-    currency: currencyCodeSchema(locale).optional(),
-    sortBy: tutorSortBySchema.optional(),
-    sortOrder: sortOrderSchema.optional(),
-  }) satisfies ZodType<QueryTutorPaymentsDto>;
 
 // ─── Transaction Labels ────────────────────────────────────────────────────────
 
@@ -161,7 +96,6 @@ export const queryTransactionLabelsSchema = () =>
 const transactionTypeSchema = z.enum(['INCOME', 'EXPENSE']) satisfies ZodType<TransactionType>;
 const transactionEntityTypeSchema = z.enum([
   'LEARNER_PAYMENT',
-  'TUTOR_PAYMENT',
   'MANUAL',
 ]) satisfies ZodType<TransactionEntityType>;
 const transactionsSortBySchema = z.enum([

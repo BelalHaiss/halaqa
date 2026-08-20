@@ -80,8 +80,8 @@ export class GroupService {
       timezone: group.timezone,
       status: group.status,
       billingType: group.billingType,
-      tutorHourlyRate: group.tutorHourlyRate ? Number(group.tutorHourlyRate) : null,
-      tutorCurrency: group.tutorCurrency,
+      monthlyPrice: group.monthlyPrice ? Number(group.monthlyPrice) : null,
+      currency: group.currency,
       scheduleDays: group.scheduleDays.map((day) => ({
         dayOfWeek: day.dayOfWeek,
         startMinutes: day.startMinutes,
@@ -126,8 +126,8 @@ export class GroupService {
       timezone: group.timezone,
       status: group.status,
       billingType: group.billingType,
-      tutorHourlyRate: group.tutorHourlyRate ? Number(group.tutorHourlyRate) : null,
-      tutorCurrency: group.tutorCurrency,
+      monthlyPrice: group.monthlyPrice ? Number(group.monthlyPrice) : null,
+      currency: group.currency,
       scheduleDays: group.scheduleDays.map((day) => ({
         dayOfWeek: day.dayOfWeek,
         startMinutes: day.startMinutes,
@@ -159,21 +159,44 @@ export class GroupService {
     }));
   }
 
-  async getGroupOptions(user: User): Promise<GroupSelectOptionDto[]> {
+  async getGroupOptions(
+    user: User,
+    learnerId?: string,
+    paidOnly?: boolean
+  ): Promise<GroupSelectOptionDto[]> {
+    const where: Prisma.GroupWhereInput = {
+      ...this.getScopedGroupWhere(user),
+      ...(learnerId || paidOnly ? { billingType: 'MONTHLY' } : {}),
+      ...(learnerId
+        ? {
+            students: {
+              some: {
+                userId: learnerId,
+                leftAt: null,
+              },
+            },
+          }
+        : {}),
+    };
+
     const groups = await this.prismaService.group.findMany({
-      where: this.getScopedGroupWhere(user),
+      where,
       orderBy: {
         name: 'asc',
       },
       select: {
         id: true,
         name: true,
+        monthlyPrice: true,
+        currency: true,
       },
     });
 
     return groups.map((group) => ({
       name: group.name,
       value: group.id,
+      monthlyPrice: group.monthlyPrice ? Number(group.monthlyPrice) : undefined,
+      currency: group.currency ?? undefined,
     }));
   }
 
@@ -202,8 +225,8 @@ export class GroupService {
         timezone: dto.timezone,
         status: dto.status ?? 'ACTIVE',
         billingType: dto.billingType ?? 'FREE',
-        tutorHourlyRate: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorHourlyRate : null,
-        tutorCurrency: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorCurrency : null,
+        monthlyPrice: dto.billingType === 'MONTHLY' ? dto.monthlyPrice : null,
+        currency: dto.billingType === 'MONTHLY' ? dto.currency : null,
         scheduleDays: {
           createMany: {
             data: dto.scheduleDays.map((day) => ({
@@ -247,9 +270,8 @@ export class GroupService {
           status: dto.status,
           ...(dto.billingType !== undefined && {
             billingType: dto.billingType,
-            tutorHourlyRate:
-              dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorHourlyRate : null,
-            tutorCurrency: dto.billingType === 'SESSION_COUNT_MONTHLY' ? dto.tutorCurrency : null,
+            monthlyPrice: dto.billingType === 'MONTHLY' ? dto.monthlyPrice : null,
+            currency: dto.billingType === 'MONTHLY' ? dto.currency : null,
           }),
         },
       });

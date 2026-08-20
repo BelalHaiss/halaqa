@@ -68,7 +68,7 @@ const groupStatusOptions = [
 
 const groupBillingTypeOptions = [
   { value: 'FREE', label: 'مجاني' },
-  { value: 'SESSION_COUNT_MONTHLY', label: 'محاسبة بالجلسات' },
+  { value: 'MONTHLY', label: 'اشتراك شهري' },
 ];
 
 const currencyOptions = SUPPORTED_CURRENCIES.map((c) => ({ value: c, label: getCurrencyLabel(c) }));
@@ -113,8 +113,8 @@ export function GroupFormModal({
       timezone: group?.timezone ?? DEFAULT_TIMEZONE,
       status: group?.status ?? 'ACTIVE',
       billingType: group?.billingType ?? 'FREE',
-      tutorHourlyRate: group?.tutorHourlyRate ?? undefined,
-      tutorCurrency: group?.tutorCurrency ?? '',
+      monthlyPrice: group?.monthlyPrice ?? undefined,
+      currency: group?.currency ?? '',
       sameTimeForAllDays: hasSameTimeForAllDays,
       time: defaultTime,
       dayTimes,
@@ -162,13 +162,13 @@ export function GroupFormModal({
           status: values.status,
           scheduleDays,
           billingType: values.billingType || undefined,
-          tutorHourlyRate:
-            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorHourlyRate
-              ? values.tutorHourlyRate
+          monthlyPrice:
+            values.billingType === 'MONTHLY' && values.monthlyPrice
+              ? values.monthlyPrice
               : undefined,
-          tutorCurrency:
-            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorCurrency
-              ? (values.tutorCurrency as CreateGroupDto['tutorCurrency'])
+          currency:
+            values.billingType === 'MONTHLY' && values.currency
+              ? (values.currency as CreateGroupDto['currency'])
               : undefined,
         };
 
@@ -188,13 +188,11 @@ export function GroupFormModal({
           status: values.status,
           scheduleDays,
           billingType: values.billingType || undefined,
-          tutorHourlyRate:
-            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorHourlyRate
-              ? values.tutorHourlyRate
-              : null,
-          tutorCurrency:
-            values.billingType === 'SESSION_COUNT_MONTHLY' && values.tutorCurrency
-              ? (values.tutorCurrency as UpdateGroupDto['tutorCurrency'])
+          monthlyPrice:
+            values.billingType === 'MONTHLY' && values.monthlyPrice ? values.monthlyPrice : null,
+          currency:
+            values.billingType === 'MONTHLY' && values.currency
+              ? (values.currency as UpdateGroupDto['currency'])
               : null,
         };
 
@@ -303,21 +301,21 @@ export function GroupFormModal({
               options={groupBillingTypeOptions}
             />
 
-            {billingType === 'SESSION_COUNT_MONTHLY' && (
+            {billingType === 'MONTHLY' && (
               <div className='grid grid-cols-2 gap-3'>
                 <FormField
                   control={form.control}
-                  name='tutorHourlyRate'
-                  id='group-tutor-hourly-rate'
-                  label='أجر المعلم بالساعة'
+                  name='monthlyPrice'
+                  id='group-monthly-price'
+                  label='السعر الشهري'
                   type='number'
                   placeholder='0'
                   disabled={isLoading}
                 />
                 <FormField
                   control={form.control}
-                  name='tutorCurrency'
-                  id='group-tutor-currency'
+                  name='currency'
+                  id='group-currency'
                   label='العملة'
                   type='select'
                   placeholder='اختر العملة'

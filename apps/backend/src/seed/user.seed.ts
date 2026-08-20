@@ -11,14 +11,14 @@ const seedTimezones = [
   'America/New_York',
 ];
 
-export const seedAppUser = async (username: string, role: UserRole) => {
+export const seedAppUser = async (phone: string, role: UserRole) => {
   const name = fakerAR.person.fullName();
   const user: Omit<User, 'id' | 'createdAt' | 'updatedAt'> = {
     name,
     nameNormalized: normalizeArabic(name),
     role,
     password: await argon.hash('12345678'),
-    username,
+    phone,
     timezone: faker.helpers.arrayElement(seedTimezones),
     notes: faker.datatype.boolean(0.2) ? fakerAR.lorem.sentence() : null,
   };
@@ -31,12 +31,14 @@ export async function seedUsers(args: {
   totalTutors: number;
   totalLearners: number;
 }): Promise<{ tutors: { id: string }[]; students: { id: string }[] }> {
+  const seedPhone = (index: number) => `+2010${String(index).padStart(8, '0')}`;
+
   const staffUsers = await Promise.all([
-    seedAppUser('admin', 'ADMIN'),
-    seedAppUser('moderator', 'MODERATOR'),
-    seedAppUser('tutor', 'TUTOR'),
+    seedAppUser(`+201032758989`, 'ADMIN'),
+    seedAppUser(seedPhone(2), 'MODERATOR'),
+    seedAppUser(seedPhone(3), 'TUTOR'),
     ...Array.from({ length: args.totalTutors - 1 }, (_, index) =>
-      seedAppUser(`tutor${index + 2}`, 'TUTOR')
+      seedAppUser(seedPhone(index + 4), 'TUTOR')
     ),
   ]);
 
@@ -46,7 +48,7 @@ export async function seedUsers(args: {
       name,
       nameNormalized: normalizeArabic(name),
       role: 'STUDENT' as const,
-      username: null,
+      phone: null,
       password: null,
       timezone: faker.helpers.arrayElement(seedTimezones),
       notes: faker.datatype.boolean(0.45) ? fakerAR.lorem.sentence() : null,

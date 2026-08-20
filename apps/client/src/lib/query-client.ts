@@ -33,7 +33,8 @@ export const queryKeys = {
     all: ['groups'] as const,
     lists: () => [...queryKeys.groups.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.groups.lists(), query] as const,
-    options: () => [...queryKeys.groups.all, 'options'] as const,
+    options: (learnerId?: string, paidOnly?: boolean) =>
+      [...queryKeys.groups.all, 'options', learnerId, paidOnly] as const,
     stats: (metric: 'groups-count' | 'learners-count' | 'tutors-count') =>
       [...queryKeys.groups.all, 'stats', metric] as const,
     tutors: () => [...queryKeys.groups.all, 'tutors'] as const,
@@ -47,6 +48,7 @@ export const queryKeys = {
     lists: () => [...queryKeys.sessions.all, 'list'] as const,
     list: (query?: unknown) => [...queryKeys.sessions.lists(), query] as const,
     today: (userId: string) => [...queryKeys.sessions.lists(), 'today', userId] as const,
+    missed: (userId: string) => [...queryKeys.sessions.lists(), 'missed', userId] as const,
     details: () => [...queryKeys.sessions.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.sessions.details(), id] as const,
   },
@@ -99,14 +101,6 @@ export const queryKeys = {
     learnerList: (query?: unknown) => [...queryKeys.payments.learnerLists(), query] as const,
     learnerDetails: () => [...queryKeys.payments.all, 'learner-detail'] as const,
     learnerDetail: (id: string) => [...queryKeys.payments.learnerDetails(), id] as const,
-    tutorLists: () => [...queryKeys.payments.all, 'tutor-list'] as const,
-    tutorList: (query?: unknown) => [...queryKeys.payments.tutorLists(), query] as const,
-    tutorDetails: () => [...queryKeys.payments.all, 'tutor-detail'] as const,
-    tutorDetail: (id: string) => [...queryKeys.payments.tutorDetails(), id] as const,
-    tutorLatestAllowedDate: (tutorId: string) =>
-      [...queryKeys.payments.all, 'tutor-latest-date', tutorId] as const,
-    tutorPreview: (payload?: unknown) =>
-      [...queryKeys.payments.all, 'tutor-preview', payload] as const,
   },
 
   // Transaction labels queries

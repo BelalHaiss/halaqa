@@ -1,11 +1,6 @@
 import { combineDateTime, fromUTC, ISODateOnlyString } from '@halaqa/shared';
 import { faker, fakerAR } from '@faker-js/faker';
-import {
-  AttendanceStatus,
-  CurrencyCode,
-  PrismaClient,
-  SessionStatus,
-} from 'generated/prisma/client';
+import { AttendanceStatus, PrismaClient, SessionStatus } from 'generated/prisma/client';
 import { SeededGroupWithStudents } from './group.seed';
 
 export type SeededSessionScheduleDay = {
@@ -98,8 +93,6 @@ export async function seedSessionsAndAttendance(args: {
         data: {
           groupId: group.id,
           tutorId: group.tutorId,
-          tutorSessionPrice: group.tutorHourlyRate,
-          tutorCurrency: group.tutorCurrency,
           startedAt,
           originalStartedAt: isRescheduled
             ? new Date(startedAt.getTime() - 24 * 60 * 60 * 1000)
@@ -134,41 +127,5 @@ export async function seedSessionsAndAttendance(args: {
         });
       }
     }
-  }
-}
-
-/**
- * Seeds 4 COMPLETED sessions for a single group's tutor within the last 6 days,
- * alternating between EGP and SAR. This ensures the "Create Tutor Payment" modal
- * can display a multi-currency breakdown preview for manual testing.
- */
-export async function seedDemoMultiCurrencySessions(args: {
-  prisma: PrismaClient;
-  group: SeededGroupWithStudents;
-}): Promise<void> {
-  const { prisma, group } = args;
-  const now = new Date();
-
-  const sessions: { daysAgo: number; currency: CurrencyCode; rate: number }[] = [
-    { daysAgo: 6, currency: CurrencyCode.EGP, rate: 150 },
-    { daysAgo: 5, currency: CurrencyCode.SAR, rate: 75 },
-    { daysAgo: 3, currency: CurrencyCode.EGP, rate: 150 },
-    { daysAgo: 2, currency: CurrencyCode.SAR, rate: 75 },
-  ];
-
-  for (const { daysAgo, currency, rate } of sessions) {
-    const startedAt = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    await prisma.session.create({
-      data: {
-        groupId: group.id,
-        tutorId: group.tutorId,
-        tutorSessionPrice: rate,
-        tutorCurrency: currency,
-        startedAt,
-        originalStartedAt: null,
-        status: 'COMPLETED',
-        notes: null,
-      },
-    });
   }
 }

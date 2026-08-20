@@ -9,9 +9,17 @@ export const useTodaySessionsViewModel = (currentUser: User) => {
     queryFn: async () => sessionService.getTodaySessions(),
   });
 
+  const missedSessionsQuery = useApiQuery<SessionSummaryDTO[]>({
+    queryKey: queryKeys.sessions.missed(currentUser.id),
+    queryFn: async () => sessionService.getMissedSessions(),
+  });
+
   return {
     sessions: todaySessionsQuery.data?.data ?? [],
     isLoading: todaySessionsQuery.isPending,
     error: todaySessionsQuery.error?.message ?? null,
+    missedSessions: missedSessionsQuery.data?.data ?? [],
+    isMissedLoading: missedSessionsQuery.isPending,
+    missedError: missedSessionsQuery.error?.message ?? null,
   };
 };

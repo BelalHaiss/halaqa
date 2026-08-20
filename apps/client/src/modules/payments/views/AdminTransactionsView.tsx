@@ -96,9 +96,6 @@ export function AdminTransactionsView() {
                 <SelectItem value='LEARNER_PAYMENT'>
                   {getTransactionEntityTypeLabel('LEARNER_PAYMENT')}
                 </SelectItem>
-                <SelectItem value='TUTOR_PAYMENT'>
-                  {getTransactionEntityTypeLabel('TUTOR_PAYMENT')}
-                </SelectItem>
                 <SelectItem value='MANUAL'>{getTransactionEntityTypeLabel('MANUAL')}</SelectItem>
               </SelectContent>
             </Select>

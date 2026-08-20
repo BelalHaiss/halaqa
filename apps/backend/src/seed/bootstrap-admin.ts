@@ -4,11 +4,12 @@ import { prismaSeedClient } from './seed';
 
 async function bootstrapAdmin() {
   const hashedPassword = await argon.hash('12345678');
+  const adminPhone = '+201000000001';
 
   await prismaSeedClient.user.upsert({
-    where: { username: 'admin' },
+    where: { phone: adminPhone },
     create: {
-      username: 'admin',
+      phone: adminPhone,
       name: 'System Admin',
       nameNormalized: normalizeArabic('System Admin'),
       role: 'ADMIN',
@@ -19,7 +20,7 @@ async function bootstrapAdmin() {
     update: {},
   });
 
-  console.log('Bootstrap admin is ready (username: admin)');
+  console.log(`Bootstrap admin is ready (phone: ${adminPhone})`);
 }
 
 bootstrapAdmin()

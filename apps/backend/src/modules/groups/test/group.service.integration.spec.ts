@@ -27,10 +27,18 @@ describe('GroupService (integration)', () => {
     await moduleRef.close();
   });
 
+  const phoneFromRunId = (runId: string) => {
+    let hash = 0;
+    for (const char of runId) {
+      hash = (hash * 31 + char.charCodeAt(0)) % 100_000_000;
+    }
+    return `+2010${String(hash).padStart(8, '0')}`;
+  };
+
   const createUser = async (args: { runId: string; role: UserRole; name: string }) => {
     return prisma.user.create({
       data: {
-        username: `${args.role.toLowerCase()}-group-options-${args.runId}`,
+        phone: phoneFromRunId(args.runId),
         name: args.name,
         role: args.role,
         timezone: 'UTC',

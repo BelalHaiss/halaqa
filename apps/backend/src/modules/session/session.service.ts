@@ -21,10 +21,11 @@ import {
   UserRole,
 } from 'generated/prisma/client';
 import { DatabaseService } from '../database/database.service';
-import { LearnerAttendanceCountService } from '../payments/learner-attendance-count.service';
 import {
   buildGroupScopeWhere,
   buildWeekdayCandidatesForUtcRange,
+  canRecordAttendance,
+  canSessionBeRescheduled,
   collectOccurrenceKeys,
   filterMissingOccurrences,
   findInvalidAttendanceStudentId,
@@ -118,10 +119,7 @@ type ResolvedSessionTarget = {
 
 @Injectable()
 export class SessionService {
-  constructor(
-    private readonly prismaService: DatabaseService,
-    private readonly learnerAttendanceCountService: LearnerAttendanceCountService
-  ) {}
+  constructor(private readonly prismaService: DatabaseService) {}
 
   // ==========================================================================
   // Public Methods
@@ -288,6 +286,43 @@ export class SessionService {
     sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
 
     return sessions.map((session) => session.summary);
+  }
+
+  /** Get all sessions with status MISSED, regardless of age. */
+  async getMissedSessions(user: User): Promise<SessionSummaryDTO[]> {
+    const sessions = await this.prismaService.session.findMany({
+      where: {
+        status: SessionStatus.MISSED,
+        group: buildGroupScopeWhere(user),
+      },
+      include: {
+        group: {
+          select: {
+            id: true,
+            name: true,
+            tutor: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
+    });
+
+    return sessions.map((sessionRecord) =>
+      mapSessionSummary({
+        groupId: sessionRecord.groupId,
+        groupName: sessionRecord.group.name,
+        tutorName: sessionRecord.group.tutor?.name ?? null,
+        startedAt: sessionRecord.startedAt,
+        sessionRecord,
+      })
+    );
   }
 
   /** Query sessions with filters and pagination */
@@ -529,14 +564,6 @@ export class SessionService {
           return [];
         }
 
-        const localDay = fromUTC(occurrence.startedAt.toISOString(), group.timezone);
-        const dayOfWeek = localDay.weekday === 7 ? 0 : localDay.weekday;
-        const scheduleDay = group.scheduleDays.find((d) => d.dayOfWeek === dayOfWeek);
-        const durationMinutes = scheduleDay?.durationMinutes ?? 0;
-        const tutorSessionPrice = group.tutorHourlyRate
-          ? group.tutorHourlyRate.mul(durationMinutes).div(60)
-          : null;
-
         return tx.session.upsert({
           where: {
             groupId_startedAt: {
@@ -548,8 +575,6 @@ export class SessionService {
           create: {
             groupId: occurrence.groupId,
             tutorId: group.tutorId,
-            tutorSessionPrice,
-            tutorCurrency: group.tutorCurrency,
             startedAt: occurrence.startedAt,
             status: SessionStatus.MISSED,
           },
@@ -565,7 +590,11 @@ export class SessionService {
   // ==========================================================================
 
   private async cancelSession(target: ResolvedSessionTarget): Promise<SessionDetailsDTO> {
-    const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
+    if (!canSessionBeRescheduled({ sessionRecord: target.sessionRecord })) {
+      throw new BadRequestException('Session cannot be canceled in its current status');
+    }
+
+    const tutorId = this.assertGroupHasTutor(target.group);
 
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
@@ -580,7 +609,7 @@ export class SessionService {
       : await this.prismaService.session.create({
           data: {
             groupId: target.group.id,
-            ...tutorSnapshot,
+            tutorId,
             startedAt: target.startedAt,
             status: SessionStatus.CANCELED,
           },
@@ -597,8 +626,12 @@ export class SessionService {
     payload: UpdateSessionActionDTO,
     groupTimezone: string
   ): Promise<SessionDetailsDTO> {
+    if (!canSessionBeRescheduled({ sessionRecord: target.sessionRecord })) {
+      throw new BadRequestException('Session cannot be rescheduled in its current status');
+    }
+
     const newStartedAt = new Date(combineDateTime(payload.date!, payload.time!, groupTimezone));
-    const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
+    const tutorId = this.assertGroupHasTutor(target.group);
 
     const updatedSession = target.sessionRecord
       ? await this.prismaService.session.update({
@@ -616,7 +649,7 @@ export class SessionService {
       : await this.prismaService.session.create({
           data: {
             groupId: target.group.id,
-            ...tutorSnapshot,
+            tutorId,
             status: SessionStatus.RESCHEDULED,
             originalStartedAt: target.startedAt,
             startedAt: newStartedAt,
@@ -633,6 +666,12 @@ export class SessionService {
     target: ResolvedSessionTarget,
     payload: UpdateSessionActionDTO
   ): Promise<SessionDetailsDTO> {
+    if (!canRecordAttendance({ sessionRecord: target.sessionRecord })) {
+      throw new BadRequestException(
+        'Attendance cannot be recorded for a missed or canceled session'
+      );
+    }
+
     const attendance = payload.attendance;
     if (!attendance || attendance.length === 0) {
       throw new BadRequestException('Attendance records are required for ATTENDANCE action');
@@ -645,14 +684,14 @@ export class SessionService {
 
     const updatedSession = await this.prismaService.$transaction(async (tx) => {
       const nowUtcMillis = fromUTC(getNowAsUTC(), 'UTC').toMillis();
-      const tutorSnapshot = this.getSessionTutorSnapshot(target.group, target.startedAt);
+      const tutorId = this.assertGroupHasTutor(target.group);
 
       const sessionRecord = target.sessionRecord
         ? await this.applyAttendanceActionOnExistingSession(tx, target.sessionRecord, nowUtcMillis)
         : await tx.session.create({
             data: {
               groupId: target.group.id,
-              ...tutorSnapshot,
+              tutorId,
               status: SessionStatus.COMPLETED,
               // If attendance is captured before planned start, keep that start
               // as original occurrence metadata for later traceability.
@@ -688,14 +727,6 @@ export class SessionService {
           })
         )
       );
-
-      await this.learnerAttendanceCountService.syncAttendedCount(tx, {
-        groupBillingType: target.group.billingType,
-        attendanceRecords: attendance.map((a) => ({
-          userId: a.studentId,
-          status: a.status,
-        })),
-      });
 
       return tx.session.findUniqueOrThrow({
         where: {
@@ -856,24 +887,12 @@ export class SessionService {
     }
   }
 
-  private getSessionTutorSnapshot(group: GroupWithTutorStudentsAndSchedule, startedAt: Date) {
+  private assertGroupHasTutor(group: GroupWithTutorStudentsAndSchedule): string {
     if (!group.tutorId) {
       throw new BadRequestException(`Group ${group.id} has no assigned tutor`);
     }
 
-    const localDay = fromUTC(startedAt.toISOString(), group.timezone);
-    const dayOfWeek = localDay.weekday === 7 ? 0 : localDay.weekday;
-    const scheduleDay = group.scheduleDays.find((d) => d.dayOfWeek === dayOfWeek);
-    const durationMinutes = scheduleDay?.durationMinutes ?? 0;
-    const tutorSessionPrice = group.tutorHourlyRate
-      ? group.tutorHourlyRate.mul(durationMinutes).div(60)
-      : null;
-
-    return {
-      tutorId: group.tutorId,
-      tutorSessionPrice,
-      tutorCurrency: group.tutorCurrency,
-    };
+    return group.tutorId;
   }
 
   private assertAttendanceStudentsBelongToGroup(

@@ -1,4 +1,4 @@
-import { Calendar, Loader2 } from 'lucide-react';
+import { AlertTriangle, Calendar, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PageHeader } from '@/components/ui/page-header';
@@ -15,49 +15,81 @@ export const TodaySessionsView = () => {
 
   const vm = useTodaySessionsViewModel(user);
 
-  if (vm.isLoading) {
-    return (
-      <div className='flex items-center justify-center h-64'>
-        <Loader2 className='w-8 h-8 animate-spin text-primary' />
-      </div>
-    );
-  }
-
-  if (vm.error) {
-    return (
-      <Alert alertType='ERROR'>
-        <AlertDescription>{vm.error}</AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
-    <div className='space-y-6'>
+    <div className='space-y-8'>
       <PageHeader title='جلسات اليوم' description='الجلسات المجدولة لهذا اليوم' />
 
-      {vm.sessions.length === 0 ? (
-        <div className='text-center py-12 rounded-lg border border-dashed border-border'>
-          <Calendar className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
-          <Typography as='div' size='sm' className='text-muted-foreground'>
-            لا توجد جلسات مجدولة اليوم
-          </Typography>
-        </div>
-      ) : (
-        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
-          {vm.sessions.map((session) => (
-            <SessionCard
-              key={session.id}
-              id={session.id}
-              groupName={session.groupName}
-              tutorName={session.tutorName}
-              startedAt={session.startedAt}
-              originalStartedAt={session.originalStartedAt ?? undefined}
-              sessionStatus={session.sessionStatus}
-              timezone={user.timezone}
-            />
-          ))}
-        </div>
-      )}
+      <section className='space-y-4'>
+        {vm.isLoading ? (
+          <div className='flex items-center justify-center h-64'>
+            <Loader2 className='w-8 h-8 animate-spin text-primary' />
+          </div>
+        ) : vm.error ? (
+          <Alert alertType='ERROR'>
+            <AlertDescription>{vm.error}</AlertDescription>
+          </Alert>
+        ) : vm.sessions.length === 0 ? (
+          <div className='text-center py-12 rounded-lg border border-dashed border-border'>
+            <Calendar className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
+            <Typography as='div' size='sm' className='text-muted-foreground'>
+              لا توجد جلسات مجدولة اليوم
+            </Typography>
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {vm.sessions.map((session) => (
+              <SessionCard
+                key={session.id}
+                id={session.id}
+                groupName={session.groupName}
+                tutorName={session.tutorName}
+                startedAt={session.startedAt}
+                originalStartedAt={session.originalStartedAt ?? undefined}
+                sessionStatus={session.sessionStatus}
+                timezone={user.timezone}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className='space-y-4'>
+        <Typography as='h2' size='lg' weight='semibold'>
+          الجلسات الفائتة
+        </Typography>
+
+        {vm.isMissedLoading ? (
+          <div className='flex items-center justify-center h-64'>
+            <Loader2 className='w-8 h-8 animate-spin text-primary' />
+          </div>
+        ) : vm.missedError ? (
+          <Alert alertType='ERROR'>
+            <AlertDescription>{vm.missedError}</AlertDescription>
+          </Alert>
+        ) : vm.missedSessions.length === 0 ? (
+          <div className='text-center py-12 rounded-lg border border-dashed border-border'>
+            <AlertTriangle className='w-12 h-12 mx-auto mb-3 opacity-50 text-muted-foreground' />
+            <Typography as='div' size='sm' className='text-muted-foreground'>
+              لا توجد جلسات فائتة
+            </Typography>
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {vm.missedSessions.map((session) => (
+              <SessionCard
+                key={session.id}
+                id={session.id}
+                groupName={session.groupName}
+                tutorName={session.tutorName}
+                startedAt={session.startedAt}
+                originalStartedAt={session.originalStartedAt ?? undefined}
+                sessionStatus={session.sessionStatus}
+                timezone={user.timezone}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

@@ -42,9 +42,7 @@ export function LearnerPaymentsView() {
             <Select
               value={vm.filters.status ?? '__ALL_STATUS__'}
               onValueChange={(value) =>
-                vm.setStatus(
-                  (value === '__ALL_STATUS__' ? '' : value) as 'UNPAID' | 'PARTIAL' | 'PAID' | ''
-                )
+                vm.setStatus((value === '__ALL_STATUS__' ? '' : value) as 'UNPAID' | 'PAID' | '')
               }
             >
               <SelectTrigger>
@@ -53,7 +51,6 @@ export function LearnerPaymentsView() {
               <SelectContent>
                 <SelectItem value='__ALL_STATUS__'>كل الحالات</SelectItem>
                 <SelectItem value='UNPAID'>{getPaymentStatusLabel('UNPAID')}</SelectItem>
-                <SelectItem value='PARTIAL'>{getPaymentStatusLabel('PARTIAL')}</SelectItem>
                 <SelectItem value='PAID'>{getPaymentStatusLabel('PAID')}</SelectItem>
               </SelectContent>
             </Select>
@@ -66,13 +63,11 @@ export function LearnerPaymentsView() {
       <LearnerPaymentsTable
         rows={vm.learnerPayments}
         canDelete={false}
-        canPay={false}
         isLoading={vm.isLearnerPaymentsLoading}
         sortBy={vm.filters.learnerSortBy}
         sortOrder={vm.filters.learnerSortOrder}
         onSort={vm.setLearnerSort}
         onView={(payment) => vm.setSelectedLearnerPaymentId(payment.id)}
-        onPay={() => undefined}
         onDelete={() => undefined}
       />
 

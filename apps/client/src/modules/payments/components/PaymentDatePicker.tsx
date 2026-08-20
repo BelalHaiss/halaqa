@@ -42,7 +42,7 @@ export function PaymentDatePicker({
           {value ? formatDateLongArabic(value) : placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='w-auto p-0' align='start' side='bottom' avoidCollisions={false}>
+      <PopoverContent className='w-auto p-0' align='start'>
         <Calendar
           mode='single'
           selected={selectedDate}

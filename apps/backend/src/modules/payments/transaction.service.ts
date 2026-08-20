@@ -143,7 +143,6 @@ export class TransactionService {
     labelId: string | null;
     notes: string | null;
     learnerPaymentId: string | null;
-    tutorPaymentId: string | null;
     createdById: string;
     createdAt: Date;
     updatedAt: Date;
@@ -166,7 +165,6 @@ export class TransactionService {
         : undefined,
       notes: row.notes ?? undefined,
       learnerPaymentId: row.learnerPaymentId ?? undefined,
-      tutorPaymentId: row.tutorPaymentId ?? undefined,
       createdById: row.createdById,
       createdByName: row.createdBy.name,
       createdAt: row.createdAt.toISOString() as ISODateString,

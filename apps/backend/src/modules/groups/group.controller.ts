@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import type {
   AddLearnersToGroupDto,
   CountDto,
@@ -19,6 +19,7 @@ import {
   addLearnersToGroupSchema,
   createGroupSchema,
   createLearnersSchema,
+  groupOptionsQuerySchema,
   updateGroupSchema,
 } from '@halaqa/shared';
 import { GroupService } from './group.service';
@@ -42,8 +43,12 @@ export class GroupController {
   }
 
   @Get('options')
-  getGroupOptions(@User() user: UserEntity): Promise<GroupSelectOptionDto[]> {
-    return this.groupService.getGroupOptions(user);
+  getGroupOptions(
+    @User() user: UserEntity,
+    @Query(new ZodValidationPipe(groupOptionsQuerySchema('en')))
+    query: { learnerId?: string; paidOnly?: boolean }
+  ): Promise<GroupSelectOptionDto[]> {
+    return this.groupService.getGroupOptions(user, query.learnerId, query.paidOnly);
   }
 
   @Get(':id')

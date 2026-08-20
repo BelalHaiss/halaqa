@@ -37,7 +37,7 @@ export const useUserProfileViewModel = ({
         setUser({
           ...user,
           ...response.data,
-          username: response.data.username ?? '',
+          phone: response.data.phone ?? '',
         });
       }
       toast.success('تم تحديث الملف الشخصي بنجاح');

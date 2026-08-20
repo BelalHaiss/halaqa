@@ -17,6 +17,7 @@ import { attendanceEditSchema, type AttendanceEditFormData } from '../utils/sess
 import { getSessionStatusConfig } from '../utils/session.util';
 import { useSessionDetailsViewModel } from '../viewmodels/session-details.viewmodel';
 import { AttendanceRow } from '../components/AttendanceRow';
+import { BulkAttendanceActions } from '../components/BulkAttendanceActions';
 import { RescheduleDialog } from '../components/RescheduleDialog';
 import { RescheduledNotice } from '../components/RescheduledNotice';
 
@@ -89,10 +90,7 @@ export const SessionDetailsView = () => {
   );
 
   const shouldShowAttendanceCard = true;
-  const canStoreAttendance =
-    vm.session?.status === 'SCHEDULED' ||
-    vm.session?.status === 'RESCHEDULED' ||
-    vm.session?.status === 'MISSED';
+  const canStoreAttendance = vm.session?.status !== 'MISSED' && vm.session?.status !== 'CANCELED';
 
   const handleSaveAttendance = attendanceForm.handleSubmit(async (values) => {
     await vm.saveAttendance(
@@ -270,6 +268,15 @@ export const SessionDetailsView = () => {
               </div>
             ) : (
               <>
+                {canStoreAttendance ? (
+                  <div className='mb-3'>
+                    <BulkAttendanceActions
+                      setValue={attendanceForm.setValue}
+                      getValues={attendanceForm.getValues}
+                      disabled={vm.isUpdating}
+                    />
+                  </div>
+                ) : null}
                 <div className='space-y-2'>
                   {vm.session.students.map((student, index) =>
                     canStoreAttendance ? (

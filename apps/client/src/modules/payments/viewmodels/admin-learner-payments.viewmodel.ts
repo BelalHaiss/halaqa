@@ -18,7 +18,7 @@ import { paymentService } from '../services/payment.service';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
-const VALID_STATUS: PaymentStatus[] = ['UNPAID', 'PARTIAL', 'PAID'];
+const VALID_STATUS: PaymentStatus[] = ['UNPAID', 'PAID'];
 
 const normalizePositiveInteger = (value: string | null, fallback: number): number => {
   const parsed = Number(value);
@@ -42,6 +42,7 @@ export function useAdminLearnerPaymentsViewModel() {
   const toDate = searchParams.get('toDate')?.trim() ?? '';
   const learnerId = searchParams.get('learnerId')?.trim() ?? '';
   const learnerName = searchParams.get('learnerName')?.trim() ?? '';
+  const groupId = searchParams.get('groupId')?.trim() ?? '';
   const status = normalizeStatus(searchParams.get('status'));
   const sortBy = (searchParams.get('learnerSortBy')?.trim() ?? '') as LearnerPaymentsSortBy | '';
   const sortOrder = (searchParams.get('learnerSortOrder')?.trim() ?? 'desc') as SortOrder;
@@ -49,9 +50,6 @@ export function useAdminLearnerPaymentsViewModel() {
 
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [paymentPendingApply, setPaymentPendingApply] = useState<LearnerPaymentSummaryDto | null>(
-    null
-  );
   const [paymentPendingDelete, setPaymentPendingDelete] = useState<LearnerPaymentSummaryDto | null>(
     null
   );
@@ -74,6 +72,7 @@ export function useAdminLearnerPaymentsViewModel() {
       page,
       limit,
       ...(learnerId ? { learnerId } : {}),
+      ...(groupId ? { groupId } : {}),
       ...(status ? { status } : {}),
       ...(fromDate ? { fromDate: fromDate as QueryLearnerPaymentsDto['fromDate'] } : {}),
       ...(toDate ? { toDate: toDate as QueryLearnerPaymentsDto['toDate'] } : {}),
@@ -81,10 +80,8 @@ export function useAdminLearnerPaymentsViewModel() {
       ...(sortBy ? { sortOrder } : {}),
       ...(currency ? { currency } : {}),
     }),
-    [currency, fromDate, learnerId, sortBy, sortOrder, limit, page, status, toDate]
+    [currency, fromDate, learnerId, groupId, sortBy, sortOrder, limit, page, status, toDate]
   );
-
-  console.log('Querying learner payments with:', query);
 
   const paymentsQuery = useApiQuery({
     queryKey: queryKeys.payments.learnerList(query),
@@ -110,22 +107,6 @@ export function useAdminLearnerPaymentsViewModel() {
     },
   });
 
-  const applyMutation = useApiMutation<
-    { id: string; amount: number; currency: CurrencyCode },
-    unknown
-  >({
-    mutationFn: ({ id, amount, currency }) =>
-      paymentService.applyLearnerPayment(id, { amount, currency }),
-    onSuccess: async () => {
-      toast.success('تم تسجيل الدفعة بنجاح');
-      await queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
   const deleteMutation = useApiMutation<string, null>({
     mutationFn: paymentService.deleteLearnerPayment,
     onSuccess: async () => {
@@ -141,16 +122,6 @@ export function useAdminLearnerPaymentsViewModel() {
   const canManagePayments = role === 'ADMIN' || role === 'MODERATOR';
   const canDeletePayments = role === 'ADMIN';
 
-  const confirmApply = async (amount: number) => {
-    if (!paymentPendingApply) return;
-    await applyMutation.mutateAsync({
-      id: paymentPendingApply.id,
-      amount,
-      currency: paymentPendingApply.currency,
-    });
-    setPaymentPendingApply(null);
-  };
-
   const confirmDelete = async () => {
     if (!paymentPendingDelete) return;
     await deleteMutation.mutateAsync(paymentPendingDelete.id);
@@ -165,6 +136,7 @@ export function useAdminLearnerPaymentsViewModel() {
       toDate,
       learnerId,
       learnerName,
+      groupId,
       status,
       currency: currency || undefined,
       sortBy: sortBy || undefined,
@@ -175,6 +147,7 @@ export function useAdminLearnerPaymentsViewModel() {
       updateParams({ page: nextPage > DEFAULT_PAGE ? String(nextPage) : undefined }),
     setLearnerId: (id: string, name: string) =>
       updateParams({ learnerId: id || undefined, learnerName: name || undefined }, true),
+    setGroupId: (id: string) => updateParams({ groupId: id || undefined }, true),
     setFromDate: (value: string) => updateParams({ fromDate: value || undefined }, true),
     setToDate: (value: string) => updateParams({ toDate: value || undefined }, true),
     setStatus: (value: PaymentStatus | '') => updateParams({ status: value || undefined }, true),
@@ -200,8 +173,6 @@ export function useAdminLearnerPaymentsViewModel() {
     setSelectedPaymentId,
     isCreateOpen,
     setIsCreateOpen,
-    paymentPendingApply,
-    setPaymentPendingApply,
     paymentPendingDelete,
     setPaymentPendingDelete,
 
@@ -212,10 +183,6 @@ export function useAdminLearnerPaymentsViewModel() {
       await createMutation.mutateAsync(payload);
     },
     isCreatingPayment: createMutation.isPending,
-
-    openApply: (payment: LearnerPaymentSummaryDto) => setPaymentPendingApply(payment),
-    confirmApply,
-    isApplying: applyMutation.isPending,
 
     confirmDelete,
   };

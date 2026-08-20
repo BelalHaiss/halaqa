@@ -15,7 +15,7 @@ export class GroupLearnerOrchestrator {
             data: {
               name: learner.name,
               role: UserRole.STUDENT,
-              username: null,
+              phone: null,
               password: null,
               timezone: learner.timezone || DEFAULT_TIMEZONE,
               notes: learner.contact?.notes,

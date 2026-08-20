@@ -24,6 +24,11 @@ export class SessionController {
     return this.sessionService.getTodaySessions(user);
   }
 
+  @Get('missed')
+  async getMissedSessions(@User() user: AuthenticatedUser): Promise<SessionSummaryDTO[]> {
+    return this.sessionService.getMissedSessions(user);
+  }
+
   @Get('history')
   async querySessions(
     @Query(new ZodValidationPipe(sessionQuerySchema('en'))) query: SessionQueryDTO,

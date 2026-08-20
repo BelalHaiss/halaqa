@@ -12,6 +12,10 @@ export class SessionService {
     return apiClient.get<SessionSummaryDTO[]>('/sessions/today');
   }
 
+  async getMissedSessions(): Promise<UnifiedApiResponse<SessionSummaryDTO[]>> {
+    return apiClient.get<SessionSummaryDTO[]>('/sessions/missed');
+  }
+
   async getSessionDetails(id: string): Promise<UnifiedApiResponse<SessionDetailsDTO>> {
     return apiClient.get<SessionDetailsDTO>(`/sessions/${id}`);
   }

@@ -182,6 +182,22 @@ export function canSessionBeRescheduled(args: {
   );
 }
 
+/** Check if attendance can be recorded on a session.
+ * - Virtual (no record): always true
+ * - MISSED / CANCELED: false — cannot record attendance on a missed or canceled session
+ * - COMPLETED / RESCHEDULED: true
+ */
+export function canRecordAttendance(args: { sessionRecord?: SessionRecordLike | null }): boolean {
+  if (!args.sessionRecord) {
+    return true;
+  }
+
+  return (
+    args.sessionRecord.status !== SessionStatus.MISSED &&
+    args.sessionRecord.status !== SessionStatus.CANCELED
+  );
+}
+
 // ============================================================================
 // ============================================================================
 // Session Mapping (DTO Converters)

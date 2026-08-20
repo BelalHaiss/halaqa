@@ -3,7 +3,6 @@ import { PaymentStatus, TransactionEntityType, TransactionType } from '../paymen
 
 const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   UNPAID: 'غير مدفوع',
-  PARTIAL: 'مدفوع جزئيا',
   PAID: 'مدفوع',
 };
 
@@ -14,26 +13,25 @@ const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
 
 const TRANSACTION_ENTITY_TYPE_LABELS: Record<TransactionEntityType, string> = {
   LEARNER_PAYMENT: 'دفعة متعلم',
-  TUTOR_PAYMENT: 'مستحق معلم',
   MANUAL: 'يدوي',
 };
 
-const CURRENCY_LABELS: Partial<Record<CurrencyCode, string>> = {
-  USD: 'دول',
-  EUR: 'يور',
-  GBP: 'ستر',
-  JPY: 'ين',
-  CNY: 'يون',
-  INR: 'روب',
-  CAD: 'كند',
-  AUD: 'أست',
-  CHF: 'فرن',
-  TRY: 'ترك',
-  SAR: 'رس',
-  AED: 'در',
-  EGP: 'جم',
-  KWD: 'دك',
-  QAR: 'رق',
+const CURRENCY_LABELS: Record<CurrencyCode, string> = {
+  EGP: 'ج.م',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  CNY: '¥',
+  INR: '₹',
+  CAD: 'C$',
+  AUD: 'A$',
+  CHF: 'CHF',
+  TRY: '₺',
+  SAR: 'ر.س',
+  AED: 'د.إ',
+  KWD: 'د.ك',
+  QAR: 'ر.ق',
 };
 
 export function getPaymentStatusLabel(status: PaymentStatus): string {

@@ -1,8 +1,16 @@
 import { DatabaseService } from 'src/modules/database/database.service';
 import { seededScheduleDayFromUtc } from 'src/seed/session.seed';
 
-const TEST_USERNAME_PREFIX = 'session-test-';
+const TEST_PHONE_PREFIX = '+2099';
 const TEST_GROUP_PREFIX = 'session-test-group-';
+
+const testPhoneFromRunId = (runId: string) => {
+  let hash = 0;
+  for (const char of runId) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 100_000_000;
+  }
+  return `${TEST_PHONE_PREFIX}${String(hash).padStart(8, '0')}`;
+};
 
 export async function createSessionTestTutor(args: {
   prisma: DatabaseService;
@@ -12,7 +20,7 @@ export async function createSessionTestTutor(args: {
 }) {
   return args.prisma.user.create({
     data: {
-      username: `${TEST_USERNAME_PREFIX}${args.runId}`,
+      phone: testPhoneFromRunId(args.runId),
       name: args.name,
       role: 'TUTOR',
       timezone: args.timezone,
@@ -99,8 +107,8 @@ export async function cleanupSessionTestData(prisma: DatabaseService): Promise<v
 
     await tx.user.deleteMany({
       where: {
-        username: {
-          startsWith: TEST_USERNAME_PREFIX,
+        phone: {
+          startsWith: TEST_PHONE_PREFIX,
         },
       },
     });

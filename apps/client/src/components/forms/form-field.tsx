@@ -10,6 +10,7 @@ import { Checkbox } from '../ui/checkbox';
 import { Field, FieldLabel, FieldError as FieldErrorComponent } from '../ui/field';
 import { PasswordInput } from '../ui/password-input';
 import { Input } from '../ui/input';
+import { PhoneInput } from '../ui/phone-input';
 import { Textarea } from '../ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -21,7 +22,7 @@ export interface SelectOption {
 export interface IFormField {
   name: string;
   label?: string | ReactNode;
-  type: 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea' | 'number';
+  type: 'text' | 'email' | 'password' | 'checkbox' | 'select' | 'textarea' | 'number' | 'phone';
   placeholder?: string;
   disabled?: boolean;
   id?: string;
@@ -156,6 +157,10 @@ function FormFieldComponent<T extends FieldValues>({
 
     if (type === 'password') {
       return <PasswordInput {...commonProps} />;
+    }
+
+    if (type === 'phone') {
+      return <PhoneInput {...commonProps} />;
     }
 
     return <Input type={type} {...commonProps} />;

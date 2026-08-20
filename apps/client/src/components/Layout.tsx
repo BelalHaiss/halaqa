@@ -71,7 +71,7 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       name: 'المدفوعات',
       href: '/payments',
       icon: HandCoins,
-      roles: ['ADMIN', 'MODERATOR', 'TUTOR', 'STUDENT'],
+      roles: ['ADMIN', 'MODERATOR', 'STUDENT'],
     },
   ];
 

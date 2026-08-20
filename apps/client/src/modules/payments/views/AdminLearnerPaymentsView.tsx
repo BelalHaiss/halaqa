@@ -13,9 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ApplyLearnerPaymentModal } from '../components/ApplyLearnerPaymentModal';
 import { CreateLearnerPaymentModal } from '../components/CreateLearnerPaymentModal';
 import { CurrencySelectFilter } from '../components/CurrencySelectFilter';
+import { GroupFilterSelect } from '../components/GroupFilterSelect';
 import { LearnerPaymentsTable } from '../components/LearnerPaymentsTable';
 import { LearnerSearchCombobox } from '../components/LearnerSearchCombobox';
 import { PaymentDatePicker } from '../components/PaymentDatePicker';
@@ -47,12 +47,14 @@ export function AdminLearnerPaymentsView() {
             {`إجمالي الاشتراكات: ${vm.meta.total}`}
           </Badge>
 
-          <div className='grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5'>
+          <div className='grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6'>
             <LearnerSearchCombobox
               value={vm.filters.learnerId}
               onValueChange={vm.setLearnerId}
               selectedName={vm.filters.learnerName}
             />
+
+            <GroupFilterSelect value={vm.filters.groupId} onChange={vm.setGroupId} />
 
             <PaymentDatePicker
               value={vm.filters.fromDate}
@@ -71,9 +73,7 @@ export function AdminLearnerPaymentsView() {
             <Select
               value={vm.filters.status ?? '__ALL_STATUS__'}
               onValueChange={(value) =>
-                vm.setStatus(
-                  (value === '__ALL_STATUS__' ? '' : value) as 'UNPAID' | 'PARTIAL' | 'PAID' | ''
-                )
+                vm.setStatus((value === '__ALL_STATUS__' ? '' : value) as 'UNPAID' | 'PAID' | '')
               }
             >
               <SelectTrigger>
@@ -82,7 +82,6 @@ export function AdminLearnerPaymentsView() {
               <SelectContent>
                 <SelectItem value='__ALL_STATUS__'>كل الحالات</SelectItem>
                 <SelectItem value='UNPAID'>{getPaymentStatusLabel('UNPAID')}</SelectItem>
-                <SelectItem value='PARTIAL'>{getPaymentStatusLabel('PARTIAL')}</SelectItem>
                 <SelectItem value='PAID'>{getPaymentStatusLabel('PAID')}</SelectItem>
               </SelectContent>
             </Select>
@@ -97,13 +96,11 @@ export function AdminLearnerPaymentsView() {
       <LearnerPaymentsTable
         rows={vm.payments}
         canDelete={vm.canDeletePayments}
-        canPay={vm.canManagePayments}
         isLoading={vm.isLoading}
         sortBy={vm.filters.sortBy}
         sortOrder={vm.filters.sortOrder}
         onSort={vm.setSort}
         onView={(payment) => vm.setSelectedPaymentId(payment.id)}
-        onPay={vm.openApply}
         onDelete={vm.setPaymentPendingDelete}
       />
 
@@ -120,21 +117,6 @@ export function AdminLearnerPaymentsView() {
         onOpenChange={vm.setIsCreateOpen}
         onSubmit={vm.createPayment}
         isSubmitting={vm.isCreatingPayment}
-      />
-
-      <ApplyLearnerPaymentModal
-        open={Boolean(vm.paymentPendingApply)}
-        onOpenChange={(open) => {
-          if (!open) vm.setPaymentPendingApply(null);
-        }}
-        onSubmit={vm.confirmApply}
-        currency={vm.paymentPendingApply?.currency ?? 'EGP'}
-        maxAmount={
-          vm.paymentPendingApply
-            ? vm.paymentPendingApply.totalAmount - vm.paymentPendingApply.paidAmount
-            : 0
-        }
-        isSubmitting={vm.isApplying}
       />
 
       <PaymentDetailsModal

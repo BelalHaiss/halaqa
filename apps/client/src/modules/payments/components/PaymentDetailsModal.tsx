@@ -4,7 +4,6 @@ import {
   getTransactionEntityTypeLabel,
   getTransactionTypeLabel,
   LearnerPaymentSummaryDto,
-  TutorPaymentSummaryDto,
 } from '@halaqa/shared';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -23,16 +22,14 @@ type PaymentDetailsModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   learnerPayment?: LearnerPaymentSummaryDto | null;
-  tutorPayment?: TutorPaymentSummaryDto | null;
 };
 
 export function PaymentDetailsModal({
   open,
   onOpenChange,
   learnerPayment,
-  tutorPayment,
 }: PaymentDetailsModalProps) {
-  const transactions = learnerPayment?.transactions ?? tutorPayment?.transactions ?? [];
+  const transactions = learnerPayment?.transactions ?? [];
   const { user } = useApp();
 
   return (
@@ -41,28 +38,16 @@ export function PaymentDetailsModal({
         <DialogHeader>
           <DialogTitle>
             {learnerPayment ? `تفاصيل اشتراك ${learnerPayment.learnerName}` : null}
-            {tutorPayment ? `تفاصيل أجر ${tutorPayment.tutorName}` : null}
           </DialogTitle>
         </DialogHeader>
 
         {learnerPayment ? (
           <div className='space-y-3'>
             <div className='flex flex-wrap gap-2'>
-              <Badge color='muted'>عدد الجلسات: {learnerPayment.sessionsCount}</Badge>
+              <Badge color='muted'>الحلقة: {learnerPayment.groupName}</Badge>
               <Badge color='muted'>الإجمالي: {learnerPayment.totalAmount}</Badge>
-              <Badge color='muted'>المدفوع: {learnerPayment.paidAmount}</Badge>
               <Badge color='muted'>العملة: {getCurrencyLabel(learnerPayment.currency)}</Badge>
               <PaymentStatusBadge status={learnerPayment.status} />
-            </div>
-          </div>
-        ) : null}
-
-        {tutorPayment ? (
-          <div className='space-y-3'>
-            <div className='flex flex-wrap gap-2'>
-              <Badge color='muted'>عدد الجلسات: {tutorPayment.sessionsCount}</Badge>
-              <Badge color='muted'>الإجمالي: {tutorPayment.totalAmount}</Badge>
-              <Badge color='muted'>العملة: {getCurrencyLabel(tutorPayment.currency)}</Badge>
             </div>
           </div>
         ) : null}

@@ -27,7 +27,7 @@ export function UserProfileView() {
     resolver: zodResolver(updateOwnProfileSchema()),
     defaultValues: {
       name: user?.name || '',
-      username: user?.username || '',
+      phone: user?.phone || '',
       timezone: user?.timezone || 'Africa/Cairo',
     },
     mode: 'onTouched',
@@ -116,15 +116,14 @@ export function UserProfileView() {
                   disabled={vm.isUpdatingProfile}
                 />
 
-                {/* Username */}
+                {/* Phone */}
                 <FormField
                   control={profileForm.control}
-                  name='username'
-                  label='اسم المستخدم'
-                  type='text'
-                  placeholder='username'
+                  name='phone'
+                  label='رقم الهاتف'
+                  type='phone'
+                  placeholder='+966501234567'
                   disabled={vm.isUpdatingProfile}
-                  inputClassName='text-left'
                 />
 
                 <FormField

@@ -47,7 +47,7 @@ export const LoginView = () => {
   } = useForm<LoginCredentialsDto>({
     resolver: zodResolver(loginSchema()),
     defaultValues: {
-      username: '',
+      phone: '',
       password: '',
     },
     mode: 'onTouched',
@@ -79,13 +79,12 @@ export const LoginView = () => {
               <div className='space-y-4 rounded-xl border border-border bg-background/80 p-4'>
                 <FormField
                   control={control}
-                  name='username'
-                  label='اسم المستخدم'
-                  type='text'
-                  placeholder='admin'
+                  name='phone'
+                  label='رقم الهاتف'
+                  type='phone'
+                  placeholder='+966501234567'
                   disabled={isLoading}
-                  id='username'
-                  inputClassName='text-left'
+                  id='phone'
                 />
 
                 <FormField

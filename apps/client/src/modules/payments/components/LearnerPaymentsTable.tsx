@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, Eye, HandCoins, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Eye, Trash2 } from 'lucide-react';
 import {
   formatDate,
   getCurrencyLabel,
@@ -22,34 +22,28 @@ import { PaymentStatusBadge } from './PaymentStatusBadge';
 type LearnerPaymentsTableProps = {
   rows: LearnerPaymentSummaryDto[];
   canDelete: boolean;
-  canPay: boolean;
   isLoading?: boolean;
   sortBy?: LearnerPaymentsSortBy;
   sortOrder: SortOrder;
   onSort: (sortBy: LearnerPaymentsSortBy) => void;
   onView: (row: LearnerPaymentSummaryDto) => void;
-  onPay: (row: LearnerPaymentSummaryDto) => void;
   onDelete: (row: LearnerPaymentSummaryDto) => void;
 };
 
 export function LearnerPaymentsTable({
   rows,
   canDelete,
-  canPay,
   isLoading,
   sortBy,
   sortOrder,
   onSort,
   onView,
-  onPay,
   onDelete,
 }: LearnerPaymentsTableProps) {
   const sortableColumns: LearnerPaymentsSortBy[] = [
     'learnerName',
-    'sessionsCount',
-    'attendedCount',
+    'groupName',
     'totalAmount',
-    'paidAmount',
     'currency',
     'status',
     'periodFrom',
@@ -64,24 +58,14 @@ export function LearnerPaymentsTable({
         id: 'learnerName',
       },
       {
-        accessorKey: 'sessionsCount',
-        header: 'عدد الجلسات',
-        id: 'sessionsCount',
-      },
-      {
-        accessorKey: 'attendedCount',
-        header: 'الجلسات المحضورة',
-        id: 'attendedCount',
+        accessorKey: 'groupName',
+        header: 'الحلقة',
+        id: 'groupName',
       },
       {
         accessorKey: 'totalAmount',
         header: 'الإجمالي',
         id: 'totalAmount',
-      },
-      {
-        accessorKey: 'paidAmount',
-        header: 'المدفوع',
-        id: 'paidAmount',
       },
       {
         accessorKey: 'currency',
@@ -125,17 +109,6 @@ export function LearnerPaymentsTable({
             <Button size='icon' variant='ghost' color='muted' onClick={() => onView(row.original)}>
               <Eye className='w-4 h-4' />
             </Button>
-            {canPay ? (
-              <Button
-                size='icon'
-                variant='ghost'
-                color='success'
-                onClick={() => onPay(row.original)}
-                disabled={row.original.status === 'PAID'}
-              >
-                <HandCoins className='w-4 h-4' />
-              </Button>
-            ) : null}
             {canDelete ? (
               <Button
                 size='icon'
@@ -150,7 +123,7 @@ export function LearnerPaymentsTable({
         ),
       },
     ],
-    [canDelete, canPay, onDelete, onPay, onView]
+    [canDelete, onDelete, onView]
   );
 
   const table = useReactTable({

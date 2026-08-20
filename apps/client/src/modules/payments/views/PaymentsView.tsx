@@ -13,22 +13,20 @@ const LearnerPaymentsView = lazy(() =>
   }))
 );
 
-const TutorPaymentsView = lazy(() =>
-  import('./TutorPaymentsView').then((module) => ({
-    default: module.TutorPaymentsView,
-  }))
-);
-
 const fallback = <div className='py-8 text-center text-muted-foreground'>جاري التحميل...</div>;
 
 export default function PaymentsView() {
   const { user } = useApp();
 
+  if (user?.role === 'TUTOR') {
+    return (
+      <div className='py-16 text-center text-muted-foreground'>لا يمكنك الوصول إلى هذه الصفحة</div>
+    );
+  }
+
   const content =
     user?.role === 'ADMIN' || user?.role === 'MODERATOR' ? (
       <AdminModeratorPaymentsView />
-    ) : user?.role === 'TUTOR' ? (
-      <TutorPaymentsView />
     ) : (
       <LearnerPaymentsView />
     );

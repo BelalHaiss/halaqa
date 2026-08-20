@@ -1,10 +1,6 @@
 export const NAME_MIN_LENGTH = 2;
 export const NAME_MAX_LENGTH = 100;
 
-export const USERNAME_MIN_LENGTH = 3;
-export const USERNAME_MAX_LENGTH = 50;
-export const USERNAME_ACCOUNT_REGEX = /^[a-zA-Z0-9_]+$/;
-
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 100;
 
@@ -30,6 +26,7 @@ export const PAGINATION_DEFAULT_PAGE = 1;
 export const PAGINATION_DEFAULT_LIMIT = 10;
 
 export const SUPPORTED_CURRENCIES = [
+  'EGP',
   'USD',
   'EUR',
   'GBP',
@@ -42,7 +39,6 @@ export const SUPPORTED_CURRENCIES = [
   'TRY',
   'SAR',
   'AED',
-  'EGP',
   'KWD',
   'QAR',
 ] as const;

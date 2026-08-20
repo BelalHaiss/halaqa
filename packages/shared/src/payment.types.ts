@@ -7,27 +7,16 @@ import {
 } from './types/api.types';
 import { CurrencyCode } from './currency.types';
 
-export type PaymentStatus = 'UNPAID' | 'PARTIAL' | 'PAID';
+export type PaymentStatus = 'UNPAID' | 'PAID';
 export type TransactionType = 'INCOME' | 'EXPENSE';
-export type TransactionEntityType = 'LEARNER_PAYMENT' | 'TUTOR_PAYMENT' | 'MANUAL';
-export type LearnerBillingType = 'SESSION_COUNT_MONTHLY';
+export type TransactionEntityType = 'LEARNER_PAYMENT' | 'MANUAL';
 export type SortOrder = 'asc' | 'desc';
 export type LearnerPaymentsSortBy =
   | 'learnerName'
-  | 'sessionsCount'
-  | 'attendedCount'
+  | 'groupName'
   | 'totalAmount'
-  | 'paidAmount'
   | 'currency'
   | 'status'
-  | 'periodFrom'
-  | 'periodTo'
-  | 'createdAt';
-export type TutorPaymentsSortBy =
-  | 'tutorName'
-  | 'sessionsCount'
-  | 'totalAmount'
-  | 'currency'
   | 'periodFrom'
   | 'periodTo'
   | 'createdAt';
@@ -40,7 +29,6 @@ export interface FinancialTransactionDto {
   currency: CurrencyCode;
   createdById: string;
   learnerPaymentId?: string;
-  tutorPaymentId?: string;
   createdAt: ISODateString;
   updatedAt: ISODateString;
 }
@@ -49,13 +37,11 @@ export interface LearnerPaymentSummaryDto {
   id: string;
   learnerId: string;
   learnerName: string;
-  billingType: LearnerBillingType;
-  sessionsCount: number;
-  attendedCount: number;
+  groupId: string;
+  groupName: string;
   periodFrom: ISODateString;
   periodTo: ISODateString;
   totalAmount: number;
-  paidAmount: number;
   currency: CurrencyCode;
   status: PaymentStatus;
   createdAt: ISODateString;
@@ -66,6 +52,7 @@ export interface LearnerPaymentSummaryDto {
 export type QueryLearnerPaymentsDto = PaginationQueryType &
   DateRangeQueryType & {
     learnerId?: string;
+    groupId?: string;
     status?: PaymentStatus;
     currency?: CurrencyCode;
     sortBy?: LearnerPaymentsSortBy;
@@ -78,75 +65,11 @@ export type QueryLearnerPaymentsResponseDto = {
 
 export interface CreateLearnerPaymentDto {
   learnerId: string;
-  billingType: LearnerBillingType;
-  sessionsCount: number;
+  groupId: string;
   periodFrom: ISODateOnlyString;
   periodTo: ISODateOnlyString;
   totalAmount: number;
   currency: CurrencyCode;
-  initialPaidAmount?: number;
-}
-
-export interface ApplyLearnerPaymentDto {
-  amount: number;
-  currency: CurrencyCode;
-}
-
-export interface TutorPaymentSummaryDto {
-  id: string;
-  tutorId: string;
-  tutorName: string;
-  periodFrom: ISODateString;
-  periodTo: ISODateString;
-  sessionsCount: number;
-  totalAmount: number;
-  currency: CurrencyCode;
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
-  transactions: FinancialTransactionDto[];
-}
-
-export type QueryTutorPaymentsDto = PaginationQueryType &
-  DateRangeQueryType & {
-    tutorId?: string;
-    currency?: CurrencyCode;
-    sortBy?: TutorPaymentsSortBy;
-    sortOrder?: SortOrder;
-  };
-
-export type QueryTutorPaymentsResponseDto = {
-  data: TutorPaymentSummaryDto[];
-} & PaginationResponseMeta;
-
-export interface TutorLatestAllowedDateDto {
-  tutorId: string;
-  latestPaidTo?: ISODateOnlyString;
-  nextAllowedFrom?: ISODateOnlyString;
-}
-
-export interface PreviewTutorPaymentDto {
-  tutorId: string;
-  periodFrom: ISODateOnlyString;
-  periodTo: ISODateOnlyString;
-}
-
-export interface TutorPaymentBreakdown {
-  currency: CurrencyCode;
-  sessionsCount: number;
-  totalAmount: number;
-}
-
-export interface TutorPaymentPreviewDto {
-  tutorId: string;
-  periodFrom: ISODateOnlyString;
-  periodTo: ISODateOnlyString;
-  breakdowns: TutorPaymentBreakdown[];
-}
-
-export interface CreateTutorPaymentDto {
-  tutorId: string;
-  periodFrom: ISODateOnlyString;
-  periodTo: ISODateOnlyString;
 }
 
 // ─── Transaction Labels ────────────────────────────────────────────────────────
@@ -183,7 +106,6 @@ export interface FinancialTransactionSummaryDto {
   label?: TransactionLabelDto;
   notes?: string;
   learnerPaymentId?: string;
-  tutorPaymentId?: string;
   createdById: string;
   createdByName: string;
   createdAt: ISODateString;
