@@ -20,6 +20,6 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             cd /root/controller-hub
-            docker compose pull center-lms-prod center-lms-staging
-            docker compose up -d --no-deps center-lms-prod center-lms-staging
+            docker compose pull  halaqa-prod halaqa-staging
+            docker compose up -d --no-deps  halaqa-prod halaqa-staging
             docker image prune -f
