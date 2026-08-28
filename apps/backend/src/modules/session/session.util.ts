@@ -184,7 +184,8 @@ export function canSessionBeRescheduled(args: {
 
 /** Check if attendance can be recorded on a session.
  * - Virtual (no record): always true
- * - MISSED / CANCELED: false — cannot record attendance on a missed or canceled session
+ * - CANCELED: false — cannot record attendance on a canceled session
+ * - MISSED: true — admins can record attendance retroactively, which completes the session
  * - COMPLETED / RESCHEDULED: true
  */
 export function canRecordAttendance(args: { sessionRecord?: SessionRecordLike | null }): boolean {
@@ -192,10 +193,7 @@ export function canRecordAttendance(args: { sessionRecord?: SessionRecordLike | 
     return true;
   }
 
-  return (
-    args.sessionRecord.status !== SessionStatus.MISSED &&
-    args.sessionRecord.status !== SessionStatus.CANCELED
-  );
+  return args.sessionRecord.status !== SessionStatus.CANCELED;
 }
 
 // ============================================================================

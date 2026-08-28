@@ -667,9 +667,7 @@ export class SessionService {
     payload: UpdateSessionActionDTO
   ): Promise<SessionDetailsDTO> {
     if (!canRecordAttendance({ sessionRecord: target.sessionRecord })) {
-      throw new BadRequestException(
-        'Attendance cannot be recorded for a missed or canceled session'
-      );
+      throw new BadRequestException('Attendance cannot be recorded for a canceled session');
     }
 
     const attendance = payload.attendance;

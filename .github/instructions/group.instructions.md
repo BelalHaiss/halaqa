@@ -53,12 +53,13 @@ Enforced server-side in `session.service.ts` via `canSessionBeRescheduled()` / `
 | ------------- | -------------------- | ---------- |
 | Virtual (no record) | ✅ Allowed      | ✅ Allowed |
 | `RESCHEDULED` | ✅ Allowed            | ✅ Allowed |
-| `MISSED`      | ✅ Allowed (no time restriction) | ❌ Blocked |
+| `MISSED`      | ✅ Allowed (no time restriction) | ✅ Allowed (recording attendance completes the session) |
 | `COMPLETED`   | ❌ Blocked            | ✅ Allowed |
 | `CANCELED`    | ❌ Blocked            | ❌ Blocked |
 
 - `canSessionBeRescheduled` also governs cancel eligibility (same status rules apply to both actions).
-- `canRecordAttendance` is `false` only for `MISSED` and `CANCELED`; `true` otherwise, including `COMPLETED` (attendance is editable after completion).
+- `canRecordAttendance` is `false` only for `CANCELED`; `true` otherwise, including `MISSED` and `COMPLETED` (attendance is editable after completion, and can be recorded retroactively for a missed session).
+- Recording attendance on a `MISSED` session flips its status to `COMPLETED` via `applyAttendanceActionOnExistingSession` (`session.service.ts`), same as any other non-`COMPLETED` record.
 
 ## Today's Session Window
 

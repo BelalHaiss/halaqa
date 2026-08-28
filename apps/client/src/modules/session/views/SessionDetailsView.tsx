@@ -90,7 +90,7 @@ export const SessionDetailsView = () => {
   );
 
   const shouldShowAttendanceCard = true;
-  const canStoreAttendance = vm.session?.status !== 'MISSED' && vm.session?.status !== 'CANCELED';
+  const canStoreAttendance = vm.session?.status !== 'CANCELED';
 
   const handleSaveAttendance = attendanceForm.handleSubmit(async (values) => {
     await vm.saveAttendance(
