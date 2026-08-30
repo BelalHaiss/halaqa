@@ -14,6 +14,7 @@ import {
   UserCog,
   Settings,
   HandCoins,
+  FileText,
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -72,6 +73,12 @@ export default function Layout({ user, onLogout, children }: LayoutProps) {
       href: '/payments',
       icon: HandCoins,
       roles: ['ADMIN', 'MODERATOR', 'STUDENT'],
+    },
+    {
+      name: 'التقارير',
+      href: '/reports',
+      icon: FileText,
+      roles: ['ADMIN', 'MODERATOR'],
     },
   ];
 

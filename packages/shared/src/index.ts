@@ -7,6 +7,7 @@ export * from './session.types';
 export * from './attendance.types';
 export * from './currency.types';
 export * from './payment.types';
+export * from './report.types';
 export * from './validation/fields.constants';
 
 // Export utilities
@@ -29,3 +30,4 @@ export * from './validation/group.schema';
 export * from './validation/session.schema';
 export * from './validation/currency.schema';
 export * from './validation/payment.schema';
+export * from './validation/report.schema';

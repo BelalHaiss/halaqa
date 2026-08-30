@@ -5,6 +5,7 @@ import { TodaySessionsView, SessionDetailsView, SessionHistoryView } from '@/mod
 import { UsersView, UserProfileView } from '@/modules/users';
 import { LearnersView } from '@/modules/learners';
 import { PaymentsView } from '@/modules/payments';
+import { GroupReportView } from '@/modules/reports';
 import { RouteErrorElement } from '@/modules/observability';
 import { ProtectedLayout } from '@/components/ProtectedLayout';
 
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
       {
         path: 'payments',
         element: <PaymentsView />,
+      },
+      {
+        path: 'reports',
+        element: <GroupReportView />,
       },
       {
         path: 'profile',
